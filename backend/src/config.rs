@@ -7,6 +7,8 @@ pub struct Config {
     pub host: String,
     pub jwt_secret: String,
     pub nfc_mode: String,
+    pub super_admin_email: String,
+    pub super_admin_password: String,
 }
 
 impl Config {
@@ -23,6 +25,10 @@ impl Config {
         let jwt_secret = env::var("JWT_SECRET")
             .unwrap_or_else(|_| "super_secret_aircraft_verification_jwt_key_2026!".to_string());
         let nfc_mode = env::var("NFC_MODE").unwrap_or_else(|_| "mock".to_string());
+        let super_admin_email =
+            env::var("SUPER_ADMIN_EMAIL").unwrap_or_else(|_| "admin@gmail.com".to_string());
+        let super_admin_password =
+            env::var("SUPER_ADMIN_PASSWORD").unwrap_or_else(|_| "vikas93912".to_string());
 
         Self {
             database_url,
@@ -30,6 +36,8 @@ impl Config {
             host,
             jwt_secret,
             nfc_mode,
+            super_admin_email,
+            super_admin_password,
         }
     }
 }

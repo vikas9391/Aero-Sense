@@ -3,6 +3,7 @@ pub mod auth;
 pub mod components;
 pub mod maintenance;
 pub mod tags;
+pub mod users;
 pub mod verification;
 
 use crate::{config::Config, db::DbPool, services::blockchain_service::BlockchainService};
@@ -27,6 +28,9 @@ pub fn create_router(pool: DbPool, config: Config, blockchain: BlockchainService
         // Auth routes
         .route("/api/auth/login", post(auth::login))
         .route("/api/auth/me", get(auth::get_me))
+        // User management routes (admin only)
+        .route("/api/users", post(users::create_user))
+        .route("/api/users", get(users::list_users))
         // Aircraft routes
         .route("/api/aircraft", post(aircraft::create_aircraft))
         .route("/api/aircraft", get(aircraft::list_aircraft))

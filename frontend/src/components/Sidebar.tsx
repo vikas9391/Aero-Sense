@@ -11,6 +11,7 @@ import {
   ShieldAlert,
   User,
   PlusCircle,
+  Users,
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -19,6 +20,7 @@ export const Sidebar: React.FC = () => {
 
   const canRegister = role === 'ADMIN' || role === 'MANUFACTURER';
   const canMaintain = role === 'ADMIN' || role === 'MAINTENANCE_TECHNICIAN';
+  const isAdmin = role === 'ADMIN';
 
   const navItems = [
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -35,6 +37,7 @@ export const Sidebar: React.FC = () => {
         ]
       : []),
     ...(canMaintain ? [{ to: '/maintenance', label: 'Log Maintenance', icon: Wrench }] : []),
+    ...(isAdmin ? [{ to: '/users', label: 'User Management', icon: Users }] : []),
     { to: '/security', label: 'Security & Audit', icon: ShieldAlert },
     { to: '/profile', label: 'My Profile', icon: User },
   ];

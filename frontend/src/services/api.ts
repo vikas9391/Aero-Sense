@@ -28,6 +28,17 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+export const usersApi = {
+  list: async () => {
+    const res = await api.get<User[]>('/users');
+    return res.data;
+  },
+  create: async (data: { name: string; email: string; password: string; role: string }) => {
+    const res = await api.post<User>('/users', data);
+    return res.data;
+  },
+};
+
 export const authApi = {
   login: async (email: string, password: string) => {
     const res = await api.post<{ success: boolean; token: string; user: User }>('/auth/login', {

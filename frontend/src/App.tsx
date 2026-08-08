@@ -14,6 +14,7 @@ import { VerifyPage } from './pages/VerifyPage';
 import { MaintenancePage } from './pages/MaintenancePage';
 import { SecurityPage } from './pages/SecurityPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { UsersPage } from './pages/UsersPage';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
@@ -59,6 +60,7 @@ export const App: React.FC = () => {
             <Route path="nfc/register" element={<RegisterTagPage />} />
             <Route path="maintenance" element={<MaintenancePage />} />
             <Route path="security" element={<SecurityPage />} />
+            <Route path="users" element={<UsersPage />} />
             <Route path="profile" element={<ProfilePage />} />
           </Route>
 

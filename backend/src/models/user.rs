@@ -80,3 +80,11 @@ pub struct AuthResponse {
     pub token: String,
     pub user: UserResponse,
 }
+
+#[derive(Debug, Deserialize)]
+pub struct CreateUserRequest {
+    pub name: String,
+    pub email: String,
+    pub password: String,
+    pub role: String,
+}

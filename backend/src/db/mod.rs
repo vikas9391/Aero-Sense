@@ -24,8 +24,46 @@ pub async fn init_db(config: &Config) -> Result<DbPool, AppError> {
         .map_err(|e| AppError::InternalServerError(format!("Migration failed: {}", e)))?;
 
     seed_database(&pool).await?;
+    seed_super_admin(&pool, config).await?;
 
     Ok(pool)
+}
+
+/// Ensures a default super admin account always exists, independent of the one-time
+/// seed_database() run above (so it also gets created on databases that were already seeded).
+/// Credentials come from SUPER_ADMIN_EMAIL / SUPER_ADMIN_PASSWORD in .env.
+async fn seed_super_admin(pool: &DbPool, config: &Config) -> Result<(), AppError> {
+    let existing: Option<(i64,)> = sqlx::query_as("SELECT id FROM users WHERE email = ?")
+        .bind(&config.super_admin_email)
+        .fetch_optional(pool)
+        .await?;
+
+    if existing.is_some() {
+        return Ok(());
+    }
+
+    info!("Seeding default super admin account ({})...", config.super_admin_email);
+
+    let salt = SaltString::generate(&mut OsRng);
+    let argon2 = Argon2::default();
+    let password_hash = argon2
+        .hash_password(config.super_admin_password.as_bytes(), &salt)
+        .map_err(|e| AppError::InternalServerError(format!("Password hashing error: {}", e)))?
+        .to_string();
+
+    let user_uuid = uuid::Uuid::new_v4().to_string();
+
+    sqlx::query("INSERT INTO users (uuid, name, email, password_hash, role) VALUES (?, ?, ?, ?, ?)")
+        .bind(&user_uuid)
+        .bind("Super Admin")
+        .bind(&config.super_admin_email)
+        .bind(&password_hash)
+        .bind("ADMIN")
+        .execute(pool)
+        .await?;
+
+    info!("Super admin seeded successfully.");
+    Ok(())
 }
 
 async fn seed_database(pool: &DbPool) -> Result<(), AppError> {
