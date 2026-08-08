@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-dark: #0b101d;
+    --card-bg: #121929;
+    --border-color: #1e293b;
+    --accent-blue: #38bdf8;
+    --accent-indigo: #6366f1;
+    --status-authentic: #10b981;
+    --status-suspicious: #ef4444;
+    --status-warning: #f59e0b;
+  }
+
+  body {
+    background-color: #090d16;
+    color: #f8fafc;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    min-height: 100vh;
+    margin: 0;
+  }
+}
+
+/* Custom glassmorphism & glow effects */
+.glass-panel {
+  background: rgba(18, 25, 41, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+  background: linear-gradient(135deg, rgba(20, 29, 47, 0.9) 0%, rgba(15, 23, 38, 0.7) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+}
+
+.glow-blue {
+  box-shadow: 0 0 25px -5px rgba(56, 189, 248, 0.3);
+}
+
+.glow-green {
+  box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.3);
+}
+
+.glow-red {
+  box-shadow: 0 0 25px -5px rgba(239, 68, 68, 0.3);
+}
