@@ -1,10 +1,11 @@
 use crate::{
+    config::Config,
     db::DbPool,
     errors::AppError,
-    middleware::auth::{require_company_scope, AuthenticatedUser},
+    middleware::auth::{require_company_scope, require_role, AuthenticatedUser},
     models::{
-        BlockchainVerifyRequest, BlockchainVerifyResponse, NfcVerificationRequest, VerificationLog,
-        VerificationResponse,
+        BlockchainVerifyRequest, BlockchainVerifyResponse, NfcVerificationRequest, UserRole,
+        VerificationLog, VerificationResponse,
     },
     services::{
         blockchain_service::BlockchainService, nfc_service::MockNfcService,
@@ -20,10 +21,28 @@ use std::sync::Arc;
 pub async fn verify_nfc(
     State(pool): State<DbPool>,
     Extension(blockchain): Extension<Arc<BlockchainService>>,
+    Extension(config): Extension<Arc<Config>>,
     user: AuthenticatedUser,
-    Json(req): Json<NfcVerificationRequest>,
+    Json(mut req): Json<NfcVerificationRequest>,
 ) -> Result<Json<VerificationResponse>, AppError> {
     let company_id = require_company_scope(&user)?;
+
+    // `simulate_scenario` fabricates verification outcomes (including audit
+    // log entries) without touching real NFC/blockchain checks. It exists to
+    // demo failure states, so it's off unless the deployment explicitly opts
+    // in via ALLOW_VERIFICATION_SIMULATION, and even then only a Company
+    // Admin can invoke it — never a regular technician account.
+    if req.simulate_scenario.is_some() {
+        if !config.allow_verification_simulation {
+            return Err(AppError::Forbidden(
+                "Verification simulation is disabled on this deployment".to_string(),
+            ));
+        }
+        require_role(&user, &[UserRole::CompanyAdmin])?;
+    } else {
+        req.simulate_scenario = None;
+    }
+
     let mock_nfc = MockNfcService::new();
     let res = VerificationService::verify_nfc_tag(&pool, company_id, &mock_nfc, &blockchain, req).await?;
     Ok(Json(res))

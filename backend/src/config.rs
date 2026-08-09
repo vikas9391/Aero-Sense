@@ -12,6 +12,18 @@ pub struct Config {
     pub nfc_mode: String,
     pub super_admin_email: String,
     pub super_admin_password: String,
+    /// If true, the `/api/verification/nfc` endpoint honors the client-supplied
+    /// `simulate_scenario` field (used to demo failure states without real
+    /// hardware). Defaults to **off** — this must be explicitly enabled via
+    /// `ALLOW_VERIFICATION_SIMULATION=true` for a demo/staging deployment, and
+    /// should never be set in production, since it lets any authenticated user
+    /// write fabricated results into the verification audit log.
+    pub allow_verification_simulation: bool,
+    /// Comma-separated list of origins allowed to call the API (e.g.
+    /// `https://app.example.com,http://localhost:5173`). Falls back to common
+    /// local dev origins if unset — **never** wildcard `*` once this is
+    /// reachable from the public internet.
+    pub allowed_origins: Vec<String>,
 }
 
 impl Config {
@@ -47,6 +59,24 @@ impl Config {
             "SUPER_ADMIN_PASSWORD must be at least 8 characters"
         );
 
+        let allow_verification_simulation = env::var("ALLOW_VERIFICATION_SIMULATION")
+            .map(|v| v.eq_ignore_ascii_case("true") || v == "1")
+            .unwrap_or(false);
+
+        let allowed_origins = env::var("ALLOWED_ORIGINS")
+            .map(|v| {
+                v.split(',')
+                    .map(|s| s.trim().to_string())
+                    .filter(|s| !s.is_empty())
+                    .collect::<Vec<_>>()
+            })
+            .unwrap_or_else(|_| {
+                vec![
+                    "http://localhost:5173".to_string(),
+                    "http://127.0.0.1:5173".to_string(),
+                ]
+            });
+
         Self {
             database_url,
             port,
@@ -55,6 +85,8 @@ impl Config {
             nfc_mode,
             super_admin_email,
             super_admin_password,
+            allow_verification_simulation,
+            allowed_origins,
         }
     }
 

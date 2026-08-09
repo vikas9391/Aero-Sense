@@ -196,9 +196,14 @@ impl VerificationService {
             .await?;
 
             if let Some((hash, rid)) = record_hash {
-                blockchain_service.verify_record_hash(rid, &hash).await.unwrap_or(true)
+                // Fail closed: an error checking the chain means "not verified",
+                // not "assume it's fine".
+                blockchain_service.verify_record_hash(rid, &hash).await.unwrap_or(false)
             } else {
-                true // No maintenance records yet, integrity valid
+                true // No maintenance records exist yet, so there's nothing to
+                     // tamper with — integrity is vacuously valid here (this is
+                     // distinct from the "record exists but can't be found in
+                     // the chain registry" case above, which now fails closed).
             }
         } else {
             false

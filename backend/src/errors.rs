@@ -5,6 +5,7 @@ use axum::{
 };
 use serde::Serialize;
 use thiserror::Error;
+use tracing::error;
 
 #[derive(Debug, Error)]
 pub enum AppError {
@@ -90,16 +91,24 @@ impl IntoResponse for AppError {
             AppError::ComponentBindingFailed(msg) => (StatusCode::BAD_REQUEST, "COMPONENT_BINDING_FAILED", msg.clone()),
             AppError::TamperDetected(msg) => (StatusCode::UNPROCESSABLE_ENTITY, "TAMPER_DETECTED", msg.clone()),
             AppError::BlockchainMismatch(msg) => (StatusCode::UNPROCESSABLE_ENTITY, "BLOCKCHAIN_MISMATCH", msg.clone()),
-            AppError::DatabaseError(err) => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "DATABASE_ERROR",
-                format!("Database failure: {}", err),
-            ),
-            AppError::InternalServerError(msg) => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "INTERNAL_SERVER_ERROR",
-                msg.clone(),
-            ),
+            AppError::DatabaseError(err) => {
+                // Log the real error server-side (may contain schema/query
+                // details) but never hand it back to the client.
+                error!("Database error: {}", err);
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "DATABASE_ERROR",
+                    "An internal database error occurred".to_string(),
+                )
+            }
+            AppError::InternalServerError(msg) => {
+                error!("Internal server error: {}", msg);
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "INTERNAL_SERVER_ERROR",
+                    "An internal server error occurred".to_string(),
+                )
+            }
         };
 
         let body = Json(ErrorResponse {

@@ -9,19 +9,29 @@ pub mod users;
 pub mod verification;
 
 use crate::{config::Config, db::DbPool, services::blockchain_service::BlockchainService};
+use axum::http::{HeaderValue, Method};
 use axum::{
     routing::{get, post},
     Extension, Router,
 };
 use std::sync::Arc;
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
 
 pub fn create_router(pool: DbPool, config: Config, blockchain: BlockchainService) -> Router {
+    // Origins come from `ALLOWED_ORIGINS` (see Config) rather than a wildcard —
+    // with Bearer-token auth a wide-open `Any` origin means any site running
+    // JS in a victim's browser could ride an XSS bug straight into the API.
+    let origins: Vec<HeaderValue> = config
+        .allowed_origins
+        .iter()
+        .filter_map(|o| o.parse().ok())
+        .collect();
+
     let cors = CorsLayer::new()
-        .allow_origin(Any)
-        .allow_methods(Any)
-        .allow_headers(Any);
+        .allow_origin(origins)
+        .allow_methods([Method::GET, Method::POST, Method::PUT, Method::DELETE])
+        .allow_headers(tower_http::cors::Any);
 
     let config_arc = Arc::new(config);
     let blockchain_arc = Arc::new(blockchain);

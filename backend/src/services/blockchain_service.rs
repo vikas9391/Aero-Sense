@@ -42,13 +42,19 @@ impl BlockchainService {
         Ok(record_hash)
     }
 
+    /// Fails **closed**: a record with no matching entry in the on-chain
+    /// registry is treated as unverifiable, not automatically valid. This
+    /// matters in particular because the registry is in-memory only and is
+    /// wiped on every server restart — the previous fallback of "assume valid
+    /// if we can't find it" meant integrity checking silently stopped doing
+    /// anything after any restart. Callers that want restart-tolerant
+    /// behavior should persist `store_record_hash` results to durable storage
+    /// (or a real chain) instead of relying on this in-memory map.
     pub async fn verify_record_hash(&self, record_id: i64, current_db_hash: &str) -> Result<bool, AppError> {
         let registry = self.hash_registry.lock().unwrap();
-        if let Some(onchain_hash) = registry.get(&record_id) {
-            Ok(onchain_hash == current_db_hash)
-        } else {
-            // For new/seeded records without explicit mock state, if hash exists, compare with hash
-            Ok(!current_db_hash.is_empty())
+        match registry.get(&record_id) {
+            Some(onchain_hash) => Ok(onchain_hash == current_db_hash),
+            None => Ok(false),
         }
     }
 }

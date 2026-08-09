@@ -5,6 +5,7 @@ use axum::{
 };
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
@@ -76,7 +77,14 @@ where
         }
 
         let token = &auth_header[7..];
-        let config = Config::from_env();
+
+        // Reuse the single `Config` built once at startup (stored as an
+        // `Extension` by `create_router`) instead of re-parsing env vars and
+        // re-reading `.jwt_secret` from disk on every request.
+        let config = parts
+            .extensions
+            .get::<Arc<Config>>()
+            .ok_or_else(|| AppError::InternalServerError("Config extension missing".to_string()))?;
 
         let token_data = decode::<Claims>(
             token,
