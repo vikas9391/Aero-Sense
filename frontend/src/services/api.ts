@@ -55,6 +55,13 @@ export const authApi = {
     const res = await api.get<User>('/auth/me');
     return res.data;
   },
+  changePassword: async (currentPassword: string, newPassword: string) => {
+    const res = await api.put<User>('/auth/change-password', {
+      current_password: currentPassword,
+      new_password: newPassword,
+    });
+    return res.data;
+  },
 };
 
 // Super Admin only: onboard companies and provision their admins.

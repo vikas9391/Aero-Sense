@@ -8,13 +8,13 @@ const StatCard: React.FC<{ icon: React.ElementType; label: string; value: number
   label,
   value,
 }) => (
-  <div className="glass-card rounded-2xl border border-slate-800 p-5 flex items-center space-x-4">
-    <div className="rounded-xl bg-sky-500/10 p-3 border border-sky-500/20">
-      <Icon className="h-5 w-5 text-sky-400" />
+  <div className="glass-card rounded-2xl border border-slate-200 p-5 flex items-center space-x-4">
+    <div className="rounded-xl bg-blue-600/10 p-3 border border-blue-500/20">
+      <Icon className="h-5 w-5 text-blue-600" />
     </div>
     <div>
-      <div className="text-2xl font-bold text-slate-100">{value}</div>
-      <div className="text-xs text-slate-400">{label}</div>
+      <div className="text-2xl font-bold text-slate-900">{value}</div>
+      <div className="text-xs text-slate-500">{label}</div>
     </div>
   </div>
 );
@@ -33,26 +33,23 @@ export const AnalyticsPage: React.FC = () => {
   }, []);
 
   if (loading) {
-    return <div className="py-12 text-center text-slate-400 text-sm">Loading work analytics...</div>;
+    return <div className="py-12 text-center text-slate-500 text-sm">Loading work analytics...</div>;
   }
 
   if (error || !data) {
-    return <div className="py-12 text-center text-rose-400 text-sm">{error || 'No data available'}</div>;
+    return <div className="py-12 text-center text-rose-600 text-sm">{error || 'No data available'}</div>;
   }
 
   const maxUserCount = Math.max(1, ...data.records_by_user.map((u) => u.maintenance_count));
 
   return (
     <div className="space-y-8">
-      <div className="border-b border-slate-800/80 pb-5">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-100 flex items-center space-x-3">
-          <BarChart3 className="h-7 w-7 text-sky-400" />
+      <div className="border-b border-slate-200/80 pb-5">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center space-x-3">
+          <BarChart3 className="h-7 w-7 text-blue-600" />
           <span>Work Analytics</span>
         </h1>
-        <p className="text-sm text-slate-400 mt-1">
-          Company Admin-only: an overview of your company's overall work — this data never
-          includes anything from other companies.
-        </p>
+        
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -65,19 +62,19 @@ export const AnalyticsPage: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Verification pass/fail */}
-        <div className="glass-card rounded-2xl border border-slate-800 p-6 space-y-4">
-          <h2 className="text-sm font-bold text-slate-100">Verification Outcomes</h2>
+        <div className="glass-card rounded-2xl border border-slate-200 p-6 space-y-4">
+          <h2 className="text-sm font-bold text-slate-900">Verification Outcomes</h2>
           <div className="flex items-center space-x-6">
             <div className="flex items-center space-x-2">
-              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-              <span className="text-sm text-slate-300">{data.verifications_passed} authentic</span>
+              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+              <span className="text-sm text-slate-700">{data.verifications_passed} authentic</span>
             </div>
             <div className="flex items-center space-x-2">
-              <XCircle className="h-4 w-4 text-rose-400" />
-              <span className="text-sm text-slate-300">{data.verifications_failed} flagged</span>
+              <XCircle className="h-4 w-4 text-rose-600" />
+              <span className="text-sm text-slate-700">{data.verifications_failed} flagged</span>
             </div>
           </div>
-          <div className="h-2.5 w-full rounded-full bg-slate-800 overflow-hidden flex">
+          <div className="h-2.5 w-full rounded-full bg-slate-100 overflow-hidden flex">
             <div
               className="h-full bg-emerald-500"
               style={{
@@ -100,7 +97,7 @@ export const AnalyticsPage: React.FC = () => {
             />
           </div>
 
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 pt-2">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 pt-2">
             Maintenance Results
           </h3>
           <div className="space-y-2">
@@ -109,16 +106,16 @@ export const AnalyticsPage: React.FC = () => {
             )}
             {data.maintenance_by_result.map((r) => (
               <div key={r.inspection_result} className="flex items-center justify-between text-xs">
-                <span className="text-slate-400">{r.inspection_result}</span>
-                <span className="font-mono text-slate-200">{r.count}</span>
+                <span className="text-slate-500">{r.inspection_result}</span>
+                <span className="font-mono text-slate-800">{r.count}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Work by user */}
-        <div className="glass-card rounded-2xl border border-slate-800 p-6 space-y-4">
-          <h2 className="text-sm font-bold text-slate-100">Maintenance Activity by Team Member</h2>
+        <div className="glass-card rounded-2xl border border-slate-200 p-6 space-y-4">
+          <h2 className="text-sm font-bold text-slate-900">Maintenance Activity by Team Member</h2>
           <div className="space-y-3">
             {data.records_by_user.length === 0 && (
               <div className="text-xs text-slate-500">No team activity yet.</div>
@@ -126,12 +123,12 @@ export const AnalyticsPage: React.FC = () => {
             {data.records_by_user.map((u) => (
               <div key={u.user_id} className="space-y-1">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-300">{u.user_name}</span>
-                  <span className="font-mono text-slate-400">{u.maintenance_count}</span>
+                  <span className="text-slate-700">{u.user_name}</span>
+                  <span className="font-mono text-slate-500">{u.maintenance_count}</span>
                 </div>
-                <div className="h-1.5 w-full rounded-full bg-slate-800 overflow-hidden">
+                <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
                   <div
-                    className="h-full bg-sky-500"
+                    className="h-full bg-blue-600"
                     style={{ width: `${(u.maintenance_count / maxUserCount) * 100}%` }}
                   />
                 </div>

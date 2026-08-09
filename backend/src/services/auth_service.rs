@@ -3,7 +3,7 @@ use crate::{
     db::DbPool,
     errors::AppError,
     middleware::auth::create_jwt,
-    models::{AuthResponse, Company, CreateUserRequest, LoginRequest, User, UserResponse, UserRole},
+    models::{AuthResponse, ChangePasswordRequest, Company, CreateUserRequest, LoginRequest, User, UserResponse, UserRole},
 };
 use argon2::{
     password_hash::{rand_core::OsRng, SaltString},
@@ -169,6 +169,49 @@ impl AuthService {
 
         let id = res.last_insert_rowid();
         Self::get_user_by_id(pool, id).await
+    }
+
+    /// Any authenticated user: change their own password. Requires the
+    /// caller's current password to be re-verified server-side first — the
+    /// user's identity for the lookup comes from the authenticated session
+    /// (`user_id`), never from the request body.
+    pub async fn change_password(
+        pool: &DbPool,
+        user_id: i64,
+        req: ChangePasswordRequest,
+    ) -> Result<UserResponse, AppError> {
+        if req.new_password.len() < 8 {
+            return Err(AppError::ValidationError(
+                "New password must be at least 8 characters".to_string(),
+            ));
+        }
+
+        let user: User = sqlx::query_as("SELECT * FROM users WHERE id = ?")
+            .bind(user_id)
+            .fetch_optional(pool)
+            .await?
+            .ok_or_else(|| AppError::NotFound("User not found".to_string()))?;
+
+        let parsed_hash = PasswordHash::new(&user.password_hash)
+            .map_err(|e| AppError::InternalServerError(format!("Invalid password hash format: {}", e)))?;
+
+        Argon2::default()
+            .verify_password(req.current_password.as_bytes(), &parsed_hash)
+            .map_err(|_| AppError::Unauthorized("Current password is incorrect".to_string()))?;
+
+        let salt = SaltString::generate(&mut OsRng);
+        let new_hash = Argon2::default()
+            .hash_password(req.new_password.as_bytes(), &salt)
+            .map_err(|e| AppError::InternalServerError(format!("Password hashing error: {}", e)))?
+            .to_string();
+
+        sqlx::query("UPDATE users SET password_hash = ? WHERE id = ?")
+            .bind(&new_hash)
+            .bind(user_id)
+            .execute(pool)
+            .await?;
+
+        Self::get_user_by_id(pool, user_id).await
     }
 
     /// Company Admin only: list users belonging to the caller's own company.

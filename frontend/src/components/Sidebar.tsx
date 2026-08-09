@@ -35,7 +35,7 @@ export const Sidebar: React.FC = () => {
     ];
 
     return (
-      <aside className="w-64 shrink-0 glass-panel border-r border-slate-800/80 p-4 flex flex-col justify-between min-h-[calc(100vh-65px)]">
+      <aside className="w-64 shrink-0 glass-panel border-r border-slate-200/80 p-4 flex flex-col justify-between min-h-[calc(100vh-65px)]">
         <div className="space-y-6">
           <div>
             <div className="px-3 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
@@ -51,8 +51,8 @@ export const Sidebar: React.FC = () => {
                     className={({ isActive }) =>
                       `flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
                         isActive
-                          ? 'bg-sky-500/15 text-sky-400 border border-sky-500/30 shadow-md shadow-sky-500/10'
-                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                          ? 'bg-blue-600/15 text-blue-600 border border-blue-500/30 shadow-md shadow-blue-500/10'
+                          : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50'
                       }`
                     }
                   >
@@ -65,9 +65,9 @@ export const Sidebar: React.FC = () => {
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-800/80 bg-slate-900/50 p-3 text-xs">
-          <div className="font-semibold text-slate-300 mb-1">Super Admin</div>
-          <p className="text-[11px] text-slate-400 leading-relaxed">
+        <div className="rounded-xl border border-slate-200/80 bg-white/50 p-3 text-xs">
+          <div className="font-semibold text-slate-700 mb-1">Super Admin</div>
+          <p className="text-[11px] text-slate-500 leading-relaxed">
             Platform-level account. Not part of any company — no access to any company's
             operational data by design.
           </p>
@@ -102,7 +102,7 @@ export const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="w-64 shrink-0 glass-panel border-r border-slate-800/80 p-4 flex flex-col justify-between min-h-[calc(100vh-65px)]">
+    <aside className="w-64 shrink-0 glass-panel border-r border-slate-200/80 p-4 flex flex-col justify-between min-h-[calc(100vh-65px)]">
       <div className="space-y-6">
         <div>
           <div className="px-3 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
@@ -118,10 +118,10 @@ export const Sidebar: React.FC = () => {
                   className={({ isActive }) =>
                     `flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
                       isActive
-                        ? 'bg-sky-500/15 text-sky-400 border border-sky-500/30 shadow-md shadow-sky-500/10'
+                        ? 'bg-blue-600/15 text-blue-600 border border-blue-500/30 shadow-md shadow-blue-500/10'
                         : item.highlight
-                        ? 'text-emerald-400 bg-emerald-950/20 hover:bg-emerald-950/40 border border-emerald-800/30'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                        ? 'text-emerald-600 bg-emerald-50/20 hover:bg-emerald-50/40 border border-emerald-200/30'
+                        : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50'
                     }`
                   }
                 >
@@ -147,8 +147,8 @@ export const Sidebar: React.FC = () => {
                   className={({ isActive }) =>
                     `flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
                       isActive
-                        ? 'bg-sky-500/15 text-sky-400 border border-sky-500/30 shadow-md shadow-sky-500/10'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                        ? 'bg-blue-600/15 text-blue-600 border border-blue-500/30 shadow-md shadow-blue-500/10'
+                        : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50'
                     }`
                   }
                 >
@@ -161,13 +161,7 @@ export const Sidebar: React.FC = () => {
         </div>
       </div>
 
-      {/* Footer Info Box */}
-      <div className="rounded-xl border border-slate-800/80 bg-slate-900/50 p-3 text-xs">
-        <div className="font-semibold text-slate-300 mb-1">NTAG 424 DNA Support</div>
-        <p className="text-[11px] text-slate-400 leading-relaxed">
-          Supports dynamic AES CMAC authentication and TagTamper evidence verification.
-        </p>
-      </div>
+     
     </aside>
   );
 };

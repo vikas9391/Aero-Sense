@@ -3,7 +3,7 @@ use crate::{
     db::DbPool,
     errors::AppError,
     middleware::auth::AuthenticatedUser,
-    models::{AuthResponse, LoginRequest, UserResponse},
+    models::{AuthResponse, ChangePasswordRequest, LoginRequest, UserResponse},
     services::AuthService,
 };
 use axum::{extract::State, Extension, Json};
@@ -24,4 +24,16 @@ pub async fn get_me(
 ) -> Result<Json<UserResponse>, AppError> {
     let user_info = AuthService::get_user_by_id(&pool, user.0.sub).await?;
     Ok(Json(user_info))
+}
+
+/// PUT /api/auth/change-password — any authenticated user changes their own
+/// password. Requires the current password to be resupplied and re-verified;
+/// the target account always comes from the caller's own session.
+pub async fn change_password(
+    State(pool): State<DbPool>,
+    user: AuthenticatedUser,
+    Json(req): Json<ChangePasswordRequest>,
+) -> Result<Json<UserResponse>, AppError> {
+    let updated = AuthService::change_password(&pool, user.0.sub, req).await?;
+    Ok(Json(updated))
 }

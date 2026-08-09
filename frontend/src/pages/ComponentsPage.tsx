@@ -30,13 +30,13 @@ export const ComponentsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800/80 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-100 flex items-center space-x-3">
-            <Cpu className="h-7 w-7 text-sky-400" />
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center space-x-3">
+            <Cpu className="h-7 w-7 text-blue-600" />
             <span>Aircraft Component Catalog</span>
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-slate-500 mt-1">
             Registered physical components with digital NFC cryptographic identity mapping.
           </p>
         </div>
@@ -44,7 +44,7 @@ export const ComponentsPage: React.FC = () => {
         {canRegister && (
           <Link
             to="/components/register"
-            className="inline-flex items-center space-x-2 rounded-xl bg-sky-500 px-4 py-2.5 font-semibold text-white shadow-lg shadow-sky-500/20 hover:bg-sky-400 transition"
+            className="inline-flex items-center space-x-2 rounded-xl bg-blue-600 px-4 py-2.5 font-semibold text-white shadow-lg shadow-blue-500/20 hover:bg-blue-500 transition"
           >
             <Plus className="h-4 w-4" />
             <span>Register Component</span>
@@ -60,43 +60,43 @@ export const ComponentsPage: React.FC = () => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by Component ID, Serial #, Type, or Manufacturer..."
-          className="w-full rounded-xl border border-slate-800 bg-slate-900/90 pl-10 pr-4 py-2 text-xs text-slate-100 placeholder-slate-500 focus:border-sky-500 focus:outline-none"
+          className="w-full rounded-xl border border-slate-200 bg-white/90 pl-10 pr-4 py-2 text-xs text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none"
         />
       </div>
 
       {loading ? (
-        <div className="py-12 text-center text-slate-400">Loading catalog...</div>
+        <div className="py-12 text-center text-slate-500">Loading catalog...</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((c) => (
             <div key={c.id} className="glass-card rounded-2xl p-6 flex flex-col justify-between space-y-4">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-extrabold text-base text-sky-400">{c.component_uuid}</span>
-                  <span className="rounded bg-slate-800 px-2.5 py-1 text-xs font-mono text-slate-300 border border-slate-700">
+                  <span className="font-extrabold text-base text-blue-600">{c.component_uuid}</span>
+                  <span className="rounded bg-slate-100 px-2.5 py-1 text-xs font-mono text-slate-700 border border-slate-300">
                     SN: {c.serial_number}
                   </span>
                 </div>
 
                 <div>
-                  <h3 className="font-bold text-slate-100 text-sm">{c.component_type}</h3>
-                  <div className="text-xs text-slate-400 mt-0.5">{c.manufacturer}</div>
+                  <h3 className="font-bold text-slate-900 text-sm">{c.component_type}</h3>
+                  <div className="text-xs text-slate-500 mt-0.5">{c.manufacturer}</div>
                 </div>
 
-                <div className="flex items-center space-x-2 text-xs text-slate-400 pt-2 border-t border-slate-800/60">
+                <div className="flex items-center space-x-2 text-xs text-slate-500 pt-2 border-t border-slate-200/60">
                   <Plane className="h-3.5 w-3.5 text-slate-500" />
-                  <span>Aircraft: <strong className="text-slate-200">{c.aircraft_registration || 'Unassigned'}</strong></span>
+                  <span>Aircraft: <strong className="text-slate-800">{c.aircraft_registration || 'Unassigned'}</strong></span>
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between">
-                <span className="text-emerald-400 text-xs font-semibold flex items-center space-x-1">
+              <div className="pt-4 border-t border-slate-200/80 flex items-center justify-between">
+                <span className="text-emerald-600 text-xs font-semibold flex items-center space-x-1">
                   <ShieldCheck className="h-3.5 w-3.5" />
                   <span>{c.status}</span>
                 </span>
                 <Link
                   to={`/components/${c.id}`}
-                  className="flex items-center space-x-1 text-xs font-semibold text-sky-400 hover:text-sky-300"
+                  className="flex items-center space-x-1 text-xs font-semibold text-blue-600 hover:text-blue-500"
                 >
                   <span>Component Details</span>
                   <ArrowRight className="h-3.5 w-3.5" />

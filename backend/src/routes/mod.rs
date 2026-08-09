@@ -11,7 +11,7 @@ pub mod verification;
 use crate::{config::Config, db::DbPool, services::blockchain_service::BlockchainService};
 use axum::http::{HeaderValue, Method};
 use axum::{
-    routing::{get, post},
+    routing::{get, post, put},
     Extension, Router,
 };
 use std::sync::Arc;
@@ -40,6 +40,7 @@ pub fn create_router(pool: DbPool, config: Config, blockchain: BlockchainService
         // Auth routes
         .route("/api/auth/login", post(auth::login))
         .route("/api/auth/me", get(auth::get_me))
+        .route("/api/auth/change-password", put(auth::change_password))
         // Company (tenant) management routes — Super Admin only
         .route("/api/companies", post(companies::create_company))
         .route("/api/companies", get(companies::list_companies))
