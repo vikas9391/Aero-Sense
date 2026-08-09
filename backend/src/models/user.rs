@@ -4,7 +4,13 @@ use sqlx::FromRow;
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum UserRole {
-    Admin,
+    /// Platform owner. Not part of any company (`company_id` is always `None`).
+    /// Can create companies and provision each company's first admin, but has
+    /// no access to any company's operational data.
+    SuperAdmin,
+    /// Owns and manages a single company: adds/removes that company's own
+    /// admins and employees, and sees that company's full work analytics.
+    CompanyAdmin,
     Manufacturer,
     MaintenanceTechnician,
     Inspector,
@@ -14,7 +20,8 @@ pub enum UserRole {
 impl UserRole {
     pub fn as_str(&self) -> &'static str {
         match self {
-            UserRole::Admin => "ADMIN",
+            UserRole::SuperAdmin => "SUPER_ADMIN",
+            UserRole::CompanyAdmin => "COMPANY_ADMIN",
             UserRole::Manufacturer => "MANUFACTURER",
             UserRole::MaintenanceTechnician => "MAINTENANCE_TECHNICIAN",
             UserRole::Inspector => "INSPECTOR",
@@ -24,7 +31,10 @@ impl UserRole {
 
     pub fn from_str(s: &str) -> Self {
         match s.to_uppercase().as_str() {
-            "ADMIN" => UserRole::Admin,
+            "SUPER_ADMIN" | "SUPERADMIN" => UserRole::SuperAdmin,
+            // "ADMIN" kept as a legacy alias so any pre-existing accounts/tokens
+            // still resolve to the equivalent modern role.
+            "COMPANY_ADMIN" | "ADMIN" => UserRole::CompanyAdmin,
             "MANUFACTURER" => UserRole::Manufacturer,
             "MAINTENANCE_TECHNICIAN" | "TECHNICIAN" => UserRole::MaintenanceTechnician,
             "INSPECTOR" => UserRole::Inspector,
@@ -42,6 +52,9 @@ pub struct User {
     #[serde(skip_serializing)]
     pub password_hash: String,
     pub role: String,
+    /// `None` only for the platform Super Admin. Every other user belongs to
+    /// exactly one company and every query is scoped by this value.
+    pub company_id: Option<i64>,
     pub created_at: String,
 }
 
@@ -52,6 +65,7 @@ pub struct UserResponse {
     pub name: String,
     pub email: String,
     pub role: String,
+    pub company_id: Option<i64>,
     pub created_at: String,
 }
 
@@ -63,6 +77,7 @@ impl From<User> for UserResponse {
             name: u.name,
             email: u.email,
             role: u.role,
+            company_id: u.company_id,
             created_at: u.created_at,
         }
     }

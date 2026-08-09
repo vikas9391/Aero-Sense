@@ -1,5 +1,7 @@
 pub mod aircraft;
+pub mod analytics;
 pub mod auth;
+pub mod companies;
 pub mod components;
 pub mod maintenance;
 pub mod tags;
@@ -28,7 +30,15 @@ pub fn create_router(pool: DbPool, config: Config, blockchain: BlockchainService
         // Auth routes
         .route("/api/auth/login", post(auth::login))
         .route("/api/auth/me", get(auth::get_me))
-        // User management routes (admin only)
+        // Company (tenant) management routes — Super Admin only
+        .route("/api/companies", post(companies::create_company))
+        .route("/api/companies", get(companies::list_companies))
+        .route("/api/companies/:id", get(companies::get_company))
+        .route("/api/companies/:id/analytics", get(companies::get_company_analytics))
+        .route("/api/companies/:id/admins", post(companies::create_company_admin))
+        // Company-scoped work analytics — Company Admin only
+        .route("/api/analytics/overview", get(analytics::get_overview))
+        // User management routes (company admin only, scoped to their own company)
         .route("/api/users", post(users::create_user))
         .route("/api/users", get(users::list_users))
         // Aircraft routes

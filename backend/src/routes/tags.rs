@@ -1,7 +1,7 @@
 use crate::{
     db::DbPool,
     errors::AppError,
-    middleware::auth::{require_role, AuthenticatedUser},
+    middleware::auth::{require_company_scope, require_role, AuthenticatedUser},
     models::{ComponentTag, RegisterTagRequest, UserRole},
     services::TagService,
 };
@@ -16,16 +16,18 @@ pub async fn register_tag(
     user: AuthenticatedUser,
     Json(req): Json<RegisterTagRequest>,
 ) -> Result<(StatusCode, Json<ComponentTag>), AppError> {
-    require_role(&user, &[UserRole::Admin, UserRole::Manufacturer])?;
-    let tag = TagService::register_tag(&pool, req).await?;
+    require_role(&user, &[UserRole::Manufacturer])?;
+    let company_id = require_company_scope(&user)?;
+    let tag = TagService::register_tag(&pool, company_id, req).await?;
     Ok((StatusCode::CREATED, Json(tag)))
 }
 
 pub async fn get_tag(
     State(pool): State<DbPool>,
-    _user: AuthenticatedUser,
+    user: AuthenticatedUser,
     Path(id): Path<i64>,
 ) -> Result<Json<ComponentTag>, AppError> {
-    let tag = TagService::get_tag_by_id(&pool, id).await?;
+    let company_id = require_company_scope(&user)?;
+    let tag = TagService::get_tag_by_id(&pool, company_id, id).await?;
     Ok(Json(tag))
 }

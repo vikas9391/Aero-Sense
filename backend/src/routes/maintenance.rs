@@ -1,7 +1,7 @@
 use crate::{
     db::DbPool,
     errors::AppError,
-    middleware::auth::{require_role, AuthenticatedUser},
+    middleware::auth::{require_company_scope, require_role, AuthenticatedUser},
     models::{CreateMaintenanceRequest, MaintenanceRecord, MaintenanceRecordResponse, UserRole},
     services::blockchain_service::BlockchainService,
 };
@@ -18,15 +18,19 @@ pub async fn create_maintenance(
     user: AuthenticatedUser,
     Json(req): Json<CreateMaintenanceRequest>,
 ) -> Result<(StatusCode, Json<MaintenanceRecordResponse>), AppError> {
-    require_role(&user, &[UserRole::MaintenanceTechnician, UserRole::Admin])?;
+    require_role(&user, &[UserRole::MaintenanceTechnician])?;
+    let company_id = require_company_scope(&user)?;
 
-    // Verify component exists
-    let comp_exists: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM components WHERE id = ?")
-        .bind(req.component_id)
-        .fetch_one(&pool)
-        .await?;
+    // Verify the component exists *and belongs to the caller's own company*.
+    let comp_exists: Option<(i64,)> = sqlx::query_as(
+        "SELECT id FROM components WHERE id = ? AND company_id = ?"
+    )
+    .bind(req.component_id)
+    .bind(company_id)
+    .fetch_optional(&pool)
+    .await?;
 
-    if comp_exists.0 == 0 {
+    if comp_exists.is_none() {
         return Err(AppError::ComponentNotFound);
     }
 
@@ -43,9 +47,9 @@ pub async fn create_maintenance(
     );
 
     let res = sqlx::query(
-        "INSERT INTO maintenance_records 
-         (component_id, technician_id, maintenance_type, description, parts_replaced, inspection_result, record_hash, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO maintenance_records
+         (component_id, technician_id, maintenance_type, description, parts_replaced, inspection_result, record_hash, created_at, company_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
     )
     .bind(req.component_id)
     .bind(user.0.sub)
@@ -55,6 +59,7 @@ pub async fn create_maintenance(
     .bind(&req.inspection_result)
     .bind(&record_hash)
     .bind(&created_at)
+    .bind(company_id)
     .execute(&pool)
     .await?;
 
@@ -84,13 +89,16 @@ pub async fn create_maintenance(
 
 pub async fn get_component_history(
     State(pool): State<DbPool>,
-    _user: AuthenticatedUser,
+    user: AuthenticatedUser,
     Path(component_id): Path<i64>,
 ) -> Result<Json<Vec<MaintenanceRecordResponse>>, AppError> {
+    let company_id = require_company_scope(&user)?;
+
     let records: Vec<MaintenanceRecord> = sqlx::query_as(
-        "SELECT * FROM maintenance_records WHERE component_id = ? ORDER BY id DESC"
+        "SELECT * FROM maintenance_records WHERE component_id = ? AND company_id = ? ORDER BY id DESC"
     )
     .bind(component_id)
+    .bind(company_id)
     .fetch_all(&pool)
     .await?;
 

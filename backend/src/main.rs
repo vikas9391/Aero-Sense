@@ -1,15 +1,7 @@
-mod config;
-mod db;
-mod errors;
-mod middleware;
-mod models;
-mod routes;
-mod services;
-
-use config::Config;
-use db::init_db;
-use routes::create_router;
-use services::blockchain_service::BlockchainService;
+use backend::config::Config;
+use backend::db::init_db;
+use backend::routes::create_router;
+use backend::services::blockchain_service::BlockchainService;
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 

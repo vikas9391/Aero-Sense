@@ -102,10 +102,18 @@ export const LoginPage: React.FC = () => {
             <div className="grid grid-cols-2 gap-2 text-xs">
               <button
                 type="button"
+                onClick={() => fillQuickAccount('admin@gmail.com')}
+                className="rounded-lg border border-slate-800 bg-slate-900/50 p-2 text-left hover:bg-slate-800/80 transition"
+              >
+                <div className="font-semibold text-fuchsia-400">Super Admin</div>
+                <div className="text-[10px] text-slate-400">SUPER_ADMIN_EMAIL in .env</div>
+              </button>
+              <button
+                type="button"
                 onClick={() => fillQuickAccount('admin@aircraft.com')}
                 className="rounded-lg border border-slate-800 bg-slate-900/50 p-2 text-left hover:bg-slate-800/80 transition"
               >
-                <div className="font-semibold text-sky-400">Admin User</div>
+                <div className="font-semibold text-sky-400">Company Admin</div>
                 <div className="text-[10px] text-slate-400">admin@aircraft.com</div>
               </button>
               <button

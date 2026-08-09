@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { User as UserIcon, Shield, Mail, Key, CheckCircle2 } from 'lucide-react';
+import { User as UserIcon, Shield, Mail, CheckCircle2 } from 'lucide-react';
 
 export const ProfilePage: React.FC = () => {
   const { user } = useAuth();
@@ -8,7 +8,8 @@ export const ProfilePage: React.FC = () => {
   if (!user) return null;
 
   const rolePermissions: Record<string, string[]> = {
-    ADMIN: ['Register Aircraft', 'Register Component', 'Bind NFC/RFID Tags', 'Log Maintenance Records', 'Execute NFC Verification', 'Access Security Audits'],
+    SUPER_ADMIN: ['Onboard Companies', 'Provision Company Admins', 'View Cross-Company Work Summaries'],
+    COMPANY_ADMIN: ['Manage Company Users & Roles', 'View Company Work Analytics', 'Register Aircraft', 'Register Component', 'Bind NFC/RFID Tags', 'Log Maintenance Records', 'Execute NFC Verification', 'Access Security Audits'],
     MANUFACTURER: ['Register Component', 'Bind NFC/RFID Tags', 'Execute NFC Verification', 'View Fleet'],
     MAINTENANCE_TECHNICIAN: ['Log Maintenance Records', 'Execute NFC Verification', 'View Fleet & Components'],
     INSPECTOR: ['Execute NFC Verification', 'Access Security Audits', 'View Fleet & Components'],

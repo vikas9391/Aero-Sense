@@ -15,6 +15,8 @@ import { MaintenancePage } from './pages/MaintenancePage';
 import { SecurityPage } from './pages/SecurityPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { UsersPage } from './pages/UsersPage';
+import { CompaniesPage } from './pages/CompaniesPage';
+import { AnalyticsPage } from './pages/AnalyticsPage';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
@@ -34,6 +36,15 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
+// The Super Admin has no company, so the operational dashboard (which reads
+// aircraft/component data) isn't reachable for it — send it to company
+// management instead. Everyone else lands on the normal dashboard.
+const RoleAwareIndexRedirect: React.FC = () => {
+  const { user } = useAuth();
+  const destination = user?.role === 'SUPER_ADMIN' ? '/companies' : '/dashboard';
+  return <Navigate to={destination} replace />;
+};
+
 export const App: React.FC = () => {
   return (
     <AuthProvider>
@@ -49,7 +60,7 @@ export const App: React.FC = () => {
               </ProtectedRoute>
             }
           >
-            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route index element={<RoleAwareIndexRedirect />} />
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="verify" element={<VerifyPage />} />
             <Route path="aircraft" element={<AircraftPage />} />
@@ -61,14 +72,25 @@ export const App: React.FC = () => {
             <Route path="maintenance" element={<MaintenancePage />} />
             <Route path="security" element={<SecurityPage />} />
             <Route path="users" element={<UsersPage />} />
+            <Route path="analytics" element={<AnalyticsPage />} />
+            <Route path="companies" element={<CompaniesPage />} />
             <Route path="profile" element={<ProfilePage />} />
           </Route>
 
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<RoleAwareIndexRedirectFallback />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
   );
+};
+
+// Same role-aware redirect, usable outside the protected layout tree for the
+// catch-all route (unauthenticated users still fall through to /login via
+// ProtectedRoute once they hit /dashboard or /companies).
+const RoleAwareIndexRedirectFallback: React.FC = () => {
+  const { user } = useAuth();
+  const destination = user?.role === 'SUPER_ADMIN' ? '/companies' : '/dashboard';
+  return <Navigate to={destination} replace />;
 };
 
 export default App;

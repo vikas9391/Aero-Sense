@@ -16,7 +16,7 @@ export const AircraftPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const { user } = useAuth();
 
-  const canAdd = user?.role === 'ADMIN' || user?.role === 'MANUFACTURER';
+  const canAdd = user?.role === 'COMPANY_ADMIN' || user?.role === 'MANUFACTURER';
 
   const fetchAircraft = async () => {
     try {

@@ -10,19 +10,24 @@ use crate::{
 pub struct ComponentService;
 
 impl ComponentService {
-    pub async fn create_aircraft(pool: &DbPool, req: CreateAircraftRequest) -> Result<Aircraft, AppError> {
+    pub async fn create_aircraft(
+        pool: &DbPool,
+        company_id: i64,
+        req: CreateAircraftRequest,
+    ) -> Result<Aircraft, AppError> {
         let aircraft_uuid = uuid::Uuid::new_v4().to_string();
         let status = req.status.unwrap_or_else(|| "ACTIVE".to_string());
 
         let res = sqlx::query(
-            "INSERT INTO aircraft (aircraft_uuid, registration_number, model, manufacturer, status) 
-             VALUES (?, ?, ?, ?, ?)",
+            "INSERT INTO aircraft (aircraft_uuid, registration_number, model, manufacturer, status, company_id) \
+             VALUES (?, ?, ?, ?, ?, ?)",
         )
         .bind(&aircraft_uuid)
         .bind(&req.registration_number)
         .bind(&req.model)
         .bind(&req.manufacturer)
         .bind(&status)
+        .bind(company_id)
         .execute(pool)
         .await
         .map_err(|e| {
@@ -35,41 +40,71 @@ impl ComponentService {
 
         let id = res.last_insert_rowid();
 
-        let aircraft: Aircraft = sqlx::query_as("SELECT * FROM aircraft WHERE id = ?")
+        let aircraft: Aircraft = sqlx::query_as("SELECT * FROM aircraft WHERE id = ? AND company_id = ?")
             .bind(id)
+            .bind(company_id)
             .fetch_one(pool)
             .await?;
 
         Ok(aircraft)
     }
 
-    pub async fn list_aircraft(pool: &DbPool) -> Result<Vec<Aircraft>, AppError> {
-        let list: Vec<Aircraft> = sqlx::query_as("SELECT * FROM aircraft ORDER BY id DESC")
-            .fetch_all(pool)
-            .await?;
+    pub async fn list_aircraft(pool: &DbPool, company_id: i64) -> Result<Vec<Aircraft>, AppError> {
+        let list: Vec<Aircraft> = sqlx::query_as(
+            "SELECT * FROM aircraft WHERE company_id = ? ORDER BY id DESC"
+        )
+        .bind(company_id)
+        .fetch_all(pool)
+        .await?;
 
         Ok(list)
     }
 
-    pub async fn get_aircraft_by_id(pool: &DbPool, id: i64) -> Result<AircraftWithComponents, AppError> {
-        let aircraft: Aircraft = sqlx::query_as("SELECT * FROM aircraft WHERE id = ?")
+    pub async fn get_aircraft_by_id(
+        pool: &DbPool,
+        company_id: i64,
+        id: i64,
+    ) -> Result<AircraftWithComponents, AppError> {
+        let aircraft: Aircraft = sqlx::query_as("SELECT * FROM aircraft WHERE id = ? AND company_id = ?")
             .bind(id)
+            .bind(company_id)
             .fetch_optional(pool)
             .await?
             .ok_or_else(|| AppError::NotFound("Aircraft not found".to_string()))?;
 
-        let components = Self::list_components_by_aircraft(pool, id).await?;
+        let components = Self::list_components_by_aircraft(pool, company_id, id).await?;
 
         Ok(AircraftWithComponents { aircraft, components })
     }
 
-    pub async fn create_component(pool: &DbPool, req: CreateComponentRequest) -> Result<ComponentResponse, AppError> {
+    pub async fn create_component(
+        pool: &DbPool,
+        company_id: i64,
+        req: CreateComponentRequest,
+    ) -> Result<ComponentResponse, AppError> {
+        // If the caller is attaching this component to an aircraft, that aircraft
+        // must belong to the same company — otherwise this would let a company
+        // silently bind a component onto another tenant's aircraft.
+        if let Some(aircraft_id) = req.aircraft_id {
+            let owned: Option<(i64,)> = sqlx::query_as(
+                "SELECT id FROM aircraft WHERE id = ? AND company_id = ?"
+            )
+            .bind(aircraft_id)
+            .bind(company_id)
+            .fetch_optional(pool)
+            .await?;
+
+            if owned.is_none() {
+                return Err(AppError::NotFound("Aircraft not found".to_string()));
+            }
+        }
+
         let component_uuid = format!("ENG-{}", &uuid::Uuid::new_v4().to_string()[..8].to_uppercase());
         let status = req.status.unwrap_or_else(|| "OPERATIONAL".to_string());
 
         let res = sqlx::query(
-            "INSERT INTO components (component_uuid, aircraft_id, serial_number, component_type, manufacturer, status)
-             VALUES (?, ?, ?, ?, ?, ?)",
+            "INSERT INTO components (component_uuid, aircraft_id, serial_number, component_type, manufacturer, status, company_id)
+             VALUES (?, ?, ?, ?, ?, ?, ?)",
         )
         .bind(&component_uuid)
         .bind(req.aircraft_id)
@@ -77,6 +112,7 @@ impl ComponentService {
         .bind(&req.component_type)
         .bind(&req.manufacturer)
         .bind(&status)
+        .bind(company_id)
         .execute(pool)
         .await
         .map_err(|e| {
@@ -88,13 +124,16 @@ impl ComponentService {
         })?;
 
         let id = res.last_insert_rowid();
-        Self::get_component_by_id(pool, id).await
+        Self::get_component_by_id(pool, company_id, id).await
     }
 
-    pub async fn list_components(pool: &DbPool) -> Result<Vec<ComponentResponse>, AppError> {
-        let components: Vec<Component> = sqlx::query_as("SELECT * FROM components ORDER BY id DESC")
-            .fetch_all(pool)
-            .await?;
+    pub async fn list_components(pool: &DbPool, company_id: i64) -> Result<Vec<ComponentResponse>, AppError> {
+        let components: Vec<Component> = sqlx::query_as(
+            "SELECT * FROM components WHERE company_id = ? ORDER BY id DESC"
+        )
+        .bind(company_id)
+        .fetch_all(pool)
+        .await?;
 
         let mut responses = Vec::new();
         for c in components {
@@ -125,16 +164,26 @@ impl ComponentService {
         Ok(responses)
     }
 
-    pub async fn list_components_by_aircraft(pool: &DbPool, aircraft_id: i64) -> Result<Vec<ComponentResponse>, AppError> {
-        let components: Vec<Component> = sqlx::query_as("SELECT * FROM components WHERE aircraft_id = ? ORDER BY id DESC")
-            .bind(aircraft_id)
-            .fetch_all(pool)
-            .await?;
+    pub async fn list_components_by_aircraft(
+        pool: &DbPool,
+        company_id: i64,
+        aircraft_id: i64,
+    ) -> Result<Vec<ComponentResponse>, AppError> {
+        let components: Vec<Component> = sqlx::query_as(
+            "SELECT * FROM components WHERE aircraft_id = ? AND company_id = ? ORDER BY id DESC"
+        )
+        .bind(aircraft_id)
+        .bind(company_id)
+        .fetch_all(pool)
+        .await?;
 
-        let aircraft_reg: Option<(String,)> = sqlx::query_as("SELECT registration_number FROM aircraft WHERE id = ?")
-            .bind(aircraft_id)
-            .fetch_optional(pool)
-            .await?;
+        let aircraft_reg: Option<(String,)> = sqlx::query_as(
+            "SELECT registration_number FROM aircraft WHERE id = ? AND company_id = ?"
+        )
+        .bind(aircraft_id)
+        .bind(company_id)
+        .fetch_optional(pool)
+        .await?;
         let reg_str = aircraft_reg.map(|r| r.0);
 
         let mut responses = Vec::new();
@@ -156,9 +205,14 @@ impl ComponentService {
         Ok(responses)
     }
 
-    pub async fn get_component_by_id(pool: &DbPool, id: i64) -> Result<ComponentResponse, AppError> {
-        let c: Component = sqlx::query_as("SELECT * FROM components WHERE id = ?")
+    pub async fn get_component_by_id(
+        pool: &DbPool,
+        company_id: i64,
+        id: i64,
+    ) -> Result<ComponentResponse, AppError> {
+        let c: Component = sqlx::query_as("SELECT * FROM components WHERE id = ? AND company_id = ?")
             .bind(id)
+            .bind(company_id)
             .fetch_optional(pool)
             .await?
             .ok_or_else(|| AppError::ComponentNotFound)?;

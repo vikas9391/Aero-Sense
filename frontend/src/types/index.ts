@@ -1,5 +1,6 @@
-export type UserRole = 
-  | 'ADMIN'
+export type UserRole =
+  | 'SUPER_ADMIN'
+  | 'COMPANY_ADMIN'
   | 'MANUFACTURER'
   | 'MAINTENANCE_TECHNICIAN'
   | 'INSPECTOR'
@@ -11,7 +12,51 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
+  /** Null only for the platform Super Admin — every other user belongs to one company. */
+  company_id: number | null;
   created_at: string;
+}
+
+export interface Company {
+  id: number;
+  uuid: string;
+  name: string;
+  slug: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CompanySummary extends Company {
+  user_count: number;
+  aircraft_count: number;
+  component_count: number;
+  maintenance_count: number;
+  verification_count: number;
+}
+
+export interface MaintenanceResultCount {
+  inspection_result: string;
+  count: number;
+}
+
+export interface UserWorkCount {
+  user_id: number;
+  user_name: string;
+  maintenance_count: number;
+}
+
+export interface WorkAnalytics {
+  company_id: number;
+  total_users: number;
+  total_aircraft: number;
+  total_components: number;
+  total_maintenance_records: number;
+  total_verifications: number;
+  verifications_passed: number;
+  verifications_failed: number;
+  maintenance_by_result: MaintenanceResultCount[];
+  records_by_user: UserWorkCount[];
 }
 
 export interface Aircraft {

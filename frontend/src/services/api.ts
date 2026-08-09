@@ -2,12 +2,15 @@ import axios from 'axios';
 import {
   Aircraft,
   AircraftWithComponents,
+  Company,
+  CompanySummary,
   Component,
   ComponentTag,
   MaintenanceRecord,
   User,
   VerificationLog,
   VerificationResponse,
+  WorkAnalytics,
 } from '../types';
 
 const API_BASE = '/api';
@@ -49,6 +52,38 @@ export const authApi = {
   },
   getMe: async () => {
     const res = await api.get<User>('/auth/me');
+    return res.data;
+  },
+};
+
+// Super Admin only: onboard companies and provision their admins.
+export const companiesApi = {
+  list: async () => {
+    const res = await api.get<CompanySummary[]>('/companies');
+    return res.data;
+  },
+  getById: async (id: number) => {
+    const res = await api.get<CompanySummary>(`/companies/${id}`);
+    return res.data;
+  },
+  create: async (data: { name: string; slug?: string }) => {
+    const res = await api.post<Company>('/companies', data);
+    return res.data;
+  },
+  createAdmin: async (companyId: number, data: { name: string; email: string; password: string }) => {
+    const res = await api.post<User>(`/companies/${companyId}/admins`, data);
+    return res.data;
+  },
+  getAnalytics: async (id: number) => {
+    const res = await api.get<WorkAnalytics>(`/companies/${id}/analytics`);
+    return res.data;
+  },
+};
+
+// Company Admin: "overall work" view for their own company.
+export const analyticsApi = {
+  getOverview: async () => {
+    const res = await api.get<WorkAnalytics>('/analytics/overview');
     return res.data;
   },
 };

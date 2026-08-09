@@ -1,4 +1,5 @@
 pub mod aircraft;
+pub mod company;
 pub mod component;
 pub mod component_tag;
 pub mod maintenance;
@@ -6,6 +7,7 @@ pub mod user;
 pub mod verification;
 
 pub use aircraft::*;
+pub use company::*;
 pub use component::*;
 pub use component_tag::*;
 pub use maintenance::*;

@@ -31,13 +31,14 @@ impl AuthService {
             .verify_password(req.password.as_bytes(), &parsed_hash)
             .map_err(|_| AppError::Unauthorized("Invalid email or password".to_string()))?;
 
-        // Generate JWT token (Role is determined by backend DB record)
+        // Generate JWT token (role + tenant are determined solely by the backend DB record)
         let token = create_jwt(
             user.id,
             &user.uuid,
             &user.name,
             &user.email,
             &user.role,
+            user.company_id,
             &config.jwt_secret,
         )?;
 
@@ -58,8 +59,11 @@ impl AuthService {
         Ok(UserResponse::from(user))
     }
 
-    /// Admin-only: create a new user with a chosen role, id (assigned by DB), and password.
-    pub async fn create_user(pool: &DbPool, req: CreateUserRequest) -> Result<UserResponse, AppError> {
+    /// Company Admin only: create a new user *inside the caller's own company*.
+    /// `company_id` must come from the authenticated admin's session — never
+    /// from the request body — so an admin can never place an account into a
+    /// company that isn't theirs.
+    pub async fn create_user(pool: &DbPool, company_id: i64, req: CreateUserRequest) -> Result<UserResponse, AppError> {
         let name = req.name.trim().to_string();
         let email = req.email.trim().to_lowercase();
 
@@ -76,24 +80,44 @@ impl AuthService {
         }
 
         let role = UserRole::from_str(&req.role);
+        if role == UserRole::SuperAdmin {
+            return Err(AppError::Forbidden(
+                "Company admins cannot create super admin accounts".to_string(),
+            ));
+        }
 
+        Self::insert_user(pool, Some(company_id), &name, &email, &req.password, role).await
+    }
+
+    /// Shared insert path used by both company-scoped user creation and the
+    /// Super Admin's company-admin provisioning (see `CompanyService`).
+    /// `company_id` is `None` only when seeding the platform Super Admin itself.
+    pub(crate) async fn insert_user(
+        pool: &DbPool,
+        company_id: Option<i64>,
+        name: &str,
+        email: &str,
+        password: &str,
+        role: UserRole,
+    ) -> Result<UserResponse, AppError> {
         let salt = SaltString::generate(&mut OsRng);
         let argon2 = Argon2::default();
         let password_hash = argon2
-            .hash_password(req.password.as_bytes(), &salt)
+            .hash_password(password.as_bytes(), &salt)
             .map_err(|e| AppError::InternalServerError(format!("Password hashing error: {}", e)))?
             .to_string();
 
         let user_uuid = uuid::Uuid::new_v4().to_string();
 
         let res = sqlx::query(
-            "INSERT INTO users (uuid, name, email, password_hash, role) VALUES (?, ?, ?, ?, ?)",
+            "INSERT INTO users (uuid, name, email, password_hash, role, company_id) VALUES (?, ?, ?, ?, ?, ?)",
         )
         .bind(&user_uuid)
-        .bind(&name)
-        .bind(&email)
+        .bind(name)
+        .bind(email)
         .bind(&password_hash)
         .bind(role.as_str())
+        .bind(company_id)
         .execute(pool)
         .await
         .map_err(|e| {
@@ -108,11 +132,14 @@ impl AuthService {
         Self::get_user_by_id(pool, id).await
     }
 
-    /// Admin-only: list all users with their ids and roles (password hashes never included).
-    pub async fn list_users(pool: &DbPool) -> Result<Vec<UserResponse>, AppError> {
-        let users: Vec<User> = sqlx::query_as("SELECT * FROM users ORDER BY id ASC")
-            .fetch_all(pool)
-            .await?;
+    /// Company Admin only: list users belonging to the caller's own company.
+    pub async fn list_users(pool: &DbPool, company_id: i64) -> Result<Vec<UserResponse>, AppError> {
+        let users: Vec<User> = sqlx::query_as(
+            "SELECT * FROM users WHERE company_id = ? ORDER BY id ASC"
+        )
+        .bind(company_id)
+        .fetch_all(pool)
+        .await?;
 
         Ok(users.into_iter().map(UserResponse::from).collect())
     }

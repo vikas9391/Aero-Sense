@@ -3,7 +3,10 @@ import { usersApi } from '../services/api';
 import { User, UserRole } from '../types';
 import { Users as UsersIcon, UserPlus, AlertCircle, CheckCircle2, ShieldCheck } from 'lucide-react';
 
-const ROLES: UserRole[] = ['ADMIN', 'MANUFACTURER', 'MAINTENANCE_TECHNICIAN', 'INSPECTOR', 'VIEWER'];
+// Company Admins can create any role within their own company except
+// SUPER_ADMIN and COMPANY_ADMIN's platform-level counterpart — the backend
+// enforces this too (this list is just what's offered in the UI).
+const ROLES: UserRole[] = ['COMPANY_ADMIN', 'MANUFACTURER', 'MAINTENANCE_TECHNICIAN', 'INSPECTOR', 'VIEWER'];
 
 export const UsersPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -59,7 +62,8 @@ export const UsersPage: React.FC = () => {
           <span>User Management</span>
         </h1>
         <p className="text-sm text-slate-400 mt-1">
-          Admin-only: create new accounts with an assigned role, id, and password.
+          Company Admin-only: create accounts within your own company. Everyone you add here
+          is scoped to your company and can never see another company's data.
         </p>
       </div>
 
@@ -151,7 +155,7 @@ export const UsersPage: React.FC = () => {
         <div className="lg:col-span-2 glass-card rounded-2xl border border-slate-800 overflow-hidden">
           <div className="px-6 py-4 border-b border-slate-800/80 flex items-center space-x-2">
             <ShieldCheck className="h-4 w-4 text-sky-400" />
-            <h2 className="text-sm font-bold text-slate-100">All Accounts</h2>
+            <h2 className="text-sm font-bold text-slate-100">Your Company's Accounts</h2>
           </div>
 
           {loading ? (

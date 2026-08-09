@@ -11,7 +11,7 @@ export const ComponentsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
-  const canRegister = user?.role === 'ADMIN' || user?.role === 'MANUFACTURER';
+  const canRegister = user?.role === 'COMPANY_ADMIN' || user?.role === 'MANUFACTURER';
 
   useEffect(() => {
     componentsApi.list()
