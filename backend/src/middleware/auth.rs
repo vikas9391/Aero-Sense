@@ -1,9 +1,7 @@
 use crate::{config::Config, errors::AppError, models::UserRole};
 use axum::{
     extract::FromRequestParts,
-    http::{header, request::Parts, StatusCode},
-    response::{IntoResponse, Response},
-    Json,
+    http::{header, request::Parts},
 };
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
