@@ -3,25 +3,64 @@ use crate::{
     db::DbPool,
     errors::AppError,
     middleware::auth::create_jwt,
-    models::{AuthResponse, CreateUserRequest, LoginRequest, User, UserResponse, UserRole},
+    models::{AuthResponse, Company, CreateUserRequest, LoginRequest, User, UserResponse, UserRole},
 };
 use argon2::{
     password_hash::{rand_core::OsRng, SaltString},
     Argon2, PasswordHash, PasswordHasher, PasswordVerifier,
 };
 
+/// The fixed "company name" value the platform Super Admin must submit at
+/// login (it has no real company). Matched case-insensitively.
+pub const SUPER_ADMIN_COMPANY_NAME: &str = "Super Admin";
+
 pub struct AuthService;
 
 impl AuthService {
     pub async fn login(pool: &DbPool, config: &Config, req: LoginRequest) -> Result<AuthResponse, AppError> {
+        let company_name = req.company_name.trim();
+        let email = req.email.trim().to_lowercase();
+
+        if company_name.is_empty() {
+            return Err(AppError::ValidationError("Company name is required".to_string()));
+        }
+        if email.is_empty() {
+            return Err(AppError::ValidationError("Email is required".to_string()));
+        }
+
+        // Deliberately generic error for every failure branch below (unknown
+        // email, wrong company name, wrong password) so a bad actor can't use
+        // the response to enumerate which part of the triple was wrong.
+        let invalid = || AppError::Unauthorized("Invalid company name, email, or password".to_string());
+
         let user: Option<User> = sqlx::query_as("SELECT * FROM users WHERE email = ?")
-            .bind(&req.email)
+            .bind(&email)
             .fetch_optional(pool)
             .await?;
 
-        let user = user.ok_or_else(|| {
-            AppError::Unauthorized("Invalid email or password".to_string())
-        })?;
+        let user = user.ok_or_else(invalid)?;
+
+        // Validate the submitted company name against the account's real,
+        // server-side company — this is a credential check, not a selector.
+        // The role/company_id actually used for the session always come from
+        // `user` (the DB row), never from the request.
+        match user.company_id {
+            None => {
+                if !company_name.eq_ignore_ascii_case(SUPER_ADMIN_COMPANY_NAME) {
+                    return Err(invalid());
+                }
+            }
+            Some(company_id) => {
+                let company: Option<Company> = sqlx::query_as("SELECT * FROM companies WHERE id = ?")
+                    .bind(company_id)
+                    .fetch_optional(pool)
+                    .await?;
+                let company = company.ok_or_else(invalid)?;
+                if !company.name.eq_ignore_ascii_case(company_name) {
+                    return Err(invalid());
+                }
+            }
+        }
 
         // Verify password hash
         let parsed_hash = PasswordHash::new(&user.password_hash)
@@ -29,7 +68,7 @@ impl AuthService {
 
         Argon2::default()
             .verify_password(req.password.as_bytes(), &parsed_hash)
-            .map_err(|_| AppError::Unauthorized("Invalid email or password".to_string()))?;
+            .map_err(|_| invalid())?;
 
         // Generate JWT token (role + tenant are determined solely by the backend DB record)
         let token = create_jwt(

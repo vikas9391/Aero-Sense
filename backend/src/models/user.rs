@@ -85,6 +85,12 @@ impl From<User> for UserResponse {
 
 #[derive(Debug, Deserialize)]
 pub struct LoginRequest {
+    /// The company the account belongs to. Must be exactly "Super Admin" for
+    /// the platform Super Admin, or the exact company name for everyone else.
+    /// This is only ever used to *validate* against the server-side record —
+    /// the account's real `company_id`/role always come from the database,
+    /// never from this field.
+    pub company_name: String,
     pub email: String,
     pub password: String,
 }

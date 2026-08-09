@@ -43,8 +43,9 @@ export const usersApi = {
 };
 
 export const authApi = {
-  login: async (email: string, password: string) => {
+  login: async (companyName: string, email: string, password: string) => {
     const res = await api.post<{ success: boolean; token: string; user: User }>('/auth/login', {
+      company_name: companyName,
       email,
       password,
     });

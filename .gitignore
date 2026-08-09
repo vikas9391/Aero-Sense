@@ -9,6 +9,11 @@ backend/.env
 backend/.env.*
 !backend/.env.example
 
+# Auto-generated JWT signing secret (created on first run if JWT_SECRET
+# isn't set in the environment) — machine-specific, never commit it.
+backend/.jwt_secret
+.jwt_secret
+
 # ================================
 # Rust build artifacts
 # ================================

@@ -52,10 +52,16 @@ async fn test_multi_tenant_isolation() {
     let client = reqwest::Client::new();
 
     // --- Helpers ---
-    async fn login(client: &reqwest::Client, base: &str, email: &str, password: &str) -> String {
+    async fn login(
+        client: &reqwest::Client,
+        base: &str,
+        company_name: &str,
+        email: &str,
+        password: &str,
+    ) -> String {
         let res = client
             .post(format!("{}/api/auth/login", base))
-            .json(&json!({ "email": email, "password": password }))
+            .json(&json!({ "company_name": company_name, "email": email, "password": password }))
             .send()
             .await
             .expect("login request should succeed");
@@ -64,8 +70,30 @@ async fn test_multi_tenant_isolation() {
         body["token"].as_str().expect("token present").to_string()
     }
 
+    // --- Wrong company name must be rejected even with correct email/password ---
+    async fn assert_login_rejected(
+        client: &reqwest::Client,
+        base: &str,
+        company_name: &str,
+        email: &str,
+        password: &str,
+    ) {
+        let res = client
+            .post(format!("{}/api/auth/login", base))
+            .json(&json!({ "company_name": company_name, "email": email, "password": password }))
+            .send()
+            .await
+            .expect("login request should succeed");
+        assert_eq!(
+            res.status(),
+            401,
+            "login with the wrong company name must be rejected for {}",
+            email
+        );
+    }
+
     // --- Super Admin logs in and onboards two separate companies ---
-    let super_token = login(&client, &base, "super@test-aero.local", "SuperSecret123!").await;
+    let super_token = login(&client, &base, "Super Admin", "super@test-aero.local", "SuperSecret123!").await;
 
     let create_company = |name: &'static str| {
         let client = client.clone();
@@ -109,8 +137,13 @@ async fn test_multi_tenant_isolation() {
     create_admin(company_a_id, "admin-a@test-aero.local").await;
     create_admin(company_b_id, "admin-b@test-aero.local").await;
 
-    let token_a = login(&client, &base, "admin-a@test-aero.local", "AdminPass123!").await;
-    let token_b = login(&client, &base, "admin-b@test-aero.local", "AdminPass123!").await;
+    let token_a = login(&client, &base, "Falcon Airlines", "admin-a@test-aero.local", "AdminPass123!").await;
+    let token_b = login(&client, &base, "Condor Aviation", "admin-b@test-aero.local", "AdminPass123!").await;
+
+    // --- Right credentials, wrong company name: must fail, and must not
+    //     leak which part of the triple was wrong ---
+    assert_login_rejected(&client, &base, "Condor Aviation", "admin-a@test-aero.local", "AdminPass123!").await;
+    assert_login_rejected(&client, &base, "Falcon Airlines", "super@test-aero.local", "SuperSecret123!").await;
 
     // --- Each admin creates an aircraft inside their own company ---
     let create_aircraft = |token: String, reg: &'static str| {

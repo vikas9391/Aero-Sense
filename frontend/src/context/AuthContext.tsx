@@ -6,7 +6,7 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   loading: boolean;
-  login: (email: string, pass: string) => Promise<void>;
+  login: (companyName: string, email: string, pass: string) => Promise<User>;
   logout: () => void;
 }
 
@@ -35,11 +35,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initAuth();
   }, [token]);
 
-  const login = async (email: string, pass: string) => {
-    const res = await authApi.login(email, pass);
+  const login = async (companyName: string, email: string, pass: string) => {
+    const res = await authApi.login(companyName, email, pass);
     localStorage.setItem('aircraft_auth_token', res.token);
     setToken(res.token);
     setUser(res.user);
+    return res.user;
   };
 
   const logout = () => {

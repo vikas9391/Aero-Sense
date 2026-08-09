@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, Lock, Mail, ArrowRight, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Lock, Mail, Building2, ArrowRight, AlertCircle } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
+  const [companyName, setCompanyName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -16,18 +17,16 @@ export const LoginPage: React.FC = () => {
     setError(null);
     setSubmitting(true);
     try {
-      await login(email, password);
-      navigate('/dashboard');
+      const user = await login(companyName, email, password);
+      // Role is determined solely by the backend; the Super Admin has no
+      // company and no access to operational dashboards, so it lands on
+      // company management instead.
+      navigate(user.role === 'SUPER_ADMIN' ? '/companies' : '/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Authentication failed. Please check credentials.');
+      setError(err.response?.data?.error?.message || 'Authentication failed. Please check your credentials.');
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const fillQuickAccount = (demoEmail: string) => {
-    setEmail(demoEmail);
-    setPassword('Password123!');
   };
 
   return (
@@ -55,15 +54,35 @@ export const LoginPage: React.FC = () => {
             )}
 
             <div className="space-y-2">
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Company Name</label>
+              <div className="relative">
+                <Building2 className="absolute left-3.5 top-3 h-5 w-5 text-slate-500" />
+                <input
+                  type="text"
+                  required
+                  autoComplete="organization"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  placeholder="Your Company Name"
+                  className="w-full rounded-xl border border-slate-800 bg-slate-900/90 pl-11 pr-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                />
+              </div>
+              <p className="text-[11px] text-slate-500">
+                Platform administrators sign in with company name "Super Admin".
+              </p>
+            </div>
+
+            <div className="space-y-2">
               <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Email Address</label>
               <div className="relative">
                 <Mail className="absolute left-3.5 top-3 h-5 w-5 text-slate-500" />
                 <input
                   type="email"
                   required
+                  autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="technician@aircraft.com"
+                  placeholder="you@company.com"
                   className="w-full rounded-xl border border-slate-800 bg-slate-900/90 pl-11 pr-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
                 />
               </div>
@@ -76,6 +95,7 @@ export const LoginPage: React.FC = () => {
                 <input
                   type="password"
                   required
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
@@ -93,55 +113,6 @@ export const LoginPage: React.FC = () => {
               <ArrowRight className="h-4 w-4" />
             </button>
           </form>
-
-          {/* Quick Demo Accounts */}
-          <div className="mt-8 pt-6 border-t border-slate-800/80 space-y-3">
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider text-center">
-              Demo Accounts (Role Determined by Backend)
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <button
-                type="button"
-                onClick={() => fillQuickAccount('admin@gmail.com')}
-                className="rounded-lg border border-slate-800 bg-slate-900/50 p-2 text-left hover:bg-slate-800/80 transition"
-              >
-                <div className="font-semibold text-fuchsia-400">Super Admin</div>
-                <div className="text-[10px] text-slate-400">SUPER_ADMIN_EMAIL in .env</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => fillQuickAccount('admin@aircraft.com')}
-                className="rounded-lg border border-slate-800 bg-slate-900/50 p-2 text-left hover:bg-slate-800/80 transition"
-              >
-                <div className="font-semibold text-sky-400">Company Admin</div>
-                <div className="text-[10px] text-slate-400">admin@aircraft.com</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => fillQuickAccount('manufacturer@aircraft.com')}
-                className="rounded-lg border border-slate-800 bg-slate-900/50 p-2 text-left hover:bg-slate-800/80 transition"
-              >
-                <div className="font-semibold text-indigo-400">Manufacturer</div>
-                <div className="text-[10px] text-slate-400">manufacturer@aircraft.com</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => fillQuickAccount('technician@aircraft.com')}
-                className="rounded-lg border border-slate-800 bg-slate-900/50 p-2 text-left hover:bg-slate-800/80 transition"
-              >
-                <div className="font-semibold text-emerald-400">Lead Technician</div>
-                <div className="text-[10px] text-slate-400">technician@aircraft.com</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => fillQuickAccount('inspector@aircraft.com')}
-                className="rounded-lg border border-slate-800 bg-slate-900/50 p-2 text-left hover:bg-slate-800/80 transition"
-              >
-                <div className="font-semibold text-amber-400">Safety Inspector</div>
-                <div className="text-[10px] text-slate-400">inspector@aircraft.com</div>
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Security Disclaimer */}
