@@ -59,14 +59,14 @@ export const ProfilePage: React.FC = () => {
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="border-b border-slate-200/80 pb-5">
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center space-x-3">
-          <UserIcon className="h-7 w-7 text-blue-600" />
+          <UserIcon className="h-7 w-7 text-indigo-600" />
           <span>User Profile & Permissions</span>
         </h1>
       </div>
 
       <div className="glass-card rounded-2xl p-8 border border-slate-200 space-y-6">
         <div className="flex items-center space-x-4 pb-6 border-b border-slate-200">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-tr from-blue-600 to-blue-700 shadow-lg shadow-blue-500/20 text-white font-bold text-2xl">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-700 shadow-lg shadow-indigo-500/20 text-white font-bold text-2xl">
             {user.name.charAt(0)}
           </div>
           <div>
@@ -75,7 +75,7 @@ export const ProfilePage: React.FC = () => {
               <Mail className="h-3.5 w-3.5 text-slate-500" />
               <span>{user.email}</span>
             </div>
-            <div className="mt-2 inline-flex items-center space-x-1.5 rounded-full bg-blue-50 px-3 py-0.5 text-xs font-extrabold text-blue-600 border border-blue-200/60">
+            <div className="mt-2 inline-flex items-center space-x-1.5 rounded-full bg-indigo-50 px-3 py-0.5 text-xs font-extrabold text-indigo-600 border border-indigo-200/60">
               <Shield className="h-3.5 w-3.5" />
               <span>ROLE: {user.role}</span>
             </div>
@@ -104,7 +104,7 @@ export const ProfilePage: React.FC = () => {
       <div className="glass-card rounded-2xl p-8 border border-slate-200 space-y-5">
         <div>
           <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center space-x-2">
-            <KeyRound className="h-4 w-4 text-blue-600" />
+            <KeyRound className="h-4 w-4 text-indigo-600" />
             <span>Change Password</span>
           </h3>
           <p className="text-xs text-slate-500 mt-1">
@@ -164,7 +164,7 @@ export const ProfilePage: React.FC = () => {
           <button
             type="submit"
             disabled={submitting}
-            className="rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-2.5 font-semibold text-white shadow-lg shadow-blue-500/20 hover:from-blue-500 hover:to-blue-600 disabled:opacity-50 text-sm transition"
+            className="rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-2.5 font-semibold text-white shadow-lg shadow-indigo-500/20 hover:from-indigo-500 hover:to-indigo-600 disabled:opacity-50 text-sm transition"
           >
             {submitting ? 'Updating...' : 'Update Password'}
           </button>

@@ -60,14 +60,14 @@ export const AircraftPage: React.FC = () => {
       <div className="flex items-center justify-between border-b border-slate-200/80 pb-5">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center space-x-3">
-            <Plane className="h-7 w-7 text-blue-600" />
+            <Plane className="h-7 w-7 text-indigo-600" />
             <span>Aircraft Fleet Overview</span>
           </h1>
         </div>
         {canAdd && (
           <button
             onClick={() => setShowModal(true)}
-            className="flex items-center space-x-2 rounded-xl bg-blue-600 px-4 py-2.5 font-semibold text-white shadow-lg shadow-blue-500/20 hover:bg-blue-500 transition"
+            className="flex items-center space-x-2 rounded-xl bg-indigo-600 px-4 py-2.5 font-semibold text-white shadow-lg shadow-indigo-500/20 hover:bg-indigo-500 transition"
           >
             <Plus className="h-4 w-4" />
             <span>Register Aircraft</span>
@@ -83,7 +83,7 @@ export const AircraftPage: React.FC = () => {
             <div key={ac.id} className="glass-card rounded-2xl p-6 flex flex-col justify-between space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="rounded-lg bg-blue-50/80 px-3 py-1 text-xs font-bold text-blue-600 border border-blue-200/60">
+                  <span className="rounded-lg bg-indigo-50/80 px-3 py-1 text-xs font-bold text-indigo-600 border border-indigo-200/60">
                     {ac.registration_number}
                   </span>
                   <span className="flex items-center space-x-1 text-xs font-medium text-emerald-600">
@@ -102,7 +102,7 @@ export const AircraftPage: React.FC = () => {
                 <span className="text-[11px] text-slate-500">UUID: {ac.aircraft_uuid.substring(0, 8)}...</span>
                 <Link
                   to={`/aircraft/${ac.id}`}
-                  className="flex items-center space-x-1 text-xs font-semibold text-blue-600 hover:text-blue-500"
+                  className="flex items-center space-x-1 text-xs font-semibold text-indigo-600 hover:text-indigo-500"
                 >
                   <span>View Details</span>
                   <ArrowRight className="h-3.5 w-3.5" />
@@ -133,7 +133,7 @@ export const AircraftPage: React.FC = () => {
                   placeholder="e.g. A320-002 or N9824X"
                   value={regNum}
                   onChange={(e) => setRegNum(e.target.value)}
-                  className="w-full mt-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+                  className="w-full mt-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none"
                 />
               </div>
               <div>
@@ -144,7 +144,7 @@ export const AircraftPage: React.FC = () => {
                   placeholder="e.g. Airbus A320neo or Boeing 737 MAX"
                   value={model}
                   onChange={(e) => setModel(e.target.value)}
-                  className="w-full mt-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+                  className="w-full mt-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none"
                 />
               </div>
               <div>
@@ -155,7 +155,7 @@ export const AircraftPage: React.FC = () => {
                   placeholder="e.g. Airbus Industrie or Boeing"
                   value={manufacturer}
                   onChange={(e) => setManufacturer(e.target.value)}
-                  className="w-full mt-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+                  className="w-full mt-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none"
                 />
               </div>
 
@@ -170,7 +170,7 @@ export const AircraftPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-500"
+                  className="rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500"
                 >
                   {submitting ? 'Registering...' : 'Register Aircraft'}
                 </button>

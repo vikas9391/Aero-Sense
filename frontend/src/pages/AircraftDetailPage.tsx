@@ -23,16 +23,16 @@ export const AircraftDetailPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <Link to="/aircraft" className="inline-flex items-center space-x-2 text-xs font-semibold text-blue-600 hover:text-blue-500">
+      <Link to="/aircraft" className="inline-flex items-center space-x-2 text-xs font-semibold text-indigo-600 hover:text-indigo-500">
         <ArrowLeft className="h-4 w-4" />
         <span>Back to Fleet List</span>
       </Link>
 
       {/* Main Aircraft Header Banner */}
-      <div className="glass-card rounded-2xl p-6 relative overflow-hidden border-blue-200/30">
+      <div className="glass-card rounded-2xl p-6 relative overflow-hidden border-indigo-200/30">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex items-center space-x-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600/10 border border-blue-500/30 text-blue-600 shadow-lg shadow-blue-500/10">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600/10 border border-indigo-500/30 text-indigo-600 shadow-lg shadow-indigo-500/10">
               <Plane className="h-8 w-8" />
             </div>
             <div>
@@ -63,12 +63,12 @@ export const AircraftDetailPage: React.FC = () => {
       <div className="glass-card rounded-2xl p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-bold text-slate-900 flex items-center space-x-2">
-            <Cpu className="h-5 w-5 text-blue-600" />
+            <Cpu className="h-5 w-5 text-indigo-600" />
             <span>Bound Aircraft Components</span>
           </h2>
           <Link
             to="/components/register"
-            className="flex items-center space-x-1 text-xs font-semibold text-blue-600 hover:text-blue-500"
+            className="flex items-center space-x-1 text-xs font-semibold text-indigo-600 hover:text-indigo-500"
           >
             <Plus className="h-3.5 w-3.5" />
             <span>Add New Component</span>
@@ -88,7 +88,7 @@ export const AircraftDetailPage: React.FC = () => {
                 className="p-4 rounded-xl border border-slate-200 bg-white/60 hover:bg-slate-100/60 transition block space-y-2"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-sm text-blue-600">{c.component_uuid}</span>
+                  <span className="font-bold text-sm text-indigo-600">{c.component_uuid}</span>
                   <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-mono text-slate-700">
                     SN: {c.serial_number}
                   </span>

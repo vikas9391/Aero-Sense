@@ -59,7 +59,7 @@ export const RegisterTagPage: React.FC = () => {
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="border-b border-slate-200/80 pb-5">
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center space-x-3">
-          <Tag className="h-7 w-7 text-blue-600" />
+          <Tag className="h-7 w-7 text-indigo-600" />
           <span>Register & Bind NFC / RFID Tag</span>
         </h1>
       </div>
@@ -85,7 +85,7 @@ export const RegisterTagPage: React.FC = () => {
               required
               value={componentId}
               onChange={(e) => setComponentId(e.target.value === '' ? '' : Number(e.target.value))}
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none"
             >
               <option value="">-- Select Target Component --</option>
               {components.map((c) => (
@@ -102,7 +102,7 @@ export const RegisterTagPage: React.FC = () => {
               <select
                 value={technology}
                 onChange={(e) => setTechnology(e.target.value as 'NFC' | 'UHF_RFID')}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none"
               >
                 <option value="NFC">Secure NFC (13.56 MHz HF)</option>
                 <option value="UHF_RFID">UHF RFID (860-960 MHz RAIN)</option>
@@ -114,7 +114,7 @@ export const RegisterTagPage: React.FC = () => {
               <select
                 value={securityType}
                 onChange={(e) => setSecurityType(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none"
               >
                 <option value="MOCK">Mock Hardware</option>
                 <option value="BASIC_UID">Basic Factory UID</option>
@@ -124,7 +124,7 @@ export const RegisterTagPage: React.FC = () => {
           </div>
 
           {/* NFC Tap Simulation Action */}
-          <div className="p-5 rounded-xl border border-blue-200/40 bg-blue-50/20 space-y-4">
+          <div className="p-5 rounded-xl border border-indigo-200/40 bg-indigo-50/20 space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <div className="font-bold text-sm text-slate-800">Simulate Physical Tag Scan / Tap</div>
@@ -133,7 +133,7 @@ export const RegisterTagPage: React.FC = () => {
               <button
                 type="button"
                 onClick={simulateTap}
-                className="flex items-center space-x-2 rounded-xl bg-blue-600/20 border border-blue-500/40 px-3.5 py-2 text-xs font-bold text-blue-600 hover:bg-blue-600/30 transition"
+                className="flex items-center space-x-2 rounded-xl bg-indigo-600/20 border border-indigo-500/40 px-3.5 py-2 text-xs font-bold text-indigo-600 hover:bg-indigo-600/30 transition"
               >
                 <ScanLine className="h-4 w-4" />
                 <span>TAP NFC TAG</span>
@@ -147,7 +147,7 @@ export const RegisterTagPage: React.FC = () => {
                 required
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                className="w-full mt-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-blue-600 font-mono font-bold focus:border-blue-500 focus:outline-none"
+                className="w-full mt-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-indigo-600 font-mono font-bold focus:border-indigo-500 focus:outline-none"
               />
             </div>
           </div>
@@ -156,7 +156,7 @@ export const RegisterTagPage: React.FC = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3 font-semibold text-white shadow-lg shadow-blue-500/20 hover:from-blue-500 hover:to-blue-600 disabled:opacity-50 text-sm"
+              className="rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-3 font-semibold text-white shadow-lg shadow-indigo-500/20 hover:from-indigo-500 hover:to-indigo-600 disabled:opacity-50 text-sm"
             >
               {submitting ? 'Binding...' : 'Register & Bind Tag'}
             </button>

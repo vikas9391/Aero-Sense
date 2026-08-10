@@ -51,7 +51,7 @@ export const Sidebar: React.FC = () => {
                     className={({ isActive }) =>
                       `flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
                         isActive
-                          ? 'bg-blue-600/15 text-blue-600 border border-blue-500/30 shadow-md shadow-blue-500/10'
+                          ? 'bg-indigo-600/15 text-indigo-600 border border-indigo-500/30 shadow-md shadow-indigo-500/10'
                           : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50'
                       }`
                     }
@@ -118,7 +118,7 @@ export const Sidebar: React.FC = () => {
                   className={({ isActive }) =>
                     `flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
                       isActive
-                        ? 'bg-blue-600/15 text-blue-600 border border-blue-500/30 shadow-md shadow-blue-500/10'
+                        ? 'bg-indigo-600/15 text-indigo-600 border border-indigo-500/30 shadow-md shadow-indigo-500/10'
                         : item.highlight
                         ? 'text-emerald-600 bg-emerald-50/20 hover:bg-emerald-50/40 border border-emerald-200/30'
                         : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50'
@@ -147,7 +147,7 @@ export const Sidebar: React.FC = () => {
                   className={({ isActive }) =>
                     `flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
                       isActive
-                        ? 'bg-blue-600/15 text-blue-600 border border-blue-500/30 shadow-md shadow-blue-500/10'
+                        ? 'bg-indigo-600/15 text-indigo-600 border border-indigo-500/30 shadow-md shadow-indigo-500/10'
                         : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50'
                     }`
                   }

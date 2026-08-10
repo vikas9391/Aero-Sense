@@ -26,9 +26,9 @@ export const SecurityPage: React.FC = () => {
 
       {/* Security Architecture Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="glass-card rounded-2xl p-5 border-blue-200/40">
+        <div className="glass-card rounded-2xl p-5 border-indigo-200/40">
           <div className="flex items-center space-x-3 mb-2">
-            <Radio className="h-5 w-5 text-blue-600" />
+            <Radio className="h-5 w-5 text-indigo-600" />
             <h3 className="font-bold text-slate-800 text-sm">NTAG 424 DNA SUN</h3>
           </div>
           <p className="text-xs text-slate-500 leading-relaxed">
@@ -60,7 +60,7 @@ export const SecurityPage: React.FC = () => {
       {/* Verification Audit Stream */}
       <div className="glass-card rounded-2xl p-6">
         <h2 className="text-base font-bold text-slate-900 flex items-center space-x-2 mb-4">
-          <Activity className="h-5 w-5 text-blue-500" />
+          <Activity className="h-5 w-5 text-indigo-500" />
           <span>Verification Log Stream</span>
         </h2>
 

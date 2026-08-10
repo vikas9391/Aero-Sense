@@ -10,7 +10,7 @@ export const Navbar: React.FC = () => {
       <div className="flex items-center justify-between">
         {/* Left: Brand Identity */}
         <div className="flex items-center space-x-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-blue-700 shadow-lg shadow-blue-500/20">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-700 shadow-lg shadow-indigo-500/20">
             <ShieldCheck className="h-6 w-6 text-white" />
           </div>
           <div>
@@ -25,12 +25,12 @@ export const Navbar: React.FC = () => {
         {user && (
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-3 border-r border-slate-200 pr-4">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 border border-slate-300 text-blue-600">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 border border-slate-300 text-indigo-600">
                 <UserIcon className="h-4 w-4" />
               </div>
               <div className="text-right">
                 <div className="text-sm font-semibold text-slate-800">{user.name}</div>
-                <div className="text-[11px] font-bold text-blue-600 tracking-wider">
+                <div className="text-[11px] font-bold text-indigo-600 tracking-wider">
                   {user.role}
                 </div>
               </div>

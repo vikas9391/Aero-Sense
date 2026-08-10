@@ -39,7 +39,7 @@ export const VerifyPage: React.FC = () => {
       {/* Header */}
       <div className="border-b border-slate-200/80 pb-5">
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center space-x-3">
-          <ScanLine className="h-7 w-7 text-blue-600" />
+          <ScanLine className="h-7 w-7 text-indigo-600" />
           <span>NFC Component Verification Engine</span>
         </h1>
       </div>
@@ -49,7 +49,7 @@ export const VerifyPage: React.FC = () => {
         <div className="lg:col-span-5 space-y-6">
           <div className="glass-card rounded-2xl p-6 space-y-5">
             <h2 className="text-base font-bold text-slate-900 flex items-center space-x-2">
-              <Radio className="h-4 w-4 text-blue-600" />
+              <Radio className="h-4 w-4 text-indigo-600" />
               <span>NFC Hardware Tap Simulator</span>
             </h2>
 
@@ -59,7 +59,7 @@ export const VerifyPage: React.FC = () => {
                 type="text"
                 value={tagIdentifier}
                 onChange={(e) => setTagIdentifier(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-blue-600 font-mono font-bold focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-indigo-600 font-mono font-bold focus:border-indigo-500 focus:outline-none"
               />
             </div>
 
@@ -73,7 +73,7 @@ export const VerifyPage: React.FC = () => {
                     onClick={() => setScenario(s.id)}
                     className={`w-full p-3 rounded-xl text-left border transition ${
                       scenario === s.id
-                        ? 'bg-blue-600/15 border-blue-500/40 text-blue-500'
+                        ? 'bg-indigo-600/15 border-indigo-500/40 text-indigo-500'
                         : 'bg-white/50 border-slate-200 text-slate-500 hover:bg-slate-100/50'
                     }`}
                   >
@@ -87,7 +87,7 @@ export const VerifyPage: React.FC = () => {
             <button
               onClick={handleVerify}
               disabled={verifying}
-              className="w-full flex items-center justify-center space-x-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 font-semibold text-white shadow-lg shadow-blue-500/25 hover:from-blue-500 hover:to-blue-600 disabled:opacity-50 text-sm"
+              className="w-full flex items-center justify-center space-x-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 px-4 py-3 font-semibold text-white shadow-lg shadow-indigo-500/25 hover:from-indigo-500 hover:to-indigo-600 disabled:opacity-50 text-sm"
             >
               {verifying ? (
                 <>
@@ -188,7 +188,7 @@ export const VerifyPage: React.FC = () => {
                 <div className="glass-card rounded-2xl p-5 border border-slate-200 space-y-2">
                   <div className="text-xs font-semibold text-slate-500 uppercase">Matched Bound Component</div>
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-sm text-blue-600">{result.component.id}</span>
+                    <span className="font-bold text-sm text-indigo-600">{result.component.id}</span>
                     <span className="text-xs text-slate-700 font-medium">Aircraft: {result.component.aircraft}</span>
                   </div>
                   <div className="text-xs text-slate-500">Serial Number: {result.component.serial_number}</div>
@@ -205,7 +205,7 @@ export const VerifyPage: React.FC = () => {
                   {/* Check 1 */}
                   <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 bg-white/60">
                     <div className="flex items-center space-x-3">
-                      <Radio className="h-5 w-5 text-blue-600" />
+                      <Radio className="h-5 w-5 text-indigo-600" />
                       <div>
                         <div className="font-semibold text-xs text-slate-800">1. NFC Tag Cryptographic Auth</div>
                         <div className="text-[11px] text-slate-500">Validates tag hardware signature / SUN payload</div>
@@ -227,7 +227,7 @@ export const VerifyPage: React.FC = () => {
                   {/* Check 2 */}
                   <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 bg-white/60">
                     <div className="flex items-center space-x-3">
-                      <Cpu className="h-5 w-5 text-blue-500" />
+                      <Cpu className="h-5 w-5 text-indigo-500" />
                       <div>
                         <div className="font-semibold text-xs text-slate-800">2. Component Identity Binding</div>
                         <div className="text-[11px] text-slate-500">Verifies hardware UID mapping in Component Registry</div>

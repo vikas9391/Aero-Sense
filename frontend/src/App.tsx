@@ -23,7 +23,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-500 text-sm">
+      <div className="min-h-screen bg-[#f2f0fb] flex items-center justify-center text-slate-500 text-sm">
         Authenticating session...
       </div>
     );

@@ -100,7 +100,7 @@ export const CompaniesPage: React.FC = () => {
     <div className="space-y-8">
       <div className="border-b border-slate-200/80 pb-5">
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center space-x-3">
-          <Building2 className="h-7 w-7 text-blue-600" />
+          <Building2 className="h-7 w-7 text-indigo-600" />
           <span>Company Management</span>
         </h1>
         <p className="text-sm text-slate-500 mt-1">
@@ -115,7 +115,7 @@ export const CompaniesPage: React.FC = () => {
         {/* Create company form */}
         <div className="lg:col-span-1 glass-card rounded-2xl p-6 border border-slate-200 h-fit space-y-6">
           <h2 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
-            <PlusCircle className="h-4 w-4 text-blue-600" />
+            <PlusCircle className="h-4 w-4 text-indigo-600" />
             <span>Onboard New Company</span>
           </h2>
 
@@ -141,14 +141,14 @@ export const CompaniesPage: React.FC = () => {
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
                 placeholder="e.g. Falcon Airlines"
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none"
               />
             </div>
 
             <button
               type="submit"
               disabled={creatingCompany}
-              className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3 font-semibold text-white shadow-lg shadow-blue-500/20 hover:from-blue-500 hover:to-blue-600 disabled:opacity-50 text-sm"
+              className="w-full rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-3 font-semibold text-white shadow-lg shadow-indigo-500/20 hover:from-indigo-500 hover:to-indigo-600 disabled:opacity-50 text-sm"
             >
               {creatingCompany ? 'Creating...' : 'Create Company'}
             </button>
@@ -158,7 +158,7 @@ export const CompaniesPage: React.FC = () => {
         {/* Company list */}
         <div className="lg:col-span-2 glass-card rounded-2xl border border-slate-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-slate-200/80 flex items-center space-x-2">
-            <Building2 className="h-4 w-4 text-blue-600" />
+            <Building2 className="h-4 w-4 text-indigo-600" />
             <h2 className="text-sm font-bold text-slate-900">All Companies</h2>
           </div>
 
@@ -189,7 +189,7 @@ export const CompaniesPage: React.FC = () => {
                       </span>
                       <button
                         onClick={() => openAdminModal(c)}
-                        className="flex items-center space-x-1.5 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-blue-600 border border-slate-300 hover:bg-slate-200"
+                        className="flex items-center space-x-1.5 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-indigo-600 border border-slate-300 hover:bg-slate-200"
                       >
                         <UserPlus className="h-3.5 w-3.5" />
                         <span>Add Admin</span>
@@ -199,23 +199,23 @@ export const CompaniesPage: React.FC = () => {
 
                   <div className="grid grid-cols-5 gap-2 text-xs">
                     <div className="flex items-center space-x-1.5 text-slate-500">
-                      <Users className="h-3.5 w-3.5 text-blue-600" />
+                      <Users className="h-3.5 w-3.5 text-indigo-600" />
                       <span>{c.user_count} users</span>
                     </div>
                     <div className="flex items-center space-x-1.5 text-slate-500">
-                      <Plane className="h-3.5 w-3.5 text-blue-600" />
+                      <Plane className="h-3.5 w-3.5 text-indigo-600" />
                       <span>{c.aircraft_count} aircraft</span>
                     </div>
                     <div className="flex items-center space-x-1.5 text-slate-500">
-                      <Cpu className="h-3.5 w-3.5 text-blue-600" />
+                      <Cpu className="h-3.5 w-3.5 text-indigo-600" />
                       <span>{c.component_count} components</span>
                     </div>
                     <div className="flex items-center space-x-1.5 text-slate-500">
-                      <Wrench className="h-3.5 w-3.5 text-blue-600" />
+                      <Wrench className="h-3.5 w-3.5 text-indigo-600" />
                       <span>{c.maintenance_count} records</span>
                     </div>
                     <div className="flex items-center space-x-1.5 text-slate-500">
-                      <ScanLine className="h-3.5 w-3.5 text-blue-600" />
+                      <ScanLine className="h-3.5 w-3.5 text-indigo-600" />
                       <span>{c.verification_count} scans</span>
                     </div>
                   </div>
@@ -263,7 +263,7 @@ export const CompaniesPage: React.FC = () => {
                   required
                   value={adminName}
                   onChange={(e) => setAdminName(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none"
                 />
               </div>
               <div className="space-y-2">
@@ -273,7 +273,7 @@ export const CompaniesPage: React.FC = () => {
                   required
                   value={adminEmail}
                   onChange={(e) => setAdminEmail(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none"
                 />
               </div>
               <div className="space-y-2">
@@ -290,7 +290,7 @@ export const CompaniesPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={creatingAdmin}
-                className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3 font-semibold text-white shadow-lg shadow-blue-500/20 hover:from-blue-500 hover:to-blue-600 disabled:opacity-50 text-sm"
+                className="w-full rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-3 font-semibold text-white shadow-lg shadow-indigo-500/20 hover:from-indigo-500 hover:to-indigo-600 disabled:opacity-50 text-sm"
               >
                 {creatingAdmin ? 'Creating...' : 'Create Admin'}
               </button>

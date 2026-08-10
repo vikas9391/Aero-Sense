@@ -9,8 +9,8 @@ const StatCard: React.FC<{ icon: React.ElementType; label: string; value: number
   value,
 }) => (
   <div className="glass-card rounded-2xl border border-slate-200 p-5 flex items-center space-x-4">
-    <div className="rounded-xl bg-blue-600/10 p-3 border border-blue-500/20">
-      <Icon className="h-5 w-5 text-blue-600" />
+    <div className="rounded-xl bg-indigo-600/10 p-3 border border-indigo-500/20">
+      <Icon className="h-5 w-5 text-indigo-600" />
     </div>
     <div>
       <div className="text-2xl font-bold text-slate-900">{value}</div>
@@ -46,7 +46,7 @@ export const AnalyticsPage: React.FC = () => {
     <div className="space-y-8">
       <div className="border-b border-slate-200/80 pb-5">
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center space-x-3">
-          <BarChart3 className="h-7 w-7 text-blue-600" />
+          <BarChart3 className="h-7 w-7 text-indigo-600" />
           <span>Work Analytics</span>
         </h1>
         
@@ -128,7 +128,7 @@ export const AnalyticsPage: React.FC = () => {
                 </div>
                 <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
                   <div
-                    className="h-full bg-blue-600"
+                    className="h-full bg-indigo-600"
                     style={{ width: `${(u.maintenance_count / maxUserCount) * 100}%` }}
                   />
                 </div>

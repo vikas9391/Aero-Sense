@@ -50,7 +50,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
         placeholder={placeholder}
         className={`w-full rounded-xl border border-slate-200 ${translucent ? 'bg-white/90' : 'bg-white'} py-2.5 ${
           leadingIcon ? 'pl-11' : 'pl-4'
-        } pr-11 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+        } pr-11 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 ${
           mono ? 'font-mono' : ''
         }`}
       />

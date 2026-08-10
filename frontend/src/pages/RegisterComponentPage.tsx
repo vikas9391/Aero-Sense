@@ -41,7 +41,7 @@ export const RegisterComponentPage: React.FC = () => {
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="border-b border-slate-200/80 pb-5">
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center space-x-3">
-          <PlusCircle className="h-7 w-7 text-blue-600" />
+          <PlusCircle className="h-7 w-7 text-indigo-600" />
           <span>Register Aircraft Component</span>
         </h1>
       </div>
@@ -60,7 +60,7 @@ export const RegisterComponentPage: React.FC = () => {
             <select
               value={aircraftId}
               onChange={(e) => setAircraftId(e.target.value === '' ? '' : Number(e.target.value))}
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none"
             >
               <option value="">-- Unassigned (Inventory Storage) --</option>
               {aircraftList.map((a) => (
@@ -79,7 +79,7 @@ export const RegisterComponentPage: React.FC = () => {
               placeholder="e.g. Turbofan Engine (CFM LEAP-1A) or Avionics Flight Computer"
               value={componentType}
               onChange={(e) => setComponentType(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none"
             />
           </div>
 
@@ -92,7 +92,7 @@ export const RegisterComponentPage: React.FC = () => {
                 placeholder="e.g. XZ928374"
                 value={serialNumber}
                 onChange={(e) => setSerialNumber(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none font-mono"
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none font-mono"
               />
             </div>
 
@@ -104,7 +104,7 @@ export const RegisterComponentPage: React.FC = () => {
                 placeholder="e.g. CFM International or Honeywell"
                 value={manufacturer}
                 onChange={(e) => setManufacturer(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none"
               />
             </div>
           </div>
@@ -113,7 +113,7 @@ export const RegisterComponentPage: React.FC = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3 font-semibold text-white shadow-lg shadow-blue-500/20 hover:from-blue-500 hover:to-blue-600 disabled:opacity-50 text-sm"
+              className="rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-3 font-semibold text-white shadow-lg shadow-indigo-500/20 hover:from-indigo-500 hover:to-indigo-600 disabled:opacity-50 text-sm"
             >
               {submitting ? 'Registering...' : 'Register Component'}
             </button>

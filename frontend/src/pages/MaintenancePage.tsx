@@ -67,7 +67,7 @@ export const MaintenancePage: React.FC = () => {
     <div className="max-w-3xl mx-auto space-y-8">
       <div className="border-b border-slate-200/80 pb-5">
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center space-x-3">
-          <Wrench className="h-7 w-7 text-blue-500" />
+          <Wrench className="h-7 w-7 text-indigo-500" />
           <span>Technician Maintenance & SHA-256 Digest Portal</span>
         </h1>
       </div>
@@ -87,7 +87,7 @@ export const MaintenancePage: React.FC = () => {
               required
               value={componentId}
               onChange={(e) => setComponentId(e.target.value === '' ? '' : Number(e.target.value))}
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none"
             >
               <option value="">-- Select Target Component --</option>
               {components.map((c) => (
@@ -104,7 +104,7 @@ export const MaintenancePage: React.FC = () => {
               <select
                 value={maintenanceType}
                 onChange={(e) => setMaintenanceType(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none"
               >
                 <option value="INSPECTION">Routine Line Inspection</option>
                 <option value="REPAIR">Component Repair</option>
@@ -118,7 +118,7 @@ export const MaintenancePage: React.FC = () => {
               <select
                 value={inspectionResult}
                 onChange={(e) => setInspectionResult(e.target.value as 'PASSED' | 'FAILED' | 'WARNING')}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none font-semibold text-emerald-600"
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none font-semibold text-emerald-600"
               >
                 <option value="PASSED">PASSED — Airworthy</option>
                 <option value="WARNING">WARNING — Monitor</option>
@@ -135,7 +135,7 @@ export const MaintenancePage: React.FC = () => {
               placeholder="Describe work completed, measurements, pressures, and sensor test results..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none"
             />
           </div>
 
@@ -146,7 +146,7 @@ export const MaintenancePage: React.FC = () => {
               placeholder="e.g. High Pressure Turbine Seal (PN: HPT-882)"
               value={partsReplaced}
               onChange={(e) => setPartsReplaced(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none"
             />
           </div>
 
@@ -154,7 +154,7 @@ export const MaintenancePage: React.FC = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-xl bg-gradient-to-r from-blue-700 to-blue-600 px-6 py-3 font-semibold text-white shadow-lg shadow-blue-500/20 hover:from-blue-600 hover:to-blue-500 disabled:opacity-50 text-sm"
+              className="rounded-xl bg-gradient-to-r from-indigo-700 to-indigo-600 px-6 py-3 font-semibold text-white shadow-lg shadow-indigo-500/20 hover:from-indigo-600 hover:to-indigo-500 disabled:opacity-50 text-sm"
             >
               {submitting ? 'Anchoring Record...' : 'Submit Log & Compute Hash'}
             </button>
@@ -164,7 +164,7 @@ export const MaintenancePage: React.FC = () => {
 
       {/* Resulting Hash & Blockchain Verification Card */}
       {createdRecord && (
-        <div className="glass-card rounded-2xl p-6 border-blue-500/40 bg-blue-50/20 space-y-4">
+        <div className="glass-card rounded-2xl p-6 border-indigo-500/40 bg-indigo-50/20 space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 text-emerald-600 font-bold text-sm">
               <CheckCircle2 className="h-5 w-5" />
@@ -175,7 +175,7 @@ export const MaintenancePage: React.FC = () => {
 
           <div className="p-4 rounded-xl border border-slate-200 bg-white/80 space-y-2">
             <div className="text-xs text-slate-500 uppercase font-semibold">Generated Off-Chain Record Hash (SHA-256)</div>
-            <div className="font-mono text-xs text-blue-600 font-bold break-all bg-slate-50 p-2.5 rounded border border-slate-200">
+            <div className="font-mono text-xs text-indigo-600 font-bold break-all bg-slate-50 p-2.5 rounded border border-slate-200">
               {createdRecord.record_hash}
             </div>
           </div>
@@ -184,9 +184,9 @@ export const MaintenancePage: React.FC = () => {
             <button
               onClick={verifyBlockchainHash}
               disabled={verifyingHash}
-              className="flex items-center space-x-2 rounded-xl bg-blue-700/30 border border-blue-500/50 px-4 py-2 text-xs font-bold text-blue-500 hover:bg-blue-700/40 transition"
+              className="flex items-center space-x-2 rounded-xl bg-indigo-700/30 border border-indigo-500/50 px-4 py-2 text-xs font-bold text-indigo-500 hover:bg-indigo-700/40 transition"
             >
-              <Lock className="h-4 w-4 text-blue-500" />
+              <Lock className="h-4 w-4 text-indigo-500" />
               <span>{verifyingHash ? 'Comparing Hashes...' : 'Verify Hash Against Blockchain Anchor'}</span>
             </button>
 

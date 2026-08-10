@@ -34,22 +34,22 @@ export const ComponentDetailPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <Link to="/components" className="inline-flex items-center space-x-2 text-xs font-semibold text-blue-600 hover:text-blue-500">
+      <Link to="/components" className="inline-flex items-center space-x-2 text-xs font-semibold text-indigo-600 hover:text-indigo-500">
         <ArrowLeft className="h-4 w-4" />
         <span>Back to Component Catalog</span>
       </Link>
 
       {/* Main Header Banner */}
-      <div className="glass-card rounded-2xl p-6 relative overflow-hidden border-blue-200/30">
+      <div className="glass-card rounded-2xl p-6 relative overflow-hidden border-indigo-200/30">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex items-center space-x-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-blue-600 to-blue-700 shadow-lg shadow-blue-500/20 text-white font-extrabold text-xl">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-700 shadow-lg shadow-indigo-500/20 text-white font-extrabold text-xl">
               <Cpu className="h-8 w-8" />
             </div>
             <div>
               <div className="flex items-center space-x-3">
                 <h1 className="text-2xl font-extrabold text-slate-900">{component.component_uuid}</h1>
-                <span className="rounded bg-blue-50 px-2.5 py-1 text-xs font-mono font-bold text-blue-600 border border-blue-200/60">
+                <span className="rounded bg-indigo-50 px-2.5 py-1 text-xs font-mono font-bold text-indigo-600 border border-indigo-200/60">
                   Serial #{component.serial_number}
                 </span>
               </div>
@@ -78,12 +78,12 @@ export const ComponentDetailPage: React.FC = () => {
           <div className="glass-card rounded-2xl p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-slate-900 flex items-center space-x-2">
-                <Wrench className="h-5 w-5 text-blue-500" />
+                <Wrench className="h-5 w-5 text-indigo-500" />
                 <span>Digital Maintenance History</span>
               </h2>
               <Link
                 to="/maintenance"
-                className="text-xs font-semibold text-blue-600 hover:text-blue-500"
+                className="text-xs font-semibold text-indigo-600 hover:text-indigo-500"
               >
                 + Log Record
               </Link>
@@ -113,7 +113,7 @@ export const ComponentDetailPage: React.FC = () => {
 
                     <div className="pt-2 border-t border-slate-200/60 flex flex-wrap items-center justify-between text-[11px] text-slate-500 gap-2">
                       <span>Tech: <strong className="text-slate-700">{h.technician_name}</strong> • {h.created_at}</span>
-                      <div className="flex items-center space-x-1 font-mono text-blue-500 bg-blue-50/40 px-2 py-0.5 rounded border border-blue-200/40">
+                      <div className="flex items-center space-x-1 font-mono text-indigo-500 bg-indigo-50/40 px-2 py-0.5 rounded border border-indigo-200/40">
                         <Lock className="h-3 w-3" />
                         <span>SHA-256: {h.record_hash.substring(0, 16)}...</span>
                       </div>
@@ -129,14 +129,14 @@ export const ComponentDetailPage: React.FC = () => {
         <div className="space-y-6">
           <div className="glass-card rounded-2xl p-6">
             <h2 className="text-lg font-bold text-slate-900 flex items-center space-x-2 mb-4">
-              <Tag className="h-5 w-5 text-blue-600" />
+              <Tag className="h-5 w-5 text-indigo-600" />
               <span>NFC Hardware Identity</span>
             </h2>
 
             <div className="p-4 rounded-xl border border-slate-200 bg-white/60 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-slate-500 uppercase">Technology</span>
-                <span className="text-xs font-bold text-blue-600">Secure NFC</span>
+                <span className="text-xs font-bold text-indigo-600">Secure NFC</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-slate-500 uppercase">Hardware UID</span>
@@ -144,7 +144,7 @@ export const ComponentDetailPage: React.FC = () => {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-slate-500 uppercase">Security Protocol</span>
-                <span className="text-xs font-semibold text-blue-500">AES-128 CMAC SUN</span>
+                <span className="text-xs font-semibold text-indigo-500">AES-128 CMAC SUN</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-slate-500 uppercase">TagTamper Status</span>
@@ -155,7 +155,7 @@ export const ComponentDetailPage: React.FC = () => {
             <div className="mt-4">
               <Link
                 to="/verify"
-                className="w-full inline-flex items-center justify-center space-x-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-2.5 font-semibold text-white shadow-lg shadow-blue-500/20 text-xs"
+                className="w-full inline-flex items-center justify-center space-x-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 px-4 py-2.5 font-semibold text-white shadow-lg shadow-indigo-500/20 text-xs"
               >
                 <span>Run NFC Verification Scan</span>
                 <ExternalLink className="h-3.5 w-3.5" />

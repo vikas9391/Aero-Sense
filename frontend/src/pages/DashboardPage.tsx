@@ -58,7 +58,7 @@ export const DashboardPage: React.FC = () => {
         </div>
         <Link
           to="/verify"
-          className="inline-flex items-center space-x-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-2.5 font-semibold text-white shadow-lg shadow-blue-500/20 hover:from-blue-500 hover:to-blue-600 transition"
+          className="inline-flex items-center space-x-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 px-4 py-2.5 font-semibold text-white shadow-lg shadow-indigo-500/20 hover:from-indigo-500 hover:to-indigo-600 transition"
         >
           <ScanLine className="h-4 w-4" />
           <span>Tap / Scan NFC Tag</span>
@@ -71,13 +71,13 @@ export const DashboardPage: React.FC = () => {
         <div className="glass-card rounded-2xl p-5 relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Aircraft</span>
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 border border-blue-500/20 text-blue-600">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600/10 border border-indigo-500/20 text-indigo-600">
               <Plane className="h-5 w-5" />
             </div>
           </div>
           <div className="mt-4 flex items-baseline space-x-2">
             <span className="text-3xl font-extrabold text-slate-900">{loading ? '...' : totalAircraft}</span>
-            <span className="text-xs text-blue-600 font-medium">Registered fleet</span>
+            <span className="text-xs text-indigo-600 font-medium">Registered fleet</span>
           </div>
           <div className="mt-3 text-xs text-slate-500">Active commercial models</div>
         </div>
@@ -86,13 +86,13 @@ export const DashboardPage: React.FC = () => {
         <div className="glass-card rounded-2xl p-5 relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Components Tracked</span>
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 border border-blue-500/20 text-blue-500">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600/10 border border-indigo-500/20 text-indigo-500">
               <Cpu className="h-5 w-5" />
             </div>
           </div>
           <div className="mt-4 flex items-baseline space-x-2">
             <span className="text-3xl font-extrabold text-slate-900">{loading ? '...' : totalComponents}</span>
-            <span className="text-xs text-blue-500 font-medium">NFC identities bound</span>
+            <span className="text-xs text-indigo-500 font-medium">NFC identities bound</span>
           </div>
           <div className="mt-3 text-xs text-slate-500">Engines, Avionics, Hydraulics</div>
         </div>
@@ -135,10 +135,10 @@ export const DashboardPage: React.FC = () => {
           <div className="glass-card rounded-2xl p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-slate-900 flex items-center space-x-2">
-                <Plane className="h-5 w-5 text-blue-600" />
+                <Plane className="h-5 w-5 text-indigo-600" />
                 <span>Registered Aircraft Fleet</span>
               </h2>
-              <Link to="/aircraft" className="text-xs text-blue-600 hover:text-blue-500 font-medium flex items-center space-x-1">
+              <Link to="/aircraft" className="text-xs text-indigo-600 hover:text-indigo-500 font-medium flex items-center space-x-1">
                 <span>View All Fleet</span>
                 <ArrowUpRight className="h-3.5 w-3.5" />
               </Link>
@@ -148,7 +148,7 @@ export const DashboardPage: React.FC = () => {
               {aircraftList.map((ac) => (
                 <div key={ac.id} className="py-3.5 flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center border border-slate-200 text-blue-600 font-bold text-xs">
+                    <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center border border-slate-200 text-indigo-600 font-bold text-xs">
                       AC
                     </div>
                     <div>
@@ -176,10 +176,10 @@ export const DashboardPage: React.FC = () => {
           <div className="glass-card rounded-2xl p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-slate-900 flex items-center space-x-2">
-                <Activity className="h-5 w-5 text-blue-500" />
+                <Activity className="h-5 w-5 text-indigo-500" />
                 <span>Recent NFC Verification Logs</span>
               </h2>
-              <Link to="/security" className="text-xs text-blue-600 hover:text-blue-500 font-medium flex items-center space-x-1">
+              <Link to="/security" className="text-xs text-indigo-600 hover:text-indigo-500 font-medium flex items-center space-x-1">
                 <span>Security Audit Trail</span>
                 <ArrowUpRight className="h-3.5 w-3.5" />
               </Link>
@@ -214,10 +214,10 @@ export const DashboardPage: React.FC = () => {
           <div className="glass-card rounded-2xl p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-slate-900 flex items-center space-x-2">
-                <Cpu className="h-5 w-5 text-blue-600" />
+                <Cpu className="h-5 w-5 text-indigo-600" />
                 <span>Bound Components</span>
               </h2>
-              <Link to="/components" className="text-xs text-blue-600 hover:text-blue-500 font-medium">
+              <Link to="/components" className="text-xs text-indigo-600 hover:text-indigo-500 font-medium">
                 Catalog
               </Link>
             </div>
@@ -227,7 +227,7 @@ export const DashboardPage: React.FC = () => {
                 <div key={c.id} className="p-3.5 rounded-xl border border-slate-200 bg-white/60 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="font-semibold text-sm text-slate-800">{c.component_uuid}</span>
-                    <span className="rounded bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-600 border border-blue-200/60">
+                    <span className="rounded bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-600 border border-indigo-200/60">
                       SN: {c.serial_number}
                     </span>
                   </div>

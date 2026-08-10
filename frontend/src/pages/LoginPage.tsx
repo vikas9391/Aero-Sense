@@ -31,11 +31,11 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 text-slate-900">
+    <div className="min-h-screen bg-[#f2f0fb] flex items-center justify-center p-6 text-slate-900">
       <div className="w-full max-w-md space-y-8">
         {/* Header Branding */}
         <div className="text-center space-y-3">
-          <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-tr from-blue-600 to-blue-700 shadow-xl shadow-blue-500/25">
+          <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-700 shadow-xl shadow-indigo-500/25">
             <ShieldCheck className="h-9 w-9 text-white" />
           </div>
           <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">AIR-VERIFY PLATFORM</h1>
@@ -65,7 +65,7 @@ export const LoginPage: React.FC = () => {
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
                   placeholder="Your Company Name"
-                  className="w-full rounded-xl border border-slate-200 bg-white/90 pl-11 pr-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-slate-200 bg-white/90 pl-11 pr-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 />
               </div>
               <p className="text-[11px] text-slate-500">
@@ -84,7 +84,7 @@ export const LoginPage: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@company.com"
-                  className="w-full rounded-xl border border-slate-200 bg-white/90 pl-11 pr-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-slate-200 bg-white/90 pl-11 pr-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 />
               </div>
             </div>
@@ -105,7 +105,7 @@ export const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full flex items-center justify-center space-x-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:from-blue-500 hover:to-blue-600 disabled:opacity-50"
+              className="w-full flex items-center justify-center space-x-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 px-4 py-3 font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:from-indigo-500 hover:to-indigo-600 disabled:opacity-50"
             >
               <span>{submitting ? 'Authenticating...' : 'Sign In to Platform'}</span>
               <ArrowRight className="h-4 w-4" />
