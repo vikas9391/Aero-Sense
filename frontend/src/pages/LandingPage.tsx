@@ -40,7 +40,7 @@ export const LandingPage: React.FC = () => {
       <SectionProgress />
 
       <div className="px-3 pb-3 pt-3 md:px-5 md:pb-5 md:pt-5">
-        <div className="mx-auto max-w-[1600px] overflow-hidden rounded-[28px] shadow-[0_24px_70px_-20px_rgba(0,13,16,0.18)] md:rounded-[32px]">
+        <div className="mx-auto max-w-[1600px] overflow-hidden rounded-[28px] shadow-[0_24px_70px_-20px_rgba(91,79,224,0.18)] md:rounded-[32px]">
           <main>
             <ProblemSection />
             <SolutionFeature />

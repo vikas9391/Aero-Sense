@@ -71,25 +71,25 @@ export const ComponentPassport: React.FC = () => {
           whileInView="visible"
           viewport={{ once: true, margin: '-100px' }}
           variants={cardReveal}
-          className="border border-pebble bg-slate-elevated p-8 text-white md:p-10"
+          className="border border-pebble bg-[var(--color-slate-elevated)] p-8 text-ink md:p-10"
         >
           <motion.div
             variants={fieldReveal}
-            className="flex items-center justify-between border-b border-white/10 pb-6"
+            className="flex items-center justify-between border-b border-pebble pb-6"
           >
             <div>
               <div className="font-display text-sm font-semibold tracking-tight">AERO-SENSE</div>
-              <div className="mt-1 font-body text-[11px] uppercase tracking-[0.15em] text-white/50">
+              <div className="mt-1 font-body text-[11px] uppercase tracking-[0.15em] text-ash">
                 Digital Component Passport
               </div>
             </div>
-            <span className="font-body text-[11px] uppercase tracking-widest text-white/40">
+            <span className="font-body text-[11px] uppercase tracking-widest text-ash">
               Concept
             </span>
           </motion.div>
 
           <motion.div variants={fieldReveal} className="mt-6">
-            <div className="font-body text-[11px] uppercase tracking-[0.15em] text-white/50">
+            <div className="font-body text-[11px] uppercase tracking-[0.15em] text-ash">
               Component
             </div>
             <div className="mt-1 font-display text-xl font-semibold">Turbine Blade Assembly</div>
@@ -97,13 +97,13 @@ export const ComponentPassport: React.FC = () => {
 
           <motion.div variants={fieldReveal} className="mt-6 grid grid-cols-2 gap-6">
             <div>
-              <div className="font-body text-[11px] uppercase tracking-[0.15em] text-white/50">
+              <div className="font-body text-[11px] uppercase tracking-[0.15em] text-ash">
                 Component ID
               </div>
-              <div className="mt-1 font-mono text-sm text-white/80">AS-TRB-20491</div>
+              <div className="mt-1 font-mono text-sm text-ink/80">AS-TRB-20491</div>
             </div>
             <div>
-              <div className="font-body text-[11px] uppercase tracking-[0.15em] text-white/50">
+              <div className="font-body text-[11px] uppercase tracking-[0.15em] text-ash">
                 Status
               </div>
               <div className="mt-1 flex items-center gap-1.5 text-sm text-clay">
@@ -113,13 +113,13 @@ export const ComponentPassport: React.FC = () => {
             </div>
           </motion.div>
 
-          <motion.div variants={fieldReveal} className="mt-8 border-t border-white/10 pt-6">
-            <div className="font-body text-[11px] uppercase tracking-[0.15em] text-white/50">
+          <motion.div variants={fieldReveal} className="mt-8 border-t border-pebble pt-6">
+            <div className="font-body text-[11px] uppercase tracking-[0.15em] text-ash">
               Lifecycle
             </div>
             <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
               {LIFECYCLE.map((stage) => (
-                <div key={stage} className="flex items-center gap-2 font-body text-sm text-white/75">
+                <div key={stage} className="flex items-center gap-2 font-body text-sm text-ink/75">
                   <span className="h-1.5 w-1.5 rounded-full bg-clay" />
                   {stage}
                 </div>
@@ -130,8 +130,8 @@ export const ComponentPassport: React.FC = () => {
           {/* Verify Identity demo — explicitly labeled as a simulation.
               No hardware access, no real NFC read; the copy says so at
               every state so it can't be mistaken for a live scan. */}
-          <motion.div variants={fieldReveal} className="mt-8 border-t border-white/10 pt-6">
-            <div className="font-body text-[11px] uppercase tracking-[0.15em] text-white/50">
+          <motion.div variants={fieldReveal} className="mt-8 border-t border-pebble pt-6">
+            <div className="font-body text-[11px] uppercase tracking-[0.15em] text-ash">
               Verify Identity
             </div>
             <div className="mt-3 flex items-center gap-3">
@@ -139,7 +139,7 @@ export const ComponentPassport: React.FC = () => {
                 type="button"
                 onClick={handleVerify}
                 disabled={verifyState !== 'idle'}
-                className="inline-flex items-center gap-2 border border-white/20 px-4 py-2 font-body text-sm text-white/90 transition-colors duration-300 hover:border-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-elevated disabled:cursor-default"
+                className="inline-flex items-center gap-2 border border-ink/20 px-4 py-2 font-body text-sm text-ink/90 transition-colors duration-300 hover:border-ink/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/40 focus-visible:ring-offset-2 disabled:cursor-default"
               >
                 {verifyState === 'idle' && 'Simulate Verification'}
                 {verifyState === 'verifying' && 'Verifying…'}
@@ -151,13 +151,13 @@ export const ComponentPassport: React.FC = () => {
                 )}
               </button>
               {verifyState === 'verified' && (
-                <span className="font-body text-xs text-white/40">
+                <span className="font-body text-xs text-ash">
                   Simulated result — demo only, no physical NFC scan performed.
                 </span>
               )}
             </div>
             {verifyState === 'idle' && (
-              <p className="mt-2 font-body text-xs text-white/40">
+              <p className="mt-2 font-body text-xs text-ash">
                 Tap to simulate how identity verification would appear. This is a concept
                 demo, not a live NFC scan.
               </p>

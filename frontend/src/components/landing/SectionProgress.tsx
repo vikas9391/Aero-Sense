@@ -9,14 +9,15 @@ const EASE = [0.16, 1, 0.3, 1] as const;
 // id to a section and a matching entry here to bring it into the nav.
 //
 // `theme` controls dot/label contrast: 'light' for sections that sit on
-// white page background (Solution, Passport), 'dark' for sections with
-// a full-bleed dark background (Traceability = bg-slate, Security =
-// bg-ink) where light-colored text/dots are needed instead.
+// plain white page background (Solution, Passport), 'elevated' for
+// sections with the light-lavender full-bleed panel background
+// (Traceability, Security) — still dark text/dots, just a hair softer
+// so the nav doesn't outshine the section itself.
 const SECTIONS = [
   { id: 'solution', label: 'Solution', theme: 'light' },
   { id: 'passport', label: 'Passport', theme: 'light' },
-  { id: 'traceability', label: 'Traceability', theme: 'dark' },
-  { id: 'security', label: 'Security', theme: 'dark' },
+  { id: 'traceability', label: 'Traceability', theme: 'elevated' },
+  { id: 'security', label: 'Security', theme: 'elevated' },
 ] as const;
 
 type Theme = (typeof SECTIONS)[number]['theme'];
@@ -27,9 +28,9 @@ const THEME_CLASSES: Record<Theme, { label: string; dotIdle: string; dotHover: s
     dotIdle: 'border-ink/30 bg-transparent',
     dotHover: 'group-hover:border-clay',
   },
-  dark: {
-    label: 'text-white/70',
-    dotIdle: 'border-white/40 bg-transparent',
+  elevated: {
+    label: 'text-ink/50',
+    dotIdle: 'border-ink/25 bg-transparent',
     dotHover: 'group-hover:border-clay',
   },
 };

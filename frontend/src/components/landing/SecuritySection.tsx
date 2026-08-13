@@ -35,7 +35,7 @@ export const SecuritySection: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   return (
-    <section id="security" className="bg-ink px-6 py-28 text-white md:px-10">
+    <section id="security" className="bg-[var(--color-slate-elevated)] px-6 py-28 text-ink md:px-10">
       <div className="mx-auto max-w-[1400px]">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
@@ -48,7 +48,7 @@ export const SecuritySection: React.FC = () => {
         </motion.h2>
 
         <div
-          className="mt-16 grid grid-cols-1 border-t border-white/10 sm:grid-cols-2 lg:grid-cols-3"
+          className="mt-16 grid grid-cols-1 border-t border-pebble sm:grid-cols-2 lg:grid-cols-3"
           onTouchStart={() => setActiveIndex(null)}
         >
           {FEATURES.map((feature, i) => {
@@ -70,8 +70,8 @@ export const SecuritySection: React.FC = () => {
                   e.stopPropagation();
                   setActiveIndex(i);
                 }}
-                className={`border-b border-r px-6 py-10 outline-none transition-colors duration-300 first:pl-0 sm:[&:nth-child(2n)]:border-r-0 lg:[&:nth-child(2n)]:border-r lg:[&:nth-child(3n)]:border-r-0 focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-ink ${
-                  isActive ? 'border-white/30' : 'border-white/10'
+                className={`border-b border-r px-6 py-10 outline-none transition-colors duration-300 first:pl-0 sm:[&:nth-child(2n)]:border-r-0 lg:[&:nth-child(2n)]:border-r lg:[&:nth-child(3n)]:border-r-0 focus-visible:ring-2 focus-visible:ring-ink/20 focus-visible:ring-offset-2 ${
+                  isActive ? 'border-ink/30' : 'border-pebble'
                 }`}
               >
                 <h3
@@ -81,7 +81,7 @@ export const SecuritySection: React.FC = () => {
                 >
                   {feature.title}
                 </h3>
-                <p className="mt-3 font-body text-sm leading-relaxed text-white/55">{feature.body}</p>
+                <p className="mt-3 font-body text-sm leading-relaxed text-ash">{feature.body}</p>
               </motion.div>
             );
           })}

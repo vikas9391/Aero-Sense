@@ -37,7 +37,7 @@ export const TraceabilityTimeline: React.FC = () => {
   const activeIndex = hoverIndex ?? scrollIndex;
 
   return (
-    <section id="traceability" className="bg-slate px-6 py-28 text-white md:px-10">
+    <section id="traceability" className="bg-[var(--color-slate-elevated)] px-6 py-28 text-ink md:px-10">
       <div className="mx-auto max-w-[1400px]">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
@@ -61,11 +61,11 @@ export const TraceabilityTimeline: React.FC = () => {
               onMouseLeave={() => setHoverIndex(null)}
               onFocus={() => setHoverIndex(i)}
               onBlur={() => setHoverIndex(null)}
-              className="group flex items-center gap-6 border-t border-white/10 py-6 text-left last:border-b"
+              className="group flex items-center gap-6 border-t border-pebble py-6 text-left last:border-b"
             >
-              <span className="font-body text-xs text-white/40">0{i + 1}</span>
+              <span className="font-body text-xs text-ash">0{i + 1}</span>
               <span
-                className={`h-2 w-2 shrink-0 rounded-full border border-white/40 transition-colors duration-300 ${
+                className={`h-2 w-2 shrink-0 rounded-full border border-ink/30 transition-colors duration-300 ${
                   activeIndex === i ? 'bg-clay border-clay' : 'bg-transparent'
                 }`}
               />
@@ -73,7 +73,7 @@ export const TraceabilityTimeline: React.FC = () => {
                 {stage.label}
               </span>
               <span
-                className={`ml-auto hidden max-w-sm font-body text-sm text-white/55 transition-opacity duration-300 md:block ${
+                className={`ml-auto hidden max-w-sm font-body text-sm text-ash transition-opacity duration-300 md:block ${
                   activeIndex === i ? 'opacity-100' : 'opacity-0'
                 }`}
               >
