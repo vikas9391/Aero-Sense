@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Layout } from './components/Layout';
+import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { AircraftPage } from './pages/AircraftPage';
@@ -39,10 +40,28 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 // The Super Admin has no company, so the operational dashboard (which reads
 // aircraft/component data) isn't reachable for it — send it to company
 // management instead. Everyone else lands on the normal dashboard.
-const RoleAwareIndexRedirect: React.FC = () => {
-  const { user } = useAuth();
-  const destination = user?.role === 'SUPER_ADMIN' ? '/companies' : '/dashboard';
-  return <Navigate to={destination} replace />;
+const roleDestination = (role?: string) => (role === 'SUPER_ADMIN' ? '/companies' : '/dashboard');
+
+// Root ("/") gate: unauthenticated visitors see the public landing page;
+// authenticated users are sent into the app exactly as before. This is the
+// only behavior change at "/" — every other protected route still goes
+// through ProtectedRoute unchanged below.
+const RootRoute: React.FC = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f2f0fb] flex items-center justify-center text-slate-500 text-sm">
+        Authenticating session...
+      </div>
+    );
+  }
+
+  if (user) {
+    return <Navigate to={roleDestination(user.role)} replace />;
+  }
+
+  return <LandingPage />;
 };
 
 export const App: React.FC = () => {
@@ -50,31 +69,30 @@ export const App: React.FC = () => {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          <Route path="/" element={<RootRoute />} />
           <Route path="/login" element={<LoginPage />} />
 
           <Route
-            path="/"
             element={
               <ProtectedRoute>
                 <Layout />
               </ProtectedRoute>
             }
           >
-            <Route index element={<RoleAwareIndexRedirect />} />
-            <Route path="dashboard" element={<DashboardPage />} />
-            <Route path="verify" element={<VerifyPage />} />
-            <Route path="aircraft" element={<AircraftPage />} />
-            <Route path="aircraft/:id" element={<AircraftDetailPage />} />
-            <Route path="components" element={<ComponentsPage />} />
-            <Route path="components/:id" element={<ComponentDetailPage />} />
-            <Route path="components/register" element={<RegisterComponentPage />} />
-            <Route path="nfc/register" element={<RegisterTagPage />} />
-            <Route path="maintenance" element={<MaintenancePage />} />
-            <Route path="security" element={<SecurityPage />} />
-            <Route path="users" element={<UsersPage />} />
-            <Route path="analytics" element={<AnalyticsPage />} />
-            <Route path="companies" element={<CompaniesPage />} />
-            <Route path="profile" element={<ProfilePage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/verify" element={<VerifyPage />} />
+            <Route path="/aircraft" element={<AircraftPage />} />
+            <Route path="/aircraft/:id" element={<AircraftDetailPage />} />
+            <Route path="/components" element={<ComponentsPage />} />
+            <Route path="/components/:id" element={<ComponentDetailPage />} />
+            <Route path="/components/register" element={<RegisterComponentPage />} />
+            <Route path="/nfc/register" element={<RegisterTagPage />} />
+            <Route path="/maintenance" element={<MaintenancePage />} />
+            <Route path="/security" element={<SecurityPage />} />
+            <Route path="/users" element={<UsersPage />} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
+            <Route path="/companies" element={<CompaniesPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
           </Route>
 
           <Route path="*" element={<RoleAwareIndexRedirectFallback />} />
@@ -89,8 +107,7 @@ export const App: React.FC = () => {
 // ProtectedRoute once they hit /dashboard or /companies).
 const RoleAwareIndexRedirectFallback: React.FC = () => {
   const { user } = useAuth();
-  const destination = user?.role === 'SUPER_ADMIN' ? '/companies' : '/dashboard';
-  return <Navigate to={destination} replace />;
+  return <Navigate to={user ? roleDestination(user.role) : '/login'} replace />;
 };
 
 export default App;

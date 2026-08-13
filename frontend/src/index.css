@@ -1,5 +1,116 @@
 @import "tailwindcss";
 
+/*
+  AERO-SENSE public design system (landing page only).
+  Kept separate from the dashboard's theme below — the authenticated
+  app is untouched and keeps its own tokens.
+*/
+@theme {
+  --color-ink: #000d10;
+  --color-ash: #8e8e95;
+  --color-pebble: #d5d3d4;
+  --color-slate-elevated: #151623;
+
+  /* Atmospheric-only tokens for the hero's pale-sky background. Not brand
+     accents — never used on text, buttons, or UI elements. */
+  --color-sky: #e6edf1;
+  --color-cream: #faf9f7;
+
+  --font-display: 'Clash Display', 'General Sans', system-ui, sans-serif;
+  --font-body: 'General Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* ---- AERO-SENSE landing-page utilities ---- */
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+/* 1000px-radius pill button, per the reference. No shadow/elevation states. */
+.pill-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 1000px;
+  padding: 0.85rem 1.75rem;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.9rem;
+  letter-spacing: -0.01em;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.pill-btn-primary {
+  background: var(--color-ink);
+  color: #ffffff;
+}
+.pill-btn-primary:hover {
+  background: #001a20;
+}
+
+.pill-btn-ghost {
+  background: transparent;
+  color: var(--color-ink);
+  border: 1px solid var(--color-pebble);
+}
+.pill-btn-ghost:hover {
+  border-color: var(--color-ink);
+}
+
+.pill-btn-on-dark {
+  background: #ffffff;
+  color: var(--color-ink);
+}
+.pill-btn-on-dark:hover {
+  background: var(--color-pebble);
+}
+
+.pill-btn-ghost-on-dark {
+  background: transparent;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+.pill-btn-ghost-on-dark:hover {
+  border-color: #ffffff;
+}
+
+/* Hard-edged hairline cards — explicitly no shadow, no radius beyond a hairline. */
+.hairline {
+  border: 1px solid var(--color-pebble);
+}
+.hairline-on-dark {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Hero atmosphere: pale blue sky settling into white/cream — background only,
+   the "sky" and "cream" tokens above never appear anywhere else. */
+.aero-hero-sky {
+  background: linear-gradient(
+    180deg,
+    #abc0d5 0%,
+    #bfd1e0 15%,
+    #cedce6 30%,
+    #e2e9ec 50%,
+    var(--color-cream) 72%,
+    #ffffff 100%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 @layer base {
   :root {
     --bg-app: #f2f0fb;
