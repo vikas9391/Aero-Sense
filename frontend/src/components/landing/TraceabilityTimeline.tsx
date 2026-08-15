@@ -37,7 +37,7 @@ export const TraceabilityTimeline: React.FC = () => {
   const activeIndex = hoverIndex ?? scrollIndex;
 
   return (
-    <section id="traceability" className="bg-[var(--color-slate-elevated)] px-6 py-28 text-ink md:px-10">
+    <section id="traceability" className="bg-[var(--bg-app)] px-6 py-28 text-ink md:px-10">
       <div className="mx-auto max-w-[1400px]">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
@@ -65,8 +65,8 @@ export const TraceabilityTimeline: React.FC = () => {
             >
               <span className="font-body text-xs text-ash">0{i + 1}</span>
               <span
-                className={`h-2 w-2 shrink-0 rounded-full border border-ink/30 transition-colors duration-300 ${
-                  activeIndex === i ? 'bg-clay border-clay' : 'bg-transparent'
+                className={`h-2 w-2 shrink-0 rounded-full border border-pebble transition-colors duration-300 ${
+                  activeIndex === i ? 'bg-indigo-600 border-indigo-600' : 'bg-transparent'
                 }`}
               />
               <span className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">

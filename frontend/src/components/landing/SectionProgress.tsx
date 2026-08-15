@@ -8,16 +8,13 @@ const EASE = [0.16, 1, 0.3, 1] as const;
 // ProblemSection, and CompanyAccessSection don't have ids yet. Add an
 // id to a section and a matching entry here to bring it into the nav.
 //
-// `theme` controls dot/label contrast: 'light' for sections that sit on
-// plain white page background (Solution, Passport), 'elevated' for
-// sections with the light-lavender full-bleed panel background
-// (Traceability, Security) — still dark text/dots, just a hair softer
-// so the nav doesn't outshine the section itself.
+// `theme` controls dot/label contrast. All tracked sections now sit on
+// a light background, so every entry uses the 'light' treatment.
 const SECTIONS = [
   { id: 'solution', label: 'Solution', theme: 'light' },
   { id: 'passport', label: 'Passport', theme: 'light' },
-  { id: 'traceability', label: 'Traceability', theme: 'elevated' },
-  { id: 'security', label: 'Security', theme: 'elevated' },
+  { id: 'traceability', label: 'Traceability', theme: 'light' },
+  { id: 'security', label: 'Security', theme: 'light' },
 ] as const;
 
 type Theme = (typeof SECTIONS)[number]['theme'];
@@ -26,12 +23,7 @@ const THEME_CLASSES: Record<Theme, { label: string; dotIdle: string; dotHover: s
   light: {
     label: 'text-ink/60',
     dotIdle: 'border-ink/30 bg-transparent',
-    dotHover: 'group-hover:border-clay',
-  },
-  elevated: {
-    label: 'text-ink/50',
-    dotIdle: 'border-ink/25 bg-transparent',
-    dotHover: 'group-hover:border-clay',
+    dotHover: 'group-hover:border-indigo-500',
   },
 };
 
@@ -120,8 +112,8 @@ export const SectionProgress: React.FC = () => {
                     className="group relative flex h-6 w-6 items-center justify-center focus-visible:outline-none"
                   >
                     <span
-                      className={`h-1.5 w-1.5 rounded-full border transition-all duration-300 focus-visible:ring-2 focus-visible:ring-clay/40 focus-visible:ring-offset-2 ${theme.dotHover} ${
-                        isActive ? 'scale-125 border-clay bg-clay' : theme.dotIdle
+                      className={`h-1.5 w-1.5 rounded-full border transition-all duration-300 focus-visible:ring-2 focus-visible:ring-indigo-500/40 focus-visible:ring-offset-2 ${theme.dotHover} ${
+                        isActive ? 'scale-125 border-indigo-600 bg-indigo-600' : theme.dotIdle
                       }`}
                     />
                   </button>

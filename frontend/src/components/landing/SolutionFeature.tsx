@@ -47,7 +47,7 @@ export const SolutionFeature: React.FC = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.7, ease: EASE }}
-          className="grid grid-cols-1 items-center gap-10 bg-clay px-8 py-14 md:grid-cols-2 md:px-16 md:py-20"
+          className="grid grid-cols-1 items-center gap-10 bg-gradient-to-br from-indigo-600 to-indigo-700 px-8 py-14 md:grid-cols-2 md:px-16 md:py-20"
         >
           <div>
             <span className="font-body text-xs font-medium uppercase tracking-[0.2em] text-white/70">

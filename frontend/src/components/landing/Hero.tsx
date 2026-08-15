@@ -220,6 +220,20 @@ export const Hero: React.FC = () => {
       <div className="sticky top-0 h-screen w-full overflow-hidden">
         <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" aria-hidden="true" />
 
+        {/* Legibility scrim — the frame sequence swings from a near-white
+            sky/aircraft shot to a near-black engine close-up, so white
+            text needs guaranteed contrast independent of which frame is
+            currently drawn. Fixed gradients (not tied to scroll) sitting
+            behind the text layer, in front of the canvas. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 z-[5] h-32 bg-gradient-to-b from-[var(--color-ink)]/55 to-transparent md:h-40"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-80 bg-gradient-to-t from-[var(--color-ink)]/75 via-[var(--color-ink)]/35 to-transparent md:h-[28rem]"
+        />
+
         {/* Typography layer — secondary to the frame sequence. Positioned
             low and right, echoing the original hero's right-aligned
             headline, so it reads as a caption on the scene rather than a
@@ -377,6 +391,10 @@ const HeroStillFallback: React.FC = () => {
   return (
     <section className="relative flex min-h-[620px] w-full items-end overflow-hidden md:min-h-[720px] lg:min-h-[88vh]">
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" aria-hidden="true" />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-2/3 bg-gradient-to-t from-[var(--color-ink)]/75 via-[var(--color-ink)]/30 to-transparent"
+      />
       <div className="relative z-10 w-full px-6 pb-16 md:px-12 md:pb-20">
         <h2
           className="ml-auto max-w-[85vw] text-right font-display font-bold text-white sm:max-w-sm lg:max-w-lg"

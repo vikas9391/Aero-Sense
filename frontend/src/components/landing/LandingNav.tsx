@@ -94,10 +94,9 @@ export const LandingNav: React.FC = () => {
           transition={{ duration: 0.5, delay: 0.35, ease: EASE }}
           onClick={() => navigate('/login')}
           aria-label="Access Platform"
-          // Token doc's "Circular Icon Button": 100% radius, background
-          // #000d10, white icon, square hit area — rounded-full + bg-ink
-          // already matches this; left as-is.
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-ink text-white transition-transform duration-200 hover:scale-105 hover:bg-[#001a20] active:scale-95"
+          // Matches the app's primary button treatment used on every
+          // other page (indigo gradient, white icon).
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white shadow-lg shadow-indigo-500/20 transition-transform duration-200 hover:scale-105 hover:from-indigo-500 hover:to-indigo-600 active:scale-95"
         >
           <ArrowUpRight className="h-4 w-4" />
         </motion.button>

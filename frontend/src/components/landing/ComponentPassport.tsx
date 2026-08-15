@@ -71,7 +71,7 @@ export const ComponentPassport: React.FC = () => {
           whileInView="visible"
           viewport={{ once: true, margin: '-100px' }}
           variants={cardReveal}
-          className="border border-pebble bg-[var(--color-slate-elevated)] p-8 text-ink md:p-10"
+          className="border border-pebble bg-[var(--bg-app)] p-8 text-ink md:p-10"
         >
           <motion.div
             variants={fieldReveal}
@@ -106,7 +106,7 @@ export const ComponentPassport: React.FC = () => {
               <div className="font-body text-[11px] uppercase tracking-[0.15em] text-ash">
                 Status
               </div>
-              <div className="mt-1 flex items-center gap-1.5 text-sm text-clay">
+              <div className="mt-1 flex items-center gap-1.5 text-sm text-emerald-600">
                 <CheckCircle2 className="h-4 w-4" />
                 Verified
               </div>
@@ -120,7 +120,7 @@ export const ComponentPassport: React.FC = () => {
             <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
               {LIFECYCLE.map((stage) => (
                 <div key={stage} className="flex items-center gap-2 font-body text-sm text-ink/75">
-                  <span className="h-1.5 w-1.5 rounded-full bg-clay" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-indigo-600" />
                   {stage}
                 </div>
               ))}
@@ -139,13 +139,13 @@ export const ComponentPassport: React.FC = () => {
                 type="button"
                 onClick={handleVerify}
                 disabled={verifyState !== 'idle'}
-                className="inline-flex items-center gap-2 border border-ink/20 px-4 py-2 font-body text-sm text-ink/90 transition-colors duration-300 hover:border-ink/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/40 focus-visible:ring-offset-2 disabled:cursor-default"
+                className="inline-flex items-center gap-2 border border-pebble px-4 py-2 font-body text-sm text-ink/90 transition-colors duration-300 hover:border-ink/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-default"
               >
                 {verifyState === 'idle' && 'Simulate Verification'}
                 {verifyState === 'verifying' && 'Verifying…'}
                 {verifyState === 'verified' && (
                   <>
-                    <CheckCircle2 className="h-4 w-4 text-clay" />
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                     Verified
                   </>
                 )}

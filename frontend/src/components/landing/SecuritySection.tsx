@@ -35,7 +35,7 @@ export const SecuritySection: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   return (
-    <section id="security" className="bg-[var(--color-slate-elevated)] px-6 py-28 text-ink md:px-10">
+    <section id="security" className="bg-white px-6 py-28 text-ink md:px-10">
       <div className="mx-auto max-w-[1400px]">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
@@ -70,7 +70,7 @@ export const SecuritySection: React.FC = () => {
                   e.stopPropagation();
                   setActiveIndex(i);
                 }}
-                className={`border-b border-r px-6 py-10 outline-none transition-colors duration-300 first:pl-0 sm:[&:nth-child(2n)]:border-r-0 lg:[&:nth-child(2n)]:border-r lg:[&:nth-child(3n)]:border-r-0 focus-visible:ring-2 focus-visible:ring-ink/20 focus-visible:ring-offset-2 ${
+                className={`border-b border-r px-6 py-10 outline-none transition-colors duration-300 first:pl-0 sm:[&:nth-child(2n)]:border-r-0 lg:[&:nth-child(2n)]:border-r lg:[&:nth-child(3n)]:border-r-0 focus-visible:ring-2 focus-visible:ring-ink/20 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${
                   isActive ? 'border-ink/30' : 'border-pebble'
                 }`}
               >
