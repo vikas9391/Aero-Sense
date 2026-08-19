@@ -19,6 +19,14 @@ pub struct Config {
     /// should never be set in production, since it lets any authenticated user
     /// write fabricated results into the verification audit log.
     pub allow_verification_simulation: bool,
+    /// If true, and the `companies` table is empty on startup, seeds one
+    /// fully-populated demo tenant (company, users, aircraft, components,
+    /// NFC tags, and a couple of maintenance records with real on-chain
+    /// hashes) so a demo doesn't open on empty screens. Never overwrites or
+    /// touches existing data — it only fires when there are zero companies.
+    /// Off by default; enable via `DEMO_SEED=true`. Leave unset in
+    /// production.
+    pub demo_seed: bool,
     /// Comma-separated list of origins allowed to call the API (e.g.
     /// `https://app.example.com,http://localhost:5173`). Falls back to common
     /// local dev origins if unset — **never** wildcard `*` once this is
@@ -63,6 +71,10 @@ impl Config {
             .map(|v| v.eq_ignore_ascii_case("true") || v == "1")
             .unwrap_or(false);
 
+        let demo_seed = env::var("DEMO_SEED")
+            .map(|v| v.eq_ignore_ascii_case("true") || v == "1")
+            .unwrap_or(false);
+
         let allowed_origins = env::var("ALLOWED_ORIGINS")
             .map(|v| {
                 v.split(',')
@@ -86,6 +98,7 @@ impl Config {
             super_admin_email,
             super_admin_password,
             allow_verification_simulation,
+            demo_seed,
             allowed_origins,
         }
     }

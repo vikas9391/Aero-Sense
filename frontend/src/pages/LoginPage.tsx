@@ -31,7 +31,7 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f2f0fb] flex items-center justify-center p-6 text-slate-900">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 text-slate-900">
       <div className="w-full max-w-md space-y-8">
         {/* Header Branding */}
         <div className="text-center space-y-3">

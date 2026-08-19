@@ -3,6 +3,7 @@ pub mod analytics;
 pub mod auth;
 pub mod companies;
 pub mod components;
+pub mod health;
 pub mod maintenance;
 pub mod tags;
 pub mod users;
@@ -37,6 +38,8 @@ pub fn create_router(pool: DbPool, config: Config, blockchain: BlockchainService
     let blockchain_arc = Arc::new(blockchain);
 
     Router::new()
+        // Liveness/readiness check — no auth, no DB access
+        .route("/health", get(health::health_check))
         // Auth routes
         .route("/api/auth/login", post(auth::login))
         .route("/api/auth/me", get(auth::get_me))

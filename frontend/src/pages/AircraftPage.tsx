@@ -63,7 +63,7 @@ export const AircraftPage: React.FC = () => {
             <Plane className="h-7 w-7 text-indigo-600" />
             <span>Aircraft Fleet Overview</span>
           </h1>
-        </div>    
+        </div>
         {canAdd && (
           <button
             onClick={() => setShowModal(true)}

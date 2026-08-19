@@ -1,20 +1,24 @@
+use crate::db::DbPool;
 use crate::errors::AppError;
 use sha2::{Digest, Sha256};
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
 use tracing::info;
 
+/// Simulated blockchain: this is still not a real distributed ledger (it's
+/// a plain SQLite table, `blockchain_records`), but unlike the original
+/// in-memory `HashMap` version, hashes now survive a server restart. That
+/// matters because every other piece of verification state (components,
+/// tags, maintenance records) is already durable — an in-memory-only
+/// integrity registry meant a restart could silently turn every previously
+/// AUTHENTIC record into a false BLOCKCHAIN_MISMATCH with no real tampering
+/// having occurred.
 #[derive(Clone)]
 pub struct BlockchainService {
-    // Simulated on-chain hash registry mapping record_id -> hash_proof
-    hash_registry: Arc<Mutex<HashMap<i64, String>>>,
+    pool: DbPool,
 }
 
 impl BlockchainService {
-    pub fn new() -> Self {
-        Self {
-            hash_registry: Arc::new(Mutex::new(HashMap::new())),
-        }
+    pub fn new(pool: DbPool) -> Self {
+        Self { pool }
     }
 
     pub fn compute_record_hash(
@@ -37,23 +41,32 @@ impl BlockchainService {
 
     pub async fn store_record_hash(&self, record_id: i64, record_hash: String) -> Result<String, AppError> {
         info!("Storing proof hash on Blockchain for maintenance record #{}", record_id);
-        let mut registry = self.hash_registry.lock().unwrap();
-        registry.insert(record_id, record_hash.clone());
+
+        sqlx::query(
+            "INSERT INTO blockchain_records (record_id, onchain_hash) VALUES (?, ?) \
+             ON CONFLICT(record_id) DO UPDATE SET onchain_hash = excluded.onchain_hash, \
+             stored_at = datetime('now')",
+        )
+        .bind(record_id)
+        .bind(&record_hash)
+        .execute(&self.pool)
+        .await?;
+
         Ok(record_hash)
     }
 
     /// Fails **closed**: a record with no matching entry in the on-chain
-    /// registry is treated as unverifiable, not automatically valid. This
-    /// matters in particular because the registry is in-memory only and is
-    /// wiped on every server restart — the previous fallback of "assume valid
-    /// if we can't find it" meant integrity checking silently stopped doing
-    /// anything after any restart. Callers that want restart-tolerant
-    /// behavior should persist `store_record_hash` results to durable storage
-    /// (or a real chain) instead of relying on this in-memory map.
+    /// registry is treated as unverifiable, not automatically valid.
     pub async fn verify_record_hash(&self, record_id: i64, current_db_hash: &str) -> Result<bool, AppError> {
-        let registry = self.hash_registry.lock().unwrap();
-        match registry.get(&record_id) {
-            Some(onchain_hash) => Ok(onchain_hash == current_db_hash),
+        let row: Option<(String,)> = sqlx::query_as(
+            "SELECT onchain_hash FROM blockchain_records WHERE record_id = ?",
+        )
+        .bind(record_id)
+        .fetch_optional(&self.pool)
+        .await?;
+
+        match row {
+            Some((onchain_hash,)) => Ok(onchain_hash == current_db_hash),
             None => Ok(false),
         }
     }

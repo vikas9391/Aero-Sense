@@ -10,6 +10,10 @@
   --color-ash: #8e8e95;
   --color-pebble: #d5d3d4;
   --color-slate-elevated: #151623;
+  /* Accent used by the "How It Works" stage stepper (active-state
+     underline, progress bar, focus ring) — the one warm accent color in
+     an otherwise ink/ash/pebble palette. */
+  --color-clay: #bc7155;
 
   /* Atmospheric-only tokens for the hero's pale-sky background. Not brand
      accents — never used on text, buttons, or UI elements. */
@@ -113,18 +117,18 @@
 
 @layer base {
   :root {
-    --bg-app: #f2f0fb;
+    --bg-app: #f8fafc;
     --card-bg: #ffffff;
-    --border-color: #e3dff5;
-    --accent: #5b4fe0;
-    --accent-dark: #4638c9;
+    --border-color: #e2e8f0;
+    --accent: #4f46e5;
+    --accent-dark: #4338ca;
     --status-authentic: #059669;
     --status-suspicious: #dc2626;
     --status-warning: #d97706;
   }
 
   body {
-    background-color: #f2f0fb;
+    background-color: #f8fafc;
     color: #1e1b3a;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     min-height: 100vh;
@@ -136,17 +140,17 @@
 .glass-panel {
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(91, 79, 224, 0.1);
+  border: 1px solid rgba(79, 70, 229, 0.1);
 }
 
 .glass-card {
   background: #ffffff;
-  border: 1px solid rgba(91, 79, 224, 0.1);
-  box-shadow: 0 1px 3px rgba(30, 27, 58, 0.06), 0 8px 24px -12px rgba(91, 79, 224, 0.12);
+  border: 1px solid rgba(79, 70, 229, 0.08);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 8px 24px -12px rgba(79, 70, 229, 0.1);
 }
 
 .glow-blue {
-  box-shadow: 0 0 0 1px rgba(91, 79, 224, 0.1), 0 8px 20px -8px rgba(91, 79, 224, 0.22);
+  box-shadow: 0 0 0 1px rgba(79, 70, 229, 0.1), 0 8px 20px -8px rgba(79, 70, 229, 0.2);
 }
 
 .glow-green {

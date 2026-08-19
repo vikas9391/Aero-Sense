@@ -1,12 +1,12 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { ShieldCheck, LogOut, User as UserIcon, Lock } from 'lucide-react';
+import { ShieldCheck, LogOut, User as UserIcon } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
 
   return (
-    <header className="glass-panel sticky top-0 z-50 border-b border-slate-200/80 px-6 py-3.5">
+    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur px-6 py-3.5">
       <div className="flex items-center justify-between">
         {/* Left: Brand Identity */}
         <div className="flex items-center space-x-3">
@@ -19,8 +19,6 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
 
-        
-
         {/* Right: User Profile & Actions */}
         {user && (
           <div className="flex items-center space-x-4">
@@ -31,7 +29,7 @@ export const Navbar: React.FC = () => {
               <div className="text-right">
                 <div className="text-sm font-semibold text-slate-800">{user.name}</div>
                 <div className="text-[11px] font-bold text-indigo-600 tracking-wider">
-                  {user.role}
+                  {user.role.replace(/_/g, ' ')}
                 </div>
               </div>
             </div>

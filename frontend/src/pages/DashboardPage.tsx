@@ -243,6 +243,20 @@ export const DashboardPage: React.FC = () => {
               ))}
             </div>
           </div>
+
+          {/* Identity & Security Architecture */}
+          <div className="glass-card rounded-2xl p-6 border-indigo-200/60">
+            <h3 className="font-semibold text-sm text-indigo-700 flex items-center space-x-2 mb-2">
+              <Lock className="h-4 w-4 text-indigo-600" />
+              <span>Identity & Security Architecture</span>
+            </h3>
+            <ul className="text-xs text-slate-500 space-y-2 list-disc list-inside leading-relaxed">
+              <li>Hardware UID mapped to Component UUID</li>
+              <li>AES-128 SUN dynamic CMAC verification</li>
+              <li>TagTamper physical seal integrity check</li>
+              <li>SHA-256 on-chain maintenance record proof</li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>

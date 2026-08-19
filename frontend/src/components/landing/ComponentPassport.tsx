@@ -51,7 +51,12 @@ export const ComponentPassport: React.FC = () => {
   };
 
   return (
-    <section id="passport" className="bg-white px-6 py-28 md:px-10">
+    // id="passport" moved to HowItWorks below — the nav's "How It Works"
+    // link (#passport) is meant to target that section, not this one.
+    // Both sections using id="passport" was a duplicate-ID bug (invalid
+    // HTML — an id must be unique per page, and getElementById /
+    // in-page anchors only ever resolve to the first match).
+    <section id="component-passport" className="bg-white px-6 py-28 md:px-10">
       <div className="mx-auto grid max-w-[1400px] grid-cols-1 items-center gap-16 md:grid-cols-2">
         <div>
           <h2 className="font-display text-[2.75rem] font-semibold leading-[1.05] tracking-tight text-ink sm:text-[3.5rem]">

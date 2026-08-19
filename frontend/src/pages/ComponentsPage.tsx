@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { componentsApi } from '../services/api';
 import { Component } from '../types';
 import { Link } from 'react-router-dom';
-import { Cpu, Plus, Search, ShieldCheck, ArrowRight, Plane } from 'lucide-react';
+import { Cpu, Plus, Search, ShieldCheck, ArrowRight, Plane, Tag } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export const ComponentsPage: React.FC = () => {
@@ -42,13 +42,22 @@ export const ComponentsPage: React.FC = () => {
         </div>
 
         {canRegister && (
-          <Link
-            to="/components/register"
-            className="inline-flex items-center space-x-2 rounded-xl bg-indigo-600 px-4 py-2.5 font-semibold text-white shadow-lg shadow-indigo-500/20 hover:bg-indigo-500 transition"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Register Component</span>
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              to="/nfc/register"
+              className="inline-flex items-center space-x-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 font-semibold text-slate-700 hover:bg-slate-50 transition"
+            >
+              <Tag className="h-4 w-4" />
+              <span>Bind NFC / RFID Tag</span>
+            </Link>
+            <Link
+              to="/components/register"
+              className="inline-flex items-center space-x-2 rounded-xl bg-indigo-600 px-4 py-2.5 font-semibold text-white shadow-lg shadow-indigo-500/20 hover:bg-indigo-500 transition"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Register Component</span>
+            </Link>
+          </div>
         )}
       </div>
 

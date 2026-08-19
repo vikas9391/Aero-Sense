@@ -1,5 +1,5 @@
 use backend::config::Config;
-use backend::db::init_db;
+use backend::db::{connect_and_migrate, seed};
 use backend::routes::create_router;
 use backend::services::blockchain_service::BlockchainService;
 use serde_json::{json, Value};
@@ -36,8 +36,9 @@ async fn test_multi_tenant_isolation() {
     std::env::set_var("SUPER_ADMIN_PASSWORD", "SuperSecret123!");
 
     let config = Config::from_env();
-    let pool = init_db(&config).await.expect("db init should succeed");
-    let blockchain = BlockchainService::new();
+    let pool = connect_and_migrate(&config).await.expect("db init should succeed");
+    let blockchain = BlockchainService::new(pool.clone());
+    seed(&pool, &config, &blockchain).await.expect("seeding should succeed");
     let app = create_router(pool, config.clone(), blockchain);
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
