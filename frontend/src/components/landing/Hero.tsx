@@ -4,12 +4,22 @@ import { frameSrc, useFrameCache, type FrameSequenceConfig } from '../../lib/use
 
 // Sequence 1: Aircraft -> Engine (drives 0-50% of hero scroll progress)
 const AIRCRAFT: FrameSequenceConfig = { path: '/cinematic/aircraft', count: 120 };
-// Sequence 2: Engine -> NFC tag (drives 50-100%)
-// NOTE: inspect the tail of this sequence in your actual export. If the
-// last few frames drift back to a wider engine composition instead of
-// holding the tightest NFC close-up, lower this count so playback stops
-// on the strongest close-up frame instead of the literal last file.
-const NFC: FrameSequenceConfig = { path: '/cinematic/nfc', count: 120 };
+// Sequence 2: Engine -> NFC reveal -> final NFC close-up (drives 50-100%).
+// engine2/001-119 is the sole source for both the engine visual and its
+// own NFC reveal, ending on the last frame as the final NFC state the
+// NFC_HOLD_ZONE logic below freezes on before ✓ Verified lands. These
+// frames have already been pixel-edited (the wiring/pipe cluster on the
+// right replaced with cloned background) — no runtime crop or zoom is
+// needed to hide it, unlike the original /cinematic/nfc/ sequence this
+// replaces. Old /cinematic/nfc/ frames are left on disk, unreferenced,
+// not deleted — safe to remove manually once you're sure engine2 covers
+// every case you care about.
+//
+// count is 119, not 120: the source folder is missing ezgif-frame-120.jpg
+// (only 001-119 exist). frameSrc() clamps index to cfg.count - 1, so this
+// must match what's actually on disk or the last few scroll-frames would
+// request a file that 404s.
+const ENGINE: FrameSequenceConfig = { path: '/cinematic/engine2', count: 119 };
 
 // Frames kept warm around the current position, per sequence.
 const PRELOAD_RADIUS = 8;
@@ -105,12 +115,12 @@ export const Hero: React.FC = () => {
     const clamped = Math.min(1, Math.max(0, p));
     if (clamped < 0.5) {
       const idx = Math.round((clamped / 0.5) * (AIRCRAFT.count - 1));
-      return { cfg: AIRCRAFT, other: NFC, idx, otherBoundary: 0 };
+      return { cfg: AIRCRAFT, other: ENGINE, idx, otherBoundary: 0 };
     }
     const playEnd = 1 - NFC_HOLD_ZONE;
     const playProgress = Math.min(1, (clamped - 0.5) / (playEnd - 0.5));
-    const idx = Math.round(playProgress * (NFC.count - 1));
-    return { cfg: NFC, other: AIRCRAFT, idx, otherBoundary: AIRCRAFT.count - 1 };
+    const idx = Math.round(playProgress * (ENGINE.count - 1));
+    return { cfg: ENGINE, other: AIRCRAFT, idx, otherBoundary: AIRCRAFT.count - 1 };
   }, []);
 
   const drawFrame = useCallback((img: HTMLImageElement) => {
@@ -217,7 +227,7 @@ export const Hero: React.FC = () => {
       className="relative w-full bg-[var(--color-sky)]"
       style={{ height: `${SCROLL_DISTANCE_VH}vh` }}
     >
-      <div className="sticky top-0 h-screen w-full overflow-hidden">
+      <div className="sticky top-0 h-screen w-full overflow-hidden" style={{ transform: 'translateZ(0)' }}>
         <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" aria-hidden="true" />
 
         {/* Legibility scrim — the frame sequence swings from a near-white
@@ -380,7 +390,7 @@ const HeroStillFallback: React.FC = () => {
         const dh = ih * scale;
         ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
       };
-      img.src = frameSrc(NFC, NFC.count - 1);
+      img.src = frameSrc(ENGINE, ENGINE.count - 1);
     };
 
     draw();
