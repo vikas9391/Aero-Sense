@@ -158,6 +158,10 @@ export const maintenanceApi = {
     const res = await api.post<MaintenanceRecord>('/maintenance', data);
     return res.data;
   },
+  listAll: async () => {
+    const res = await api.get<MaintenanceRecord[]>('/maintenance');
+    return res.data;
+  },
 };
 
 export const verificationApi = {
@@ -167,6 +171,10 @@ export const verificationApi = {
   },
   verifyBlockchain: async (record_id: number) => {
     const res = await api.post<{ verified: boolean; record_id: number; db_hash: string; blockchain_hash: string; match_status: string }>('/blockchain/verify', { record_id });
+    return res.data;
+  },
+  listLogs: async () => {
+    const res = await api.get<VerificationLog[]>('/verification/logs');
     return res.data;
   },
 };

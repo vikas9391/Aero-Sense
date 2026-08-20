@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { componentsApi, maintenanceApi, verificationApi } from '../services/api';
 import { Component, MaintenanceRecord } from '../types';
-import { Wrench, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Wrench, Lock, CheckCircle2, AlertCircle, History } from 'lucide-react';
 
 export const MaintenancePage: React.FC = () => {
   const [components, setComponents] = useState<Component[]>([]);
@@ -17,8 +17,26 @@ export const MaintenancePage: React.FC = () => {
   const [verifyingHash, setVerifyingHash] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [records, setRecords] = useState<MaintenanceRecord[]>([]);
+  const [recordsLoading, setRecordsLoading] = useState(true);
+  const [recordsError, setRecordsError] = useState<string | null>(null);
+
+  const loadRecords = () => {
+    setRecordsLoading(true);
+    setRecordsError(null);
+    maintenanceApi
+      .listAll()
+      .then(setRecords)
+      .catch((err) => {
+        console.error(err);
+        setRecordsError('Failed to load maintenance history.');
+      })
+      .finally(() => setRecordsLoading(false));
+  };
+
   useEffect(() => {
     componentsApi.list().then(setComponents).catch(console.error);
+    loadRecords();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,6 +61,7 @@ export const MaintenancePage: React.FC = () => {
       setCreatedRecord(rec);
       setDescription('');
       setPartsReplaced('');
+      loadRecords();
     } catch (err: any) {
       setError(err.response?.data?.error?.message || 'Failed to submit maintenance log.');
     } finally {
@@ -198,6 +217,61 @@ export const MaintenancePage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Company Maintenance History */}
+      <div className="glass-card rounded-2xl p-6 border border-slate-200 space-y-4">
+        <h2 className="text-base font-bold text-slate-900 flex items-center space-x-2">
+          <History className="h-5 w-5 text-indigo-500" />
+          <span>Maintenance History</span>
+        </h2>
+
+        {recordsError && (
+          <div className="flex items-center space-x-3 rounded-xl bg-rose-50/50 p-4 text-sm text-rose-600 border border-rose-200/60">
+            <AlertCircle className="h-5 w-5 shrink-0 text-rose-600" />
+            <span>{recordsError}</span>
+          </div>
+        )}
+
+        {recordsLoading ? (
+          <div className="py-8 text-center text-slate-500 text-xs">Loading maintenance history...</div>
+        ) : records.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-slate-200 p-8 text-center text-xs text-slate-500">
+            No maintenance records logged yet.
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-200/80">
+            {records.map((r) => (
+              <div key={r.id} className="py-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                <div>
+                  <div className="font-bold text-sm text-slate-800 flex items-center space-x-2 flex-wrap">
+                    <span>{r.maintenance_type}</span>
+                    <span
+                      className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                        r.inspection_result === 'PASSED'
+                          ? 'bg-emerald-50 text-emerald-600'
+                          : r.inspection_result === 'WARNING'
+                          ? 'bg-amber-50 text-amber-600'
+                          : 'bg-rose-50 text-rose-600'
+                      }`}
+                    >
+                      {r.inspection_result}
+                    </span>
+                    <span className="text-[11px] font-normal text-slate-500">• Record #{r.id}</span>
+                  </div>
+                  <div className="text-xs text-slate-500 mt-1">{r.description}</div>
+                  {r.parts_replaced && (
+                    <div className="text-xs text-slate-500 mt-0.5">Parts: {r.parts_replaced}</div>
+                  )}
+                  <div className="text-[11px] text-slate-400 mt-1">
+                    Component #{r.component_id} • Logged by {r.technician_name}
+                  </div>
+                </div>
+                <div className="text-[11px] font-mono text-slate-500 shrink-0">{r.created_at}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

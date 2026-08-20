@@ -33,6 +33,26 @@ pub struct VerificationLog {
     pub created_at: String,
 }
 
+/// Same fields as `VerificationLog`, plus the scanned component's serial
+/// number and type — needed once a log listing spans every component in
+/// the company instead of one already-known component, so the UI has
+/// something to identify each row by.
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct VerificationLogWithComponent {
+    pub id: i64,
+    pub component_id: Option<i64>,
+    pub component_serial_number: Option<String>,
+    pub component_type: Option<String>,
+    pub tag_id: Option<i64>,
+    pub authentication_result: bool,
+    pub component_binding_result: bool,
+    pub tamper_result: bool,
+    pub blockchain_result: bool,
+    pub final_result: String,
+    pub failure_reason: Option<String>,
+    pub created_at: String,
+}
+
 #[derive(Debug, Deserialize)]
 pub struct NfcVerificationRequest {
     pub tag_identifier: String, // e.g. "04:A3:91:XX"

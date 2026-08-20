@@ -87,6 +87,43 @@ pub async fn create_maintenance(
     ))
 }
 
+pub async fn list_maintenance(
+    State(pool): State<DbPool>,
+    user: AuthenticatedUser,
+) -> Result<Json<Vec<MaintenanceRecordResponse>>, AppError> {
+    let company_id = require_company_scope(&user)?;
+
+    let records: Vec<MaintenanceRecord> = sqlx::query_as(
+        "SELECT * FROM maintenance_records WHERE company_id = ? ORDER BY id DESC"
+    )
+    .bind(company_id)
+    .fetch_all(&pool)
+    .await?;
+
+    let mut responses = Vec::new();
+    for r in records {
+        let tech_name: Option<(String,)> = sqlx::query_as("SELECT name FROM users WHERE id = ?")
+            .bind(r.technician_id)
+            .fetch_optional(&pool)
+            .await?;
+
+        responses.push(MaintenanceRecordResponse {
+            id: r.id,
+            component_id: r.component_id,
+            technician_id: r.technician_id,
+            technician_name: tech_name.map(|t| t.0).unwrap_or_else(|| "Unknown Tech".to_string()),
+            maintenance_type: r.maintenance_type,
+            description: r.description,
+            parts_replaced: r.parts_replaced,
+            inspection_result: r.inspection_result,
+            record_hash: r.record_hash,
+            created_at: r.created_at,
+        });
+    }
+
+    Ok(Json(responses))
+}
+
 pub async fn get_component_history(
     State(pool): State<DbPool>,
     user: AuthenticatedUser,

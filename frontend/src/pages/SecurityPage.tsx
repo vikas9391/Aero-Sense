@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { componentsApi } from '../services/api';
+import { verificationApi } from '../services/api';
 import { VerificationLog } from '../types';
 import { ShieldAlert, Activity, CheckCircle2, AlertTriangle, XCircle, Radio, Lock } from 'lucide-react';
 
@@ -8,8 +8,8 @@ export const SecurityPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch logs from component 1 for demonstration
-    componentsApi.getVerifications(1)
+    // Company-wide verification log stream (all components, not just one)
+    verificationApi.listLogs()
       .then(setLogs)
       .catch(console.error)
       .finally(() => setLoading(false));

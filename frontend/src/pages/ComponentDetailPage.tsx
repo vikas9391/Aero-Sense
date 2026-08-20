@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { componentsApi } from '../services/api';
 import { Component, MaintenanceRecord, VerificationLog } from '../types';
-import { Cpu, ArrowLeft, Tag, Wrench, Lock, ExternalLink } from 'lucide-react';
+import { Cpu, ArrowLeft, Tag, Wrench, Lock, ExternalLink, Activity, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
 
 export const ComponentDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [component, setComponent] = useState<Component | null>(null);
   const [history, setHistory] = useState<MaintenanceRecord[]>([]);
-  const [, setVerifications] = useState<VerificationLog[]>([]);
+  const [verifications, setVerifications] = useState<VerificationLog[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -161,6 +161,40 @@ export const ComponentDetailPage: React.FC = () => {
                 <ExternalLink className="h-3.5 w-3.5" />
               </Link>
             </div>
+          </div>
+
+          <div className="glass-card rounded-2xl p-6">
+            <h2 className="text-lg font-bold text-slate-900 flex items-center space-x-2 mb-4">
+              <Activity className="h-5 w-5 text-indigo-500" />
+              <span>Verification History</span>
+            </h2>
+
+            {verifications.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-xs text-slate-500">
+                No verification scans logged for this component yet.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {verifications.map((v) => (
+                  <div key={v.id} className="flex items-start space-x-2.5 p-3 rounded-xl border border-slate-200 bg-white/60">
+                    {v.final_result === 'AUTHENTIC' ? (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                    ) : v.final_result === 'SUSPICIOUS' ? (
+                      <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
+                    )}
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold text-slate-800">{v.final_result}</div>
+                      <div className="text-[11px] text-slate-500 mt-0.5">
+                        {v.failure_reason || 'All 4 checks passed'}
+                      </div>
+                      <div className="text-[10px] text-slate-400 font-mono mt-1">{v.created_at}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

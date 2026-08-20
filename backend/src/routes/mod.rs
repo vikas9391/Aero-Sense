@@ -70,9 +70,11 @@ pub fn create_router(pool: DbPool, config: Config, blockchain: BlockchainService
         .route("/api/tags/:id", get(tags::get_tag))
         // Maintenance routes
         .route("/api/maintenance", post(maintenance::create_maintenance))
+        .route("/api/maintenance", get(maintenance::list_maintenance))
         .route("/api/components/:id/history", get(maintenance::get_component_history))
         // Verification routes
         .route("/api/verification/nfc", post(verification::verify_nfc))
+        .route("/api/verification/logs", get(verification::list_verifications))
         .route("/api/components/:id/verification", get(verification::get_component_verifications))
         .route("/api/blockchain/verify", post(verification::verify_blockchain_record))
         // State & Extensions

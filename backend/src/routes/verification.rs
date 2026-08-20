@@ -48,6 +48,22 @@ pub async fn verify_nfc(
     Ok(Json(res))
 }
 
+pub async fn list_verifications(
+    State(pool): State<DbPool>,
+    user: AuthenticatedUser,
+) -> Result<Json<Vec<VerificationLog>>, AppError> {
+    let company_id = require_company_scope(&user)?;
+
+    let logs: Vec<VerificationLog> = sqlx::query_as(
+        "SELECT * FROM verification_logs WHERE company_id = ? ORDER BY id DESC"
+    )
+    .bind(company_id)
+    .fetch_all(&pool)
+    .await?;
+
+    Ok(Json(logs))
+}
+
 pub async fn get_component_verifications(
     State(pool): State<DbPool>,
     user: AuthenticatedUser,

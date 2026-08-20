@@ -80,7 +80,7 @@ export const Sidebar: React.FC = () => {
   // managing the tenant list itself.
   if (isSuperAdmin) {
     return (
-      <aside className="w-64 shrink-0 bg-white border-r border-slate-200 p-4 flex flex-col justify-between min-h-[calc(100vh-65px)]">
+      <aside className="w-64 shrink-0 bg-white border-r border-slate-200 p-4 flex flex-col justify-between sticky top-[65px] h-[calc(100vh-65px)] overflow-y-auto">
         <NavGroup
           title="Platform Administration"
           items={[
@@ -88,7 +88,6 @@ export const Sidebar: React.FC = () => {
             { to: '/profile', label: 'My Profile', icon: User },
           ]}
         />
-       
       </aside>
     );
   }
@@ -115,7 +114,7 @@ export const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="w-64 shrink-0 bg-white border-r border-slate-200 p-4 flex flex-col justify-between min-h-[calc(100vh-65px)]">
+    <aside className="w-64 shrink-0 bg-white border-r border-slate-200 p-4 flex flex-col justify-between sticky top-[65px] h-[calc(100vh-65px)] overflow-y-auto">
       <div className="space-y-7">
         <NavGroup title="Core Operations" items={coreItems} />
         {managementItems.length > 0 && <NavGroup title="Management & Audit" items={managementItems} />}
@@ -133,7 +132,6 @@ export const Sidebar: React.FC = () => {
           <User className="h-4 w-4 shrink-0 text-slate-400" />
           <span>My Profile</span>
         </NavLink>
-       
       </div>
     </aside>
   );

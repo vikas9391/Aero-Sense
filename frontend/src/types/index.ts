@@ -119,6 +119,25 @@ export interface MaintenanceRecord {
   created_at: string;
 }
 
+// Same as MaintenanceRecord, but for the company-wide listing rather than
+// a single already-known component's history — carries the component's
+// serial number/type and a technician name that can legitimately be null
+// (the join is a LEFT JOIN) so the UI can identify each row on its own.
+export interface MaintenanceRecordWithComponent {
+  id: number;
+  component_id: number;
+  component_serial_number: string | null;
+  component_type: string | null;
+  technician_id: number;
+  technician_name: string | null;
+  maintenance_type: string;
+  description: string;
+  parts_replaced: string | null;
+  inspection_result: 'PASSED' | 'FAILED' | 'WARNING';
+  record_hash: string;
+  created_at: string;
+}
+
 export interface VerificationChecks {
   nfc_authentication: boolean;
   component_binding: boolean;
@@ -143,6 +162,25 @@ export interface VerificationResponse {
 export interface VerificationLog {
   id: number;
   component_id: number | null;
+  tag_id: number | null;
+  authentication_result: boolean;
+  component_binding_result: boolean;
+  tamper_result: boolean;
+  blockchain_result: boolean;
+  final_result: 'AUTHENTIC' | 'SUSPICIOUS' | 'INVALID';
+  failure_reason: string | null;
+  created_at: string;
+}
+
+// Same as VerificationLog, but for the company-wide log stream — carries
+// the scanned component's serial number/type (both nullable: the log's
+// own component_id is nullable, and the join is a LEFT JOIN) so each row
+// can identify itself without a separate lookup per component.
+export interface VerificationLogWithComponent {
+  id: number;
+  component_id: number | null;
+  component_serial_number: string | null;
+  component_type: string | null;
   tag_id: number | null;
   authentication_result: boolean;
   component_binding_result: boolean;
