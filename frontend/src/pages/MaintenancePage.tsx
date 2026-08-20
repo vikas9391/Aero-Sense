@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { componentsApi, maintenanceApi, verificationApi } from '../services/api';
 import { Component, MaintenanceRecord } from '../types';
+import { useToast } from '../context/ToastContext';
 import { Wrench, Lock, CheckCircle2, AlertCircle, History } from 'lucide-react';
 
 export const MaintenancePage: React.FC = () => {
@@ -16,6 +17,7 @@ export const MaintenancePage: React.FC = () => {
   const [blockchainVerified, setBlockchainVerified] = useState<boolean | null>(null);
   const [verifyingHash, setVerifyingHash] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { showToast } = useToast();
 
   const [records, setRecords] = useState<MaintenanceRecord[]>([]);
   const [recordsLoading, setRecordsLoading] = useState(true);
@@ -35,8 +37,12 @@ export const MaintenancePage: React.FC = () => {
   };
 
   useEffect(() => {
-    componentsApi.list().then(setComponents).catch(console.error);
+    componentsApi.list().then(setComponents).catch((err) => {
+      console.error(err);
+      showToast('Couldn\'t load the component list for this form.', 'error');
+    });
     loadRecords();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -77,6 +83,7 @@ export const MaintenancePage: React.FC = () => {
       setBlockchainVerified(res.verified);
     } catch (err) {
       console.error('Blockchain proof verification failed:', err);
+      showToast('Blockchain proof verification failed. Please try again.', 'error');
     } finally {
       setVerifyingHash(false);
     }

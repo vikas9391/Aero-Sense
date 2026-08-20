@@ -45,6 +45,9 @@ pub enum AppError {
     #[error("Blockchain hash mismatch: {0}")]
     BlockchainMismatch(String),
 
+    #[error("Too many requests: {0}")]
+    TooManyRequests(String),
+
     #[error("Database error: {0}")]
     DatabaseError(#[from] sqlx::Error),
 
@@ -72,6 +75,7 @@ impl IntoResponse for AppError {
             AppError::Forbidden(msg) => (StatusCode::FORBIDDEN, "FORBIDDEN", msg.clone()),
             AppError::NotFound(msg) => (StatusCode::NOT_FOUND, "NOT_FOUND", msg.clone()),
             AppError::Conflict(msg) => (StatusCode::CONFLICT, "CONFLICT", msg.clone()),
+            AppError::TooManyRequests(msg) => (StatusCode::TOO_MANY_REQUESTS, "TOO_MANY_REQUESTS", msg.clone()),
             AppError::InvalidNfc(msg) => (StatusCode::BAD_REQUEST, "INVALID_NFC", msg.clone()),
             AppError::NfcTagNotRegistered => (
                 StatusCode::NOT_FOUND,

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { aircraftApi, componentsApi } from '../services/api';
 import { Aircraft } from '../types';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../context/ToastContext';
 import { PlusCircle, AlertCircle } from 'lucide-react';
 
 export const RegisterComponentPage: React.FC = () => {
@@ -13,9 +14,14 @@ export const RegisterComponentPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   useEffect(() => {
-    aircraftApi.list().then(setAircraftList).catch(console.error);
+    aircraftApi.list().then(setAircraftList).catch((err) => {
+      console.error(err);
+      showToast('Couldn\'t load the aircraft list for this form.', 'error');
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

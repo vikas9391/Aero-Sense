@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { componentsApi } from '../services/api';
 import { Component, MaintenanceRecord, VerificationLog } from '../types';
+import { useToast } from '../context/ToastContext';
 import { Cpu, ArrowLeft, Tag, Wrench, Lock, ExternalLink, Activity, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
 
 export const ComponentDetailPage: React.FC = () => {
@@ -10,6 +11,7 @@ export const ComponentDetailPage: React.FC = () => {
   const [history, setHistory] = useState<MaintenanceRecord[]>([]);
   const [verifications, setVerifications] = useState<VerificationLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (id) {
@@ -24,9 +26,13 @@ export const ComponentDetailPage: React.FC = () => {
           setHistory(h);
           setVerifications(v);
         })
-        .catch(console.error)
+        .catch((err) => {
+          console.error(err);
+          showToast('Couldn\'t load this component\'s record.', 'error');
+        })
         .finally(() => setLoading(false));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   if (loading) return <div className="py-12 text-center text-slate-500">Loading component record...</div>;

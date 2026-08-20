@@ -17,10 +17,12 @@ import {
   X,
 } from 'lucide-react';
 import { PasswordInput } from '../components/PasswordInput';
+import { useToast } from '../context/ToastContext';
 
 export const CompaniesPage: React.FC = () => {
   const [companies, setCompanies] = useState<CompanySummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const { showToast } = useToast();
 
   const [companyName, setCompanyName] = useState('');
   const [companyError, setCompanyError] = useState<string | null>(null);
@@ -40,7 +42,10 @@ export const CompaniesPage: React.FC = () => {
     companiesApi
       .list()
       .then(setCompanies)
-      .catch(console.error)
+      .catch((err) => {
+        console.error(err);
+        showToast('Couldn\'t load the company list. Please refresh the page.', 'error');
+      })
       .finally(() => setLoading(false));
   };
 

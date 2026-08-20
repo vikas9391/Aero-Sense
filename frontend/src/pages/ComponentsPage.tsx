@@ -4,20 +4,26 @@ import { Component } from '../types';
 import { Link } from 'react-router-dom';
 import { Cpu, Plus, Search, ShieldCheck, ArrowRight, Plane, Tag } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 export const ComponentsPage: React.FC = () => {
   const [components, setComponents] = useState<Component[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const { showToast } = useToast();
 
   const canRegister = user?.role === 'COMPANY_ADMIN' || user?.role === 'MANUFACTURER';
 
   useEffect(() => {
     componentsApi.list()
       .then(setComponents)
-      .catch(console.error)
+      .catch((err) => {
+        console.error(err);
+        showToast('Couldn\'t load the component catalog. Please refresh the page.', 'error');
+      })
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filtered = components.filter(

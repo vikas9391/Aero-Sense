@@ -12,6 +12,7 @@ import {
   VerificationResponse,
   WorkAnalytics,
 } from '../types';
+import { emitToast } from '../context/ToastContext';
 
 const API_BASE = '/api';
 
@@ -30,6 +31,31 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// A 401 means the session token is missing, expired, or was rejected by the
+// server (e.g. revoked, or the server restarted with a new signing key).
+// Previously this just bubbled up to whichever page made the call, was
+// caught, logged to the console, and otherwise ignored — the user would see
+// a stuck loading state with no explanation. Now we clear the stale token
+// and bounce to /login with an explanatory toast, from any page.
+//
+// GET /auth/me is exempt: AuthContext's own initAuth() already handles that
+// 401 as "no valid session yet" during the app's first load, and redirecting
+// there too would just double up on the same logic.
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && !error.config?.url?.endsWith('/auth/me')) {
+      const hadToken = !!localStorage.getItem('aircraft_auth_token');
+      localStorage.removeItem('aircraft_auth_token');
+      if (hadToken && window.location.pathname !== '/login') {
+        emitToast('Your session has expired. Please sign in again.', 'warning');
+        window.location.assign('/login');
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const usersApi = {
   list: async () => {

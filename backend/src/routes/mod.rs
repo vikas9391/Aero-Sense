@@ -9,7 +9,7 @@ pub mod tags;
 pub mod users;
 pub mod verification;
 
-use crate::{config::Config, db::DbPool, services::blockchain_service::BlockchainService};
+use crate::{config::Config, db::DbPool, middleware::LoginRateLimiter, services::blockchain_service::BlockchainService};
 use axum::http::{HeaderValue, Method};
 use axum::{
     routing::{get, post, put},
@@ -33,6 +33,12 @@ pub fn create_router(pool: DbPool, config: Config, blockchain: BlockchainService
         .allow_origin(origins)
         .allow_methods([Method::GET, Method::POST, Method::PUT, Method::DELETE])
         .allow_headers(tower_http::cors::Any);
+
+    let login_rate_limiter = LoginRateLimiter::new(
+        config.login_rate_limit_max_attempts,
+        config.login_rate_limit_window,
+    );
+    crate::middleware::rate_limit::spawn_cleanup_task(login_rate_limiter.clone());
 
     let config_arc = Arc::new(config);
     let blockchain_arc = Arc::new(blockchain);
@@ -80,6 +86,7 @@ pub fn create_router(pool: DbPool, config: Config, blockchain: BlockchainService
         // State & Extensions
         .layer(Extension(config_arc))
         .layer(Extension(blockchain_arc))
+        .layer(Extension(login_rate_limiter))
         .layer(cors)
         .layer(TraceLayer::new_for_http())
         .with_state(pool)

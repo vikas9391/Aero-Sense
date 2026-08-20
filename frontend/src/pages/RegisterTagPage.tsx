@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { componentsApi, tagsApi } from '../services/api';
 import { Component } from '../types';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../context/ToastContext';
 import { Tag, ScanLine, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 export const RegisterTagPage: React.FC = () => {
@@ -14,9 +15,14 @@ export const RegisterTagPage: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   useEffect(() => {
-    componentsApi.list().then(setComponents).catch(console.error);
+    componentsApi.list().then(setComponents).catch((err) => {
+      console.error(err);
+      showToast('Couldn\'t load the component list for this form.', 'error');
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const simulateTap = () => {

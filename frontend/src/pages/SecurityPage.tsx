@@ -1,18 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { verificationApi } from '../services/api';
 import { VerificationLog } from '../types';
+import { useToast } from '../context/ToastContext';
 import { ShieldAlert, Activity, CheckCircle2, AlertTriangle, XCircle, Radio, Lock } from 'lucide-react';
 
 export const SecurityPage: React.FC = () => {
   const [logs, setLogs] = useState<VerificationLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const { showToast } = useToast();
 
   useEffect(() => {
     // Company-wide verification log stream (all components, not just one)
     verificationApi.listLogs()
       .then(setLogs)
-      .catch(console.error)
+      .catch((err) => {
+        console.error(err);
+        showToast('Couldn\'t load the security audit log.', 'error');
+      })
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

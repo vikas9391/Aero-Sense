@@ -3,6 +3,7 @@ import { usersApi } from '../services/api';
 import { User, UserRole } from '../types';
 import { Users as UsersIcon, UserPlus, AlertCircle, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { PasswordInput } from '../components/PasswordInput';
+import { useToast } from '../context/ToastContext';
 
 // Company Admins can create any role within their own company except
 // SUPER_ADMIN and COMPANY_ADMIN's platform-level counterpart — the backend
@@ -12,6 +13,7 @@ const ROLES: UserRole[] = ['COMPANY_ADMIN', 'MANUFACTURER', 'MAINTENANCE_TECHNIC
 export const UsersPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const { showToast } = useToast();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -27,7 +29,10 @@ export const UsersPage: React.FC = () => {
     usersApi
       .list()
       .then(setUsers)
-      .catch(console.error)
+      .catch((err) => {
+        console.error(err);
+        showToast('Couldn\'t load the user list. Please refresh the page.', 'error');
+      })
       .finally(() => setLoading(false));
   };
 

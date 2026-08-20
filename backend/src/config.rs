@@ -32,6 +32,12 @@ pub struct Config {
     /// local dev origins if unset — **never** wildcard `*` once this is
     /// reachable from the public internet.
     pub allowed_origins: Vec<String>,
+    /// Max failed login attempts allowed per `ip:email` key within
+    /// `login_rate_limit_window`, before `/api/auth/login` starts returning
+    /// `429 Too Many Requests`. Default 5.
+    pub login_rate_limit_max_attempts: usize,
+    /// Rolling window the above limit applies over. Default 15 minutes.
+    pub login_rate_limit_window: std::time::Duration,
 }
 
 impl Config {
@@ -89,6 +95,17 @@ impl Config {
                 ]
             });
 
+        let login_rate_limit_max_attempts = env::var("LOGIN_RATE_LIMIT_MAX_ATTEMPTS")
+            .ok()
+            .and_then(|v| v.parse::<usize>().ok())
+            .unwrap_or(5);
+
+        let login_rate_limit_window = env::var("LOGIN_RATE_LIMIT_WINDOW_SECS")
+            .ok()
+            .and_then(|v| v.parse::<u64>().ok())
+            .map(std::time::Duration::from_secs)
+            .unwrap_or_else(|| std::time::Duration::from_secs(15 * 60));
+
         Self {
             database_url,
             port,
@@ -100,6 +117,8 @@ impl Config {
             allow_verification_simulation,
             demo_seed,
             allowed_origins,
+            login_rate_limit_max_attempts,
+            login_rate_limit_window,
         }
     }
 

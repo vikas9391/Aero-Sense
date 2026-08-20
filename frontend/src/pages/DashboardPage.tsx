@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { aircraftApi, componentsApi } from '../services/api';
 import { Aircraft, Component, VerificationLog } from '../types';
 import { Link } from 'react-router-dom';
+import { useToast } from '../context/ToastContext';
 import {
   Plane,
   Cpu,
@@ -19,6 +20,7 @@ export const DashboardPage: React.FC = () => {
   const [componentsList, setComponentsList] = useState<Component[]>([]);
   const [verifications, setVerifications] = useState<VerificationLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const { showToast } = useToast();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,11 +39,13 @@ export const DashboardPage: React.FC = () => {
         }
       } catch (err) {
         console.error('Failed to load dashboard metrics:', err);
+        showToast('Couldn\'t load dashboard data. Please refresh the page.', 'error');
       } finally {
         setLoading(false);
       }
     };
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const totalAircraft = aircraftList.length;

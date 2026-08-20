@@ -3,19 +3,57 @@ use crate::{
     db::DbPool,
     errors::AppError,
     middleware::auth::AuthenticatedUser,
+    middleware::LoginRateLimiter,
     models::{AuthResponse, ChangePasswordRequest, LoginRequest, UserResponse},
     services::AuthService,
 };
-use axum::{extract::State, Extension, Json};
+use axum::{
+    extract::{ConnectInfo, State},
+    http::HeaderMap,
+    Extension, Json,
+};
+use std::net::SocketAddr;
 use std::sync::Arc;
 
+/// POST /api/auth/login — rate limited per `ip:email` (see `LoginRateLimiter`)
+/// so a brute-force attempt against one or many accounts gets throttled
+/// before it can grind through Argon2 verification thousands of times.
+///
+/// Client IP prefers `X-Forwarded-For` (first hop) when present, since a
+/// real deployment usually sits behind a reverse proxy; otherwise falls back
+/// to the TCP peer address. `ConnectInfo` is optional here rather than a hard
+/// requirement — if it's ever missing (e.g. a test harness that doesn't wire
+/// up `into_make_service_with_connect_info`), we still rate-limit by email
+/// alone rather than failing the request outright.
 pub async fn login(
     State(pool): State<DbPool>,
     Extension(config): Extension<Arc<Config>>,
+    Extension(limiter): Extension<LoginRateLimiter>,
+    connect_info: Option<ConnectInfo<SocketAddr>>,
+    headers: HeaderMap,
     Json(req): Json<LoginRequest>,
 ) -> Result<Json<AuthResponse>, AppError> {
-    let auth_res = AuthService::login(&pool, &config, req).await?;
-    Ok(Json(auth_res))
+    let client_ip = headers
+        .get("x-forwarded-for")
+        .and_then(|v| v.to_str().ok())
+        .and_then(|v| v.split(',').next())
+        .map(|s| s.trim().to_string())
+        .or_else(|| connect_info.map(|ConnectInfo(addr)| addr.ip().to_string()))
+        .unwrap_or_else(|| "unknown".to_string());
+
+    let rate_limit_key = format!("{}:{}", client_ip, req.email.trim().to_lowercase());
+    limiter.check(&rate_limit_key)?;
+
+    match AuthService::login(&pool, &config, req).await {
+        Ok(auth_res) => {
+            limiter.record_success(&rate_limit_key);
+            Ok(Json(auth_res))
+        }
+        Err(e) => {
+            limiter.record_failure(&rate_limit_key);
+            Err(e)
+        }
+    }
 }
 
 pub async fn get_me(

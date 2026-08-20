@@ -2,20 +2,26 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { aircraftApi } from '../services/api';
 import { AircraftWithComponents } from '../types';
+import { useToast } from '../context/ToastContext';
 import { Plane, Cpu, ArrowLeft, ShieldCheck, Plus } from 'lucide-react';
 
 export const AircraftDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [data, setData] = useState<AircraftWithComponents | null>(null);
   const [loading, setLoading] = useState(true);
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (id) {
       aircraftApi.getById(parseInt(id, 10))
         .then(setData)
-        .catch(console.error)
+        .catch((err) => {
+          console.error(err);
+          showToast('Couldn\'t load this aircraft\'s details.', 'error');
+        })
         .finally(() => setLoading(false));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   if (loading) return <div className="py-12 text-center text-slate-500">Loading aircraft details...</div>;

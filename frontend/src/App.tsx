@@ -1,7 +1,9 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
 import { Layout } from './components/Layout';
+import { RequireRole } from './components/RequireRole';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
@@ -19,6 +21,8 @@ import { UsersPage } from './pages/UsersPage';
 import { CompaniesPage } from './pages/CompaniesPage';
 import { CompanyDetailPage } from './pages/CompanyDetailPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
+import { NotFoundPage } from './pages/NotFoundPage';
+import { NotAuthorizedPage } from './pages/NotAuthorizedPage';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
@@ -68,48 +72,77 @@ const RootRoute: React.FC = () => {
 export const App: React.FC = () => {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<RootRoute />} />
-          <Route path="/login" element={<LoginPage />} />
+      <ToastProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<RootRoute />} />
+            <Route path="/login" element={<LoginPage />} />
 
-          <Route
-            element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/verify" element={<VerifyPage />} />
-            <Route path="/aircraft" element={<AircraftPage />} />
-            <Route path="/aircraft/:id" element={<AircraftDetailPage />} />
-            <Route path="/components" element={<ComponentsPage />} />
-            <Route path="/components/:id" element={<ComponentDetailPage />} />
-            <Route path="/components/register" element={<RegisterComponentPage />} />
-            <Route path="/nfc/register" element={<RegisterTagPage />} />
-            <Route path="/maintenance" element={<MaintenancePage />} />
-            <Route path="/security" element={<SecurityPage />} />
-            <Route path="/users" element={<UsersPage />} />
-            <Route path="/analytics" element={<AnalyticsPage />} />
-            <Route path="/companies" element={<CompaniesPage />} />
-            <Route path="/companies/:id" element={<CompanyDetailPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-          </Route>
+            <Route
+              element={
+                <ProtectedRoute>
+                  <Layout />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/verify" element={<VerifyPage />} />
+              <Route path="/aircraft" element={<AircraftPage />} />
+              <Route path="/aircraft/:id" element={<AircraftDetailPage />} />
+              <Route path="/components" element={<ComponentsPage />} />
+              <Route path="/components/:id" element={<ComponentDetailPage />} />
+              <Route path="/components/register" element={<RegisterComponentPage />} />
+              <Route path="/nfc/register" element={<RegisterTagPage />} />
+              <Route
+                path="/maintenance"
+                element={
+                  <RequireRole allow={['COMPANY_ADMIN', 'MAINTENANCE_TECHNICIAN']}>
+                    <MaintenancePage />
+                  </RequireRole>
+                }
+              />
+              <Route path="/security" element={<SecurityPage />} />
+              <Route
+                path="/users"
+                element={
+                  <RequireRole allow={['COMPANY_ADMIN']}>
+                    <UsersPage />
+                  </RequireRole>
+                }
+              />
+              <Route
+                path="/analytics"
+                element={
+                  <RequireRole allow={['COMPANY_ADMIN']}>
+                    <AnalyticsPage />
+                  </RequireRole>
+                }
+              />
+              <Route
+                path="/companies"
+                element={
+                  <RequireRole allow={['SUPER_ADMIN']}>
+                    <CompaniesPage />
+                  </RequireRole>
+                }
+              />
+              <Route
+                path="/companies/:id"
+                element={
+                  <RequireRole allow={['SUPER_ADMIN']}>
+                    <CompanyDetailPage />
+                  </RequireRole>
+                }
+              />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/not-authorized" element={<NotAuthorizedPage />} />
+            </Route>
 
-          <Route path="*" element={<RoleAwareIndexRedirectFallback />} />
-        </Routes>
-      </BrowserRouter>
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </BrowserRouter>
+      </ToastProvider>
     </AuthProvider>
   );
 };
-
-// Same role-aware redirect, usable outside the protected layout tree for the
-// catch-all route (unauthenticated users still fall through to /login via
-// ProtectedRoute once they hit /dashboard or /companies).
-const RoleAwareIndexRedirectFallback: React.FC = () => {
-  const { user } = useAuth();
-  return <Navigate to={user ? roleDestination(user.role) : '/login'} replace />;
-};
-
 export default App;
