@@ -23,9 +23,7 @@ type NavItem = {
 
 const NavGroup: React.FC<{ title: string; items: NavItem[] }> = ({ title, items }) => (
   <div>
-    <div className="px-3 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-      {title}
-    </div>
+    <div className="aero-eyebrow px-3 mb-2 text-[10px]">{title}</div>
     <nav className="space-y-0.5">
       {items.map((item) => {
         const Icon = item.icon;
@@ -34,12 +32,12 @@ const NavGroup: React.FC<{ title: string; items: NavItem[] }> = ({ title, items 
             key={item.to}
             to={item.to}
             className={({ isActive }) =>
-              `group flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ${
+              `group flex items-center space-x-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150 ${
                 isActive
-                  ? 'bg-indigo-50 text-indigo-700'
+                  ? 'bg-[#f1f1ef] text-ink'
                   : item.highlight
-                  ? 'text-emerald-700 hover:bg-emerald-50'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  ? 'text-[#0a7a4c] hover:bg-[#e9f6ef]'
+                  : 'text-[#4b4b52] hover:bg-[#f7f7f5] hover:text-ink'
               }`
             }
           >
@@ -47,7 +45,7 @@ const NavGroup: React.FC<{ title: string; items: NavItem[] }> = ({ title, items 
               <>
                 <Icon
                   className={`h-4 w-4 shrink-0 ${
-                    isActive ? 'text-indigo-600' : item.highlight ? 'text-emerald-600' : 'text-slate-400 group-hover:text-slate-600'
+                    isActive ? 'text-ink' : item.highlight ? 'text-[#0a7a4c]' : 'text-ash group-hover:text-ink'
                   }`}
                 />
                 <span>{item.label}</span>
@@ -57,13 +55,6 @@ const NavGroup: React.FC<{ title: string; items: NavItem[] }> = ({ title, items 
         );
       })}
     </nav>
-  </div>
-);
-
-const RoleFooter: React.FC<{ label: string; description: string }> = ({ label, description }) => (
-  <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5">
-    <div className="text-[11px] font-bold uppercase tracking-wider text-indigo-600 mb-1">{label}</div>
-    <p className="text-[11px] text-slate-500 leading-relaxed">{description}</p>
   </div>
 );
 
@@ -80,7 +71,7 @@ export const Sidebar: React.FC = () => {
   // managing the tenant list itself.
   if (isSuperAdmin) {
     return (
-      <aside className="w-64 shrink-0 bg-white border-r border-slate-200 p-4 flex flex-col justify-between sticky top-[65px] h-[calc(100vh-65px)] overflow-y-auto">
+      <aside className="w-64 shrink-0 bg-white border-r border-pebble p-4 flex flex-col justify-between sticky top-[65px] h-[calc(100vh-65px)] overflow-y-auto">
         <NavGroup
           title="Platform Administration"
           items={[
@@ -114,7 +105,7 @@ export const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="w-64 shrink-0 bg-white border-r border-slate-200 p-4 flex flex-col justify-between sticky top-[65px] h-[calc(100vh-65px)] overflow-y-auto">
+    <aside className="w-64 shrink-0 bg-white border-r border-pebble p-4 flex flex-col justify-between sticky top-[65px] h-[calc(100vh-65px)] overflow-y-auto">
       <div className="space-y-7">
         <NavGroup title="Core Operations" items={coreItems} />
         {managementItems.length > 0 && <NavGroup title="Management & Audit" items={managementItems} />}
@@ -124,12 +115,12 @@ export const Sidebar: React.FC = () => {
         <NavLink
           to="/profile"
           className={({ isActive }) =>
-            `flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+            `flex items-center space-x-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+              isActive ? 'bg-[#f1f1ef] text-ink' : 'text-[#4b4b52] hover:bg-[#f7f7f5] hover:text-ink'
             }`
           }
         >
-          <User className="h-4 w-4 shrink-0 text-slate-400" />
+          <User className="h-4 w-4 shrink-0 text-ash" />
           <span>My Profile</span>
         </NavLink>
       </div>

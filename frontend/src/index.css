@@ -115,48 +115,72 @@
   }
 }
 
+/*
+  AERO-SENSE 2.0 application design system.
+  Same ink/ash/pebble/clay family the landing page already uses (see
+  @theme above), extended with semantic status colors and surface
+  utilities for the authenticated app (dashboard, fleet, components,
+  verification, maintenance, etc). Replaces the old indigo/glass-panel
+  theme — nothing below is used by the landing page.
+*/
 @layer base {
   :root {
-    --bg-app: #f8fafc;
+    --bg-app: #f7f7f5;
     --card-bg: #ffffff;
-    --border-color: #e2e8f0;
-    --accent: #4f46e5;
-    --accent-dark: #4338ca;
-    --status-authentic: #059669;
-    --status-suspicious: #dc2626;
-    --status-warning: #d97706;
+    --border-color: var(--color-pebble);
+
+    /* Single accent, reused from the landing page's clay tone rather
+       than introducing a second brand color for the app shell. */
+    --accent: var(--color-ink);
+    --accent-soft: #eef0ee;
+
+    /* Semantic status — the only saturated color in the app. */
+    --status-verified: #0a7a4c;
+    --status-verified-soft: #e9f6ef;
+    --status-warning: #b5790f;
+    --status-warning-soft: #fbf1de;
+    --status-critical: #b13a2f;
+    --status-critical-soft: #fbeceb;
+    --status-info: #2a5d8f;
+    --status-info-soft: #eaf1f8;
   }
 
   body {
-    background-color: #f8fafc;
-    color: #1e1b3a;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: var(--bg-app);
+    color: var(--color-ink);
+    font-family: var(--font-body);
     min-height: 100vh;
     margin: 0;
   }
 }
 
-/* Clean surfaces */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(79, 70, 229, 0.1);
+/* ---- Application surfaces (dashboard/fleet/components/etc.) ---- */
+
+/* Flat hairline card — no shadow, no gradient, matches the landing
+   page's .hairline treatment instead of the old glass/shadow cards. */
+.aero-panel {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
 }
 
-.glass-card {
-  background: #ffffff;
-  border: 1px solid rgba(79, 70, 229, 0.08);
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 8px 24px -12px rgba(79, 70, 229, 0.1);
+.aero-panel-tight {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
 }
 
-.glow-blue {
-  box-shadow: 0 0 0 1px rgba(79, 70, 229, 0.1), 0 8px 20px -8px rgba(79, 70, 229, 0.2);
+/* Technical metadata: component IDs, serials, hashes, timestamps. */
+.aero-mono {
+  font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: -0.01em;
 }
 
-.glow-green {
-  box-shadow: 0 0 0 1px rgba(5, 150, 105, 0.08), 0 8px 20px -8px rgba(5, 150, 105, 0.18);
-}
-
-.glow-red {
-  box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.08), 0 8px 20px -8px rgba(220, 38, 38, 0.18);
+.aero-eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ash);
 }

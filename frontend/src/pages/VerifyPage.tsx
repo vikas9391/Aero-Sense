@@ -1,7 +1,65 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { verificationApi } from '../services/api';
 import { VerificationResponse } from '../types';
+import { PageHeader } from '../components/ui/PageHeader';
+import { Card, CardHeader } from '../components/ui/Card';
+import { Badge } from '../components/ui/Badge';
 import { ScanLine, ShieldCheck, AlertTriangle, XCircle, CheckCircle2, Lock, Radio, Cpu, RefreshCw } from 'lucide-react';
+
+const scenarios = [
+  { id: 'VALID', label: '1. Valid NFC Tag & Intact Component', desc: 'All 4 security checks pass cleanly (AUTHENTIC)' },
+  { id: 'UNKNOWN_TAG', label: '2. Unknown / Unregistered NFC Tag', desc: 'Tag UID not bound to any component (INVALID)' },
+  { id: 'INVALID_TAG', label: '3. Invalid Cryptographic Signature', desc: 'NFC signature authentication fails (INVALID)' },
+  { id: 'TAMPERED_TAG', label: '4. Physical Tamper Detected', desc: 'TagTamper wire loop severed (SUSPICIOUS)' },
+  { id: 'BLOCKCHAIN_MISMATCH', label: '5. Blockchain Hash Mismatch', desc: 'Off-chain DB record modified fraudulently (SUSPICIOUS)' },
+];
+
+type ResultTone = 'verified' | 'warning' | 'critical';
+
+const statusTone = (status: VerificationResponse['status']): ResultTone =>
+  status === 'AUTHENTIC' ? 'verified' : status === 'SUSPICIOUS' ? 'warning' : 'critical';
+
+const STATUS_ICON: Record<ResultTone, React.ComponentType<{ className?: string }>> = {
+  verified: CheckCircle2,
+  warning: AlertTriangle,
+  critical: XCircle,
+};
+
+const STATUS_BANNER_CLASSES: Record<ResultTone, string> = {
+  verified: 'border-[#c9e8d7] bg-[#e9f6ef]/50',
+  warning: 'border-[#f0dcae] bg-[#fbf1de]/50',
+  critical: 'border-[#f0cbc7] bg-[#fbeceb]/50',
+};
+
+const STATUS_TEXT_CLASSES: Record<ResultTone, string> = {
+  verified: 'text-[#0a7a4c]',
+  warning: 'text-[#b5790f]',
+  critical: 'text-[#b13a2f]',
+};
+
+interface CheckRowProps {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  description: string;
+  passed: boolean;
+}
+
+const CheckRow: React.FC<CheckRowProps> = ({ icon: Icon, label, description, passed }) => (
+  <div className="flex items-center justify-between p-3.5 rounded-xl border border-pebble bg-white">
+    <div className="flex items-center gap-3">
+      <Icon className="h-5 w-5 text-ash" />
+      <div>
+        <div className="font-semibold text-xs text-ink">{label}</div>
+        <div className="text-[11px] text-ash">{description}</div>
+      </div>
+    </div>
+    <Badge tone={passed ? 'verified' : 'critical'} className="gap-1">
+      {passed ? <CheckCircle2 className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
+      <span>{passed ? 'PASSED' : 'FAILED'}</span>
+    </Badge>
+  </div>
+);
 
 export const VerifyPage: React.FC = () => {
   const [tagIdentifier, setTagIdentifier] = useState('04:A3:91:XX');
@@ -9,14 +67,6 @@ export const VerifyPage: React.FC = () => {
   const [result, setResult] = useState<VerificationResponse | null>(null);
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const scenarios = [
-    { id: 'VALID', label: '1. Valid NFC Tag & Intact Component', desc: 'All 4 security checks pass cleanly (AUTHENTIC)' },
-    { id: 'UNKNOWN_TAG', label: '2. Unknown / Unregistered NFC Tag', desc: 'Tag UID not bound to any component (INVALID)' },
-    { id: 'INVALID_TAG', label: '3. Invalid Cryptographic Signature', desc: 'NFC signature authentication fails (INVALID)' },
-    { id: 'TAMPERED_TAG', label: '4. Physical Tamper Detected', desc: 'TagTamper wire loop severed (SUSPICIOUS)' },
-    { id: 'BLOCKCHAIN_MISMATCH', label: '5. Blockchain Hash Mismatch', desc: 'Off-chain DB record modified fraudulently (SUSPICIOUS)' },
-  ];
 
   const handleVerify = async () => {
     setError(null);
@@ -34,37 +84,31 @@ export const VerifyPage: React.FC = () => {
     }
   };
 
+  const tone = result ? statusTone(result.status) : null;
+  const StatusIcon = tone ? STATUS_ICON[tone] : null;
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      {/* Header */}
-      <div className="border-b border-slate-200/80 pb-5">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center space-x-3">
-          <ScanLine className="h-7 w-7 text-indigo-600" />
-          <span>NFC Component Verification Engine</span>
-        </h1>
-      </div>
+      <PageHeader eyebrow="Live Verification" title="NFC Component Verification Engine" />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left Column: Tap Simulator & Scenarios (5 Cols) */}
+        {/* Left: tap simulator & scenarios */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="glass-card rounded-2xl p-6 space-y-5">
-            <h2 className="text-base font-bold text-slate-900 flex items-center space-x-2">
-              <Radio className="h-4 w-4 text-indigo-600" />
-              <span>NFC Hardware Tap Simulator</span>
-            </h2>
+          <Card className="p-6 space-y-5">
+            <CardHeader title="NFC Hardware Tap Simulator" icon={Radio} />
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase text-slate-500">Tag Identifier (UID)</label>
+              <label className="aero-eyebrow text-[10px]">Tag Identifier (UID)</label>
               <input
                 type="text"
                 value={tagIdentifier}
                 onChange={(e) => setTagIdentifier(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-indigo-600 font-mono font-bold focus:border-indigo-500 focus:outline-none"
+                className="w-full rounded-xl border border-pebble bg-white px-4 py-2 text-sm text-ink aero-mono font-semibold focus:border-ink focus:outline-none"
               />
             </div>
 
             <div className="space-y-3">
-              <label className="text-xs font-semibold uppercase text-slate-500">Simulation Test Scenarios</label>
+              <label className="aero-eyebrow text-[10px]">Simulation Test Scenarios</label>
               <div className="space-y-2">
                 {scenarios.map((s) => (
                   <button
@@ -73,12 +117,12 @@ export const VerifyPage: React.FC = () => {
                     onClick={() => setScenario(s.id)}
                     className={`w-full p-3 rounded-xl text-left border transition ${
                       scenario === s.id
-                        ? 'bg-indigo-600/15 border-indigo-500/40 text-indigo-500'
-                        : 'bg-white/50 border-slate-200 text-slate-500 hover:bg-slate-100/50'
+                        ? 'bg-[#f1f1ef] border-ink/30 text-ink'
+                        : 'bg-white border-pebble text-ash hover:bg-[#f7f7f5]'
                     }`}
                   >
-                    <div className="font-semibold text-xs text-slate-800">{s.label}</div>
-                    <div className="text-[11px] text-slate-500 mt-0.5">{s.desc}</div>
+                    <div className="font-semibold text-xs text-ink">{s.label}</div>
+                    <div className="text-[11px] text-ash mt-0.5">{s.desc}</div>
                   </button>
                 ))}
               </div>
@@ -87,7 +131,7 @@ export const VerifyPage: React.FC = () => {
             <button
               onClick={handleVerify}
               disabled={verifying}
-              className="w-full flex items-center justify-center space-x-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 px-4 py-3 font-semibold text-white shadow-lg shadow-indigo-500/25 hover:from-indigo-500 hover:to-indigo-600 disabled:opacity-50 text-sm"
+              className="pill-btn pill-btn-primary w-full text-sm disabled:opacity-50"
             >
               {verifying ? (
                 <>
@@ -101,198 +145,116 @@ export const VerifyPage: React.FC = () => {
                 </>
               )}
             </button>
-          </div>
+          </Card>
         </div>
 
-        {/* Right Column: Verification Results Output (7 Cols) */}
+        {/* Right: verification results output */}
         <div className="lg:col-span-7 space-y-6">
           {error && (
-            <div className="flex items-center space-x-3 rounded-xl bg-rose-50/50 p-4 text-sm text-rose-600 border border-rose-200/60">
-              <AlertTriangle className="h-5 w-5 shrink-0 text-rose-600" />
+            <div className="flex items-center gap-3 rounded-xl bg-[#fbeceb]/60 p-4 text-sm text-[#b13a2f] border border-[#f0cbc7]">
+              <AlertTriangle className="h-5 w-5 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
-          {!result && !error && (
-            <div className="glass-card rounded-2xl p-12 text-center space-y-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white border border-slate-200 text-slate-600 mx-auto">
-                <ScanLine className="h-8 w-8" />
-              </div>
-              <div className="font-bold text-slate-700">Ready for Verification</div>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                Select a test scenario on the left and click "Execute NFC Verification Scan" to test the 4-layer validation engine.
-              </p>
-            </div>
-          )}
-
-          {result && (
-            <div className="space-y-6">
-              {/* Overall Status Banner */}
-              <div
-                className={`glass-card rounded-2xl p-6 border ${
-                  result.status === 'AUTHENTIC'
-                    ? 'border-emerald-500/40 bg-emerald-50/20'
-                    : result.status === 'SUSPICIOUS'
-                    ? 'border-amber-500/40 bg-amber-50/20'
-                    : 'border-rose-500/40 bg-rose-50/20'
-                }`}
+          <AnimatePresence mode="wait">
+            {!result && !error && (
+              <motion.div
+                key="empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    {result.status === 'AUTHENTIC' ? (
-                      <CheckCircle2 className="h-10 w-10 text-emerald-600" />
-                    ) : result.status === 'SUSPICIOUS' ? (
-                      <AlertTriangle className="h-10 w-10 text-amber-600" />
-                    ) : (
-                      <XCircle className="h-10 w-10 text-rose-600" />
-                    )}
-                    <div>
-                      <div className="text-xs font-bold uppercase tracking-wider text-slate-500">Verification Result</div>
-                      <h2
-                        className={`text-2xl font-black ${
-                          result.status === 'AUTHENTIC'
-                            ? 'text-emerald-600'
-                            : result.status === 'SUSPICIOUS'
-                            ? 'text-amber-600'
-                            : 'text-rose-600'
-                        }`}
-                      >
-                        {result.status}
-                      </h2>
+                <Card className="p-12 text-center space-y-4">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-pebble bg-white text-ash mx-auto">
+                    <ScanLine className="h-8 w-8" />
+                  </div>
+                  <div className="font-semibold text-ink">Ready for Verification</div>
+                  <p className="text-xs text-ash max-w-sm mx-auto">
+                    Select a test scenario on the left and click "Execute NFC Verification Scan" to test the 4-layer validation engine.
+                  </p>
+                </Card>
+              </motion.div>
+            )}
+
+            {result && tone && StatusIcon && (
+              <motion.div
+                key={`${result.status}-${result.failure_reason ?? ''}`}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                className="space-y-6"
+              >
+                {/* Overall status banner */}
+                <div className={`aero-panel border p-6 ${STATUS_BANNER_CLASSES[tone]}`}>
+                  <div className="flex items-center justify-between flex-wrap gap-3">
+                    <div className="flex items-center gap-3">
+                      <StatusIcon className={`h-10 w-10 ${STATUS_TEXT_CLASSES[tone]}`} />
+                      <div>
+                        <div className="aero-eyebrow text-[10px]">Verification Result</div>
+                        <h2 className={`text-2xl font-semibold ${STATUS_TEXT_CLASSES[tone]}`}>{result.status}</h2>
+                      </div>
                     </div>
+
+                    <Badge tone={tone} className="px-4 py-1.5 text-xs">
+                      {result.verified ? 'VERIFIED INTACT' : 'VERIFICATION FAILED'}
+                    </Badge>
                   </div>
 
-                  <span
-                    className={`rounded-full px-4 py-1.5 text-xs font-extrabold uppercase border ${
-                      result.status === 'AUTHENTIC'
-                        ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
-                        : result.status === 'SUSPICIOUS'
-                        ? 'bg-amber-50 text-amber-600 border-amber-200'
-                        : 'bg-rose-50 text-rose-600 border-rose-200'
-                    }`}
-                  >
-                    {result.verified ? 'VERIFIED INTACT' : 'VERIFICATION FAILED'}
-                  </span>
+                  {result.failure_reason && (
+                    <div className="mt-4 pt-4 border-t border-pebble text-xs text-[#b13a2f] font-medium flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4 shrink-0" />
+                      <span>Failure Reason: {result.failure_reason}</span>
+                    </div>
+                  )}
                 </div>
 
-                {result.failure_reason && (
-                  <div className="mt-4 pt-4 border-t border-slate-200/80 text-xs text-rose-600 font-medium flex items-center space-x-2">
-                    <AlertTriangle className="h-4 w-4 shrink-0" />
-                    <span>Failure Reason: {result.failure_reason}</span>
-                  </div>
+                {/* Matched component, if any */}
+                {result.component && (
+                  <Card className="p-5 space-y-2">
+                    <div className="aero-eyebrow text-[10px]">Matched Bound Component</div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-sm text-ink aero-mono">{result.component.id}</span>
+                      <span className="text-xs text-ink font-medium">Aircraft: {result.component.aircraft}</span>
+                    </div>
+                    <div className="text-xs text-ash aero-mono">Serial Number: {result.component.serial_number}</div>
+                  </Card>
                 )}
-              </div>
 
-              {/* Component Info Card if matched */}
-              {result.component && (
-                <div className="glass-card rounded-2xl p-5 border border-slate-200 space-y-2">
-                  <div className="text-xs font-semibold text-slate-500 uppercase">Matched Bound Component</div>
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-sm text-indigo-600">{result.component.id}</span>
-                    <span className="text-xs text-slate-700 font-medium">Aircraft: {result.component.aircraft}</span>
+                {/* 4-layer security pipeline */}
+                <Card className="p-6 space-y-4">
+                  <h3 className="aero-eyebrow text-[10px]">4-Layer Cryptographic Security Pipeline</h3>
+
+                  <div className="space-y-3">
+                    <CheckRow
+                      icon={Radio}
+                      label="1. NFC Tag Cryptographic Auth"
+                      description="Validates tag hardware signature / SUN payload"
+                      passed={result.checks.nfc_authentication}
+                    />
+                    <CheckRow
+                      icon={Cpu}
+                      label="2. Component Identity Binding"
+                      description="Verifies hardware UID mapping in Component Registry"
+                      passed={result.checks.component_binding}
+                    />
+                    <CheckRow
+                      icon={ShieldCheck}
+                      label="3. Physical Tamper Seal Check"
+                      description="Evaluates TagTamper wire loop resistance / state"
+                      passed={result.checks.tamper_status}
+                    />
+                    <CheckRow
+                      icon={Lock}
+                      label="4. Blockchain Record Hash Integrity"
+                      description="Compares off-chain maintenance hash with on-chain anchor"
+                      passed={result.checks.blockchain_integrity}
+                    />
                   </div>
-                  <div className="text-xs text-slate-500">Serial Number: {result.component.serial_number}</div>
-                </div>
-              )}
-
-              {/* 4 Security Checks Breakdown */}
-              <div className="glass-card rounded-2xl p-6 space-y-4">
-                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-                  4-Layer Cryptographic Security Pipeline
-                </h3>
-
-                <div className="space-y-3">
-                  {/* Check 1 */}
-                  <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 bg-white/60">
-                    <div className="flex items-center space-x-3">
-                      <Radio className="h-5 w-5 text-indigo-600" />
-                      <div>
-                        <div className="font-semibold text-xs text-slate-800">1. NFC Tag Cryptographic Auth</div>
-                        <div className="text-[11px] text-slate-500">Validates tag hardware signature / SUN payload</div>
-                      </div>
-                    </div>
-                    {result.checks.nfc_authentication ? (
-                      <span className="text-xs font-bold text-emerald-600 flex items-center space-x-1">
-                        <CheckCircle2 className="h-4 w-4" />
-                        <span>PASSED</span>
-                      </span>
-                    ) : (
-                      <span className="text-xs font-bold text-rose-600 flex items-center space-x-1">
-                        <XCircle className="h-4 w-4" />
-                        <span>FAILED</span>
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Check 2 */}
-                  <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 bg-white/60">
-                    <div className="flex items-center space-x-3">
-                      <Cpu className="h-5 w-5 text-indigo-500" />
-                      <div>
-                        <div className="font-semibold text-xs text-slate-800">2. Component Identity Binding</div>
-                        <div className="text-[11px] text-slate-500">Verifies hardware UID mapping in Component Registry</div>
-                      </div>
-                    </div>
-                    {result.checks.component_binding ? (
-                      <span className="text-xs font-bold text-emerald-600 flex items-center space-x-1">
-                        <CheckCircle2 className="h-4 w-4" />
-                        <span>PASSED</span>
-                      </span>
-                    ) : (
-                      <span className="text-xs font-bold text-rose-600 flex items-center space-x-1">
-                        <XCircle className="h-4 w-4" />
-                        <span>FAILED</span>
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Check 3 */}
-                  <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 bg-white/60">
-                    <div className="flex items-center space-x-3">
-                      <ShieldCheck className="h-5 w-5 text-emerald-600" />
-                      <div>
-                        <div className="font-semibold text-xs text-slate-800">3. Physical Tamper Seal Check</div>
-                        <div className="text-[11px] text-slate-500">Evaluates TagTamper wire loop resistance / state</div>
-                      </div>
-                    </div>
-                    {result.checks.tamper_status ? (
-                      <span className="text-xs font-bold text-emerald-600 flex items-center space-x-1">
-                        <CheckCircle2 className="h-4 w-4" />
-                        <span>PASSED</span>
-                      </span>
-                    ) : (
-                      <span className="text-xs font-bold text-rose-600 flex items-center space-x-1">
-                        <XCircle className="h-4 w-4" />
-                        <span>FAILED</span>
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Check 4 */}
-                  <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 bg-white/60">
-                    <div className="flex items-center space-x-3">
-                      <Lock className="h-5 w-5 text-amber-600" />
-                      <div>
-                        <div className="font-semibold text-xs text-slate-800">4. Blockchain Record Hash Integrity</div>
-                        <div className="text-[11px] text-slate-500">Compares off-chain maintenance hash with on-chain anchor</div>
-                      </div>
-                    </div>
-                    {result.checks.blockchain_integrity ? (
-                      <span className="text-xs font-bold text-emerald-600 flex items-center space-x-1">
-                        <CheckCircle2 className="h-4 w-4" />
-                        <span>PASSED</span>
-                      </span>
-                    ) : (
-                      <span className="text-xs font-bold text-rose-600 flex items-center space-x-1">
-                        <XCircle className="h-4 w-4" />
-                        <span>FAILED</span>
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>
