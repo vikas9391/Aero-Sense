@@ -88,10 +88,7 @@ export const Sidebar: React.FC = () => {
             { to: '/profile', label: 'My Profile', icon: User },
           ]}
         />
-        <RoleFooter
-          label="Super Admin"
-          description="Platform-level account. Can view each company's users/emails and manage subscription status, but has no access to any company's aircraft, component, or maintenance records."
-        />
+       
       </aside>
     );
   }
@@ -136,10 +133,7 @@ export const Sidebar: React.FC = () => {
           <User className="h-4 w-4 shrink-0 text-slate-400" />
           <span>My Profile</span>
         </NavLink>
-        <RoleFooter
-          label={role?.replace(/_/g, ' ') ?? 'Account'}
-          description="Every action here is scoped to your company only — no cross-tenant visibility."
-        />
+       
       </div>
     </aside>
   );
