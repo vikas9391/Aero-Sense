@@ -23,21 +23,70 @@ export const AnalyticsPage: React.FC = () => {
   const [data, setData] = useState<WorkAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
+    setLoading(true);
+    setError(null);
     analyticsApi
       .getOverview()
       .then(setData)
-      .catch((err) => setError(err.response?.data?.error?.message || 'Failed to load analytics'))
+      .catch((err) => setError(err.response?.data?.error?.message ?? null))
       .finally(() => setLoading(false));
-  }, []);
+  }, [retryCount]);
 
   if (loading) {
-    return <div className="py-12 text-center text-slate-500 text-sm">Loading work analytics...</div>;
+    return (
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5" aria-busy="true" aria-live="polite">
+        <span className="sr-only">Loading work analytics…</span>
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="glass-card flex animate-pulse items-center space-x-4 rounded-2xl border border-slate-200 p-5">
+            <div className="h-11 w-11 rounded-xl bg-slate-200" />
+            <div className="flex-1 space-y-2">
+              <div className="h-5 w-10 rounded bg-slate-200" />
+              <div className="h-3 w-20 rounded bg-slate-200" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
   }
 
-  if (error || !data) {
-    return <div className="py-12 text-center text-rose-600 text-sm">{error || 'No data available'}</div>;
+  if (error) {
+    return (
+      <div className="glass-card mx-auto max-w-md space-y-4 rounded-2xl border border-slate-200 p-10 text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-rose-200 bg-rose-50 text-rose-600">
+          <XCircle className="h-7 w-7" />
+        </div>
+        <div>
+          <div className="font-bold text-slate-900">Analytics Unavailable</div>
+          <p className="mx-auto mt-1 max-w-xs text-sm text-slate-500">
+            We couldn't reach the analytics service. Please try again.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setRetryCount((n) => n + 1)}
+          className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-500"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="glass-card mx-auto max-w-md space-y-3 rounded-2xl border border-slate-200 p-10 text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-400">
+          <BarChart3 className="h-7 w-7" />
+        </div>
+        <div className="font-bold uppercase tracking-wide text-slate-700">No Activity Yet</div>
+        <p className="mx-auto max-w-xs text-sm text-slate-500">
+          Analytics will appear here once aircraft, components, and maintenance records start coming in.
+        </p>
+      </div>
+    );
   }
 
   const maxUserCount = Math.max(1, ...data.records_by_user.map((u) => u.maintenance_count));

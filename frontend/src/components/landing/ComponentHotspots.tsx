@@ -48,11 +48,23 @@ export const ComponentHotspots: React.FC = () => {
             style={{ top: spot.top, left: spot.left }}
             onMouseEnter={() => setActiveId(spot.id)}
             onMouseLeave={() => setActiveId(null)}
-            onFocus={() => setActiveId(spot.id)}
-            onBlur={() => setActiveId(null)}
           >
             <button
+              type="button"
               aria-label={spot.label}
+              aria-expanded={active}
+              aria-describedby={`${spot.id}-desc`}
+              // mouseenter/leave alone leaves this dead on touch devices
+              // (no hover state to trigger it), and focus/blur alone
+              // meant a tap that didn't land exactly on the 12px target
+              // never opened it either. onClick as an explicit toggle
+              // covers touch and keyboard activation (Enter/Space) the
+              // same way hover does for a mouse, and dismisses on a
+              // second tap instead of needing a mouseleave that touch
+              // never fires.
+              onClick={() => setActiveId((current) => (current === spot.id ? null : spot.id))}
+              onFocus={() => setActiveId(spot.id)}
+              onBlur={() => setActiveId(null)}
               className="relative flex h-3 w-3 items-center justify-center rounded-full border border-white/70 bg-white/10 backdrop-blur-sm"
             >
               <span
@@ -66,6 +78,8 @@ export const ComponentHotspots: React.FC = () => {
             <AnimatePresence>
               {active && (
                 <motion.div
+                  id={`${spot.id}-desc`}
+                  role="tooltip"
                   initial={{ opacity: 0, y: 4 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 4 }}
