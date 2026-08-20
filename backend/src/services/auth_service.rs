@@ -59,6 +59,15 @@ impl AuthService {
                 if !company.name.eq_ignore_ascii_case(company_name) {
                     return Err(invalid());
                 }
+                // A suspended tenant's accounts can't sign in at all — this is
+                // a deliberate access block (not a credential mismatch), so it
+                // gets its own clear message rather than the generic `invalid`
+                // response used above.
+                if company.status != "ACTIVE" {
+                    return Err(AppError::Forbidden(
+                        "This company's access has been suspended. Contact the platform administrator.".to_string(),
+                    ));
+                }
             }
         }
 

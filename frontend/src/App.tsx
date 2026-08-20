@@ -17,6 +17,7 @@ import { SecurityPage } from './pages/SecurityPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { UsersPage } from './pages/UsersPage';
 import { CompaniesPage } from './pages/CompaniesPage';
+import { CompanyDetailPage } from './pages/CompanyDetailPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -92,6 +93,7 @@ export const App: React.FC = () => {
             <Route path="/users" element={<UsersPage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />
             <Route path="/companies" element={<CompaniesPage />} />
+            <Route path="/companies/:id" element={<CompanyDetailPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
 

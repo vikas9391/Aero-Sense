@@ -17,7 +17,7 @@ export const ProfilePage: React.FC = () => {
   if (!user) return null;
 
   const rolePermissions: Record<string, string[]> = {
-    SUPER_ADMIN: ['Onboard Companies', 'Provision Company Admins', 'View Cross-Company Work Summaries'],
+    SUPER_ADMIN: ['Onboard Companies', 'Provision Company Admins', 'View Company Users & Emails', 'Suspend/Reactivate Companies', 'View Cross-Company Work Summaries'],
     COMPANY_ADMIN: ['Manage Company Users & Roles', 'View Company Work Analytics', 'Register Aircraft', 'Register Component', 'Bind NFC/RFID Tags', 'Log Maintenance Records', 'Execute NFC Verification', 'Access Security Audits'],
     MANUFACTURER: ['Register Component', 'Bind NFC/RFID Tags', 'Execute NFC Verification', 'View Fleet'],
     MAINTENANCE_TECHNICIAN: ['Log Maintenance Records', 'Execute NFC Verification', 'View Fleet & Components'],

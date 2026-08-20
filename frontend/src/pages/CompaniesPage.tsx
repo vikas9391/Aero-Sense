@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { companiesApi } from '../services/api';
 import { CompanySummary } from '../types';
 import {
@@ -12,6 +13,7 @@ import {
   Wrench,
   ScanLine,
   UserPlus,
+  ChevronRight,
   X,
 } from 'lucide-react';
 import { PasswordInput } from '../components/PasswordInput';
@@ -104,10 +106,11 @@ export const CompaniesPage: React.FC = () => {
           <span>Company Management</span>
         </h1>
         <p className="text-sm text-slate-500 mt-1">
-          Super Admin-only: onboard companies onto the platform and provision each one's
-          first admin. Every company's aircraft, components, and personnel are fully
-          isolated from every other company — you're only ever seeing aggregate counts here,
-          never operational records.
+          Super Admin-only: onboard companies onto the platform, provision each one's first
+          admin, and manage every tenant's subscription status. Select a company to see its
+          users and their emails, or suspend/reactivate its access. Aircraft, component, and
+          maintenance records stay isolated to each company — you'll never see that
+          operational data here.
         </p>
       </div>
 
@@ -171,18 +174,21 @@ export const CompaniesPage: React.FC = () => {
           ) : (
             <div className="divide-y divide-slate-200/60">
               {companies.map((c) => (
-                <div key={c.id} className="px-6 py-4 space-y-3">
+                <div key={c.id} className="px-6 py-4 space-y-3 hover:bg-slate-50/60 transition">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-sm font-semibold text-slate-900">{c.name}</div>
+                    <Link to={`/companies/${c.id}`} className="flex-1 min-w-0 group">
+                      <div className="flex items-center space-x-2">
+                        <div className="text-sm font-semibold text-slate-900 group-hover:text-indigo-600">{c.name}</div>
+                        <ChevronRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-indigo-600" />
+                      </div>
                       <div className="text-xs text-slate-500 font-mono">{c.slug}</div>
-                    </div>
+                    </Link>
                     <div className="flex items-center space-x-3">
                       <span
                         className={`rounded px-2.5 py-1 text-xs font-mono border ${
                           c.status === 'ACTIVE'
                             ? 'bg-emerald-50/40 text-emerald-600 border-emerald-200/50'
-                            : 'bg-slate-100 text-slate-500 border-slate-300'
+                            : 'bg-rose-50/50 text-rose-600 border-rose-200/50'
                         }`}
                       >
                         {c.status}
@@ -197,7 +203,7 @@ export const CompaniesPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-5 gap-2 text-xs">
+                  <Link to={`/companies/${c.id}`} className="grid grid-cols-5 gap-2 text-xs">
                     <div className="flex items-center space-x-1.5 text-slate-500">
                       <Users className="h-3.5 w-3.5 text-indigo-600" />
                       <span>{c.user_count} users</span>
@@ -218,7 +224,7 @@ export const CompaniesPage: React.FC = () => {
                       <ScanLine className="h-3.5 w-3.5 text-indigo-600" />
                       <span>{c.verification_count} scans</span>
                     </div>
-                  </div>
+                  </Link>
                 </div>
               ))}
             </div>

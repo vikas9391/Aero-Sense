@@ -4,7 +4,7 @@ use crate::{
     middleware::auth::{require_super_admin, AuthenticatedUser},
     models::{
         Company, CompanySummary, CreateCompanyAdminRequest, CreateCompanyRequest, UserResponse,
-        WorkAnalytics,
+        UpdateCompanyStatusRequest, WorkAnalytics,
     },
     services::CompanyService,
 };
@@ -71,4 +71,33 @@ pub async fn create_company_admin(
     require_super_admin(&user)?;
     let admin = CompanyService::create_company_admin(&pool, id, req).await?;
     Ok((StatusCode::CREATED, Json(admin)))
+}
+
+/// GET /api/companies/:id/users — Super Admin only. Every account belonging
+/// to this one company, including name/email/role, for the tenant-detail
+/// view. Still fully scoped to the single `:id` in the path — never a
+/// cross-company listing.
+pub async fn list_company_users(
+    State(pool): State<DbPool>,
+    user: AuthenticatedUser,
+    Path(id): Path<i64>,
+) -> Result<Json<Vec<UserResponse>>, AppError> {
+    require_super_admin(&user)?;
+    let users = CompanyService::list_company_users(&pool, id).await?;
+    Ok(Json(users))
+}
+
+/// PUT /api/companies/:id/status — Super Admin only. Subscription/access
+/// management: suspend a tenant (blocks that company's users from logging
+/// in) or reactivate it. Never touches the company's users or operational
+/// records.
+pub async fn update_company_status(
+    State(pool): State<DbPool>,
+    user: AuthenticatedUser,
+    Path(id): Path<i64>,
+    Json(req): Json<UpdateCompanyStatusRequest>,
+) -> Result<Json<Company>, AppError> {
+    require_super_admin(&user)?;
+    let company = CompanyService::update_company_status(&pool, id, &req.status).await?;
+    Ok(Json(company))
 }

@@ -8,6 +8,10 @@ use crate::{
     services::AuthService,
 };
 
+/// The only statuses a tenant can be placed into via the Super Admin's
+/// subscription-management controls.
+const VALID_COMPANY_STATUSES: [&str; 2] = ["ACTIVE", "SUSPENDED"];
+
 pub struct CompanyService;
 
 impl CompanyService {
@@ -179,6 +183,62 @@ impl CompanyService {
         }
 
         AuthService::insert_user(pool, Some(company_id), &name, &email, &req.password, UserRole::CompanyAdmin).await
+    }
+
+    /// Super Admin only: list every account belonging to one company, including
+    /// each user's email — the same rows a Company Admin would see for their
+    /// own company via `GET /api/users`, exposed here only under the Super
+    /// Admin's own tenant-management routes (never mixed into any other
+    /// company's results).
+    pub async fn list_company_users(pool: &DbPool, company_id: i64) -> Result<Vec<UserResponse>, AppError> {
+        let existing: Option<(i64,)> = sqlx::query_as("SELECT id FROM companies WHERE id = ?")
+            .bind(company_id)
+            .fetch_optional(pool)
+            .await?;
+        if existing.is_none() {
+            return Err(AppError::NotFound("Company not found".to_string()));
+        }
+
+        AuthService::list_users(pool, company_id).await
+    }
+
+    /// Super Admin only: suspend or reactivate a tenant's platform access.
+    /// This flips `companies.status` only — it never deletes or otherwise
+    /// touches the company's users, aircraft, components, or records, so
+    /// reactivating a suspended company restores it exactly as it was.
+    pub async fn update_company_status(
+        pool: &DbPool,
+        company_id: i64,
+        status: &str,
+    ) -> Result<Company, AppError> {
+        let status = status.trim().to_uppercase();
+        if !VALID_COMPANY_STATUSES.contains(&status.as_str()) {
+            return Err(AppError::ValidationError(format!(
+                "Status must be one of: {}",
+                VALID_COMPANY_STATUSES.join(", ")
+            )));
+        }
+
+        let existing: Option<(i64,)> = sqlx::query_as("SELECT id FROM companies WHERE id = ?")
+            .bind(company_id)
+            .fetch_optional(pool)
+            .await?;
+        if existing.is_none() {
+            return Err(AppError::NotFound("Company not found".to_string()));
+        }
+
+        sqlx::query("UPDATE companies SET status = ?, updated_at = datetime('now') WHERE id = ?")
+            .bind(&status)
+            .bind(company_id)
+            .execute(pool)
+            .await?;
+
+        let company: Company = sqlx::query_as("SELECT * FROM companies WHERE id = ?")
+            .bind(company_id)
+            .fetch_one(pool)
+            .await?;
+
+        Ok(company)
     }
 
     /// Detailed "overall work" breakdown for a single company. Shared by the

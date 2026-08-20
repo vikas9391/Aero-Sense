@@ -86,6 +86,14 @@ export const companiesApi = {
     const res = await api.get<WorkAnalytics>(`/companies/${id}/analytics`);
     return res.data;
   },
+  listUsers: async (id: number) => {
+    const res = await api.get<User[]>(`/companies/${id}/users`);
+    return res.data;
+  },
+  updateStatus: async (id: number, status: 'ACTIVE' | 'SUSPENDED') => {
+    const res = await api.put<Company>(`/companies/${id}/status`, { status });
+    return res.data;
+  },
 };
 
 // Company Admin: "overall work" view for their own company.

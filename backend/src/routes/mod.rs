@@ -50,6 +50,8 @@ pub fn create_router(pool: DbPool, config: Config, blockchain: BlockchainService
         .route("/api/companies/:id", get(companies::get_company))
         .route("/api/companies/:id/analytics", get(companies::get_company_analytics))
         .route("/api/companies/:id/admins", post(companies::create_company_admin))
+        .route("/api/companies/:id/users", get(companies::list_company_users))
+        .route("/api/companies/:id/status", put(companies::update_company_status))
         // Company-scoped work analytics — Company Admin only
         .route("/api/analytics/overview", get(analytics::get_overview))
         // User management routes (company admin only, scoped to their own company)

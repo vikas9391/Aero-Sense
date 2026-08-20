@@ -90,7 +90,7 @@ export const Sidebar: React.FC = () => {
         />
         <RoleFooter
           label="Super Admin"
-          description="Platform-level account. Not part of any company — no access to any company's operational data by design."
+          description="Platform-level account. Can view each company's users/emails and manage subscription status, but has no access to any company's aircraft, component, or maintenance records."
         />
       </aside>
     );

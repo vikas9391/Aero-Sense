@@ -39,6 +39,14 @@ pub struct CreateCompanyAdminRequest {
     pub password: String,
 }
 
+/// Super Admin only: change a company's subscription/access status
+/// (e.g. suspend or reactivate a tenant). Does not touch any operational
+/// data belonging to the company — only the `companies.status` flag.
+#[derive(Debug, Deserialize)]
+pub struct UpdateCompanyStatusRequest {
+    pub status: String,
+}
+
 #[derive(Debug, Serialize, FromRow)]
 pub struct MaintenanceResultCount {
     pub inspection_result: String,
