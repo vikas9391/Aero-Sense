@@ -4,17 +4,25 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 const EASE = [0.16, 1, 0.3, 1] as const;
 
 // Only sections with a real `id` in the DOM can be tracked. As of this
-// pass that's Solution, Passport, Traceability, and Security — Hero,
-// ProblemSection, and CompanyAccessSection don't have ids yet. Add an
-// id to a section and a matching entry here to bring it into the nav.
+// pass that's Solution, Digital Twin, Passport, Explorer, Traceability,
+// Blockchain History, Aircraft Health, Analytics, Security, and Final
+// CTA — Hero, ProblemSection, and CompanyAccessSection don't have ids
+// yet. Add an id to a section and a matching entry here to bring it
+// into the nav.
 //
 // `theme` controls dot/label contrast. All tracked sections now sit on
 // a light background, so every entry uses the 'light' treatment.
 const SECTIONS = [
   { id: 'solution', label: 'Solution', theme: 'light' },
+  { id: 'digital-twin', label: 'Digital Twin', theme: 'light' },
   { id: 'passport', label: 'Passport', theme: 'light' },
+  { id: 'component-explorer', label: 'Explorer', theme: 'light' },
   { id: 'traceability', label: 'Traceability', theme: 'light' },
+  { id: 'blockchain-history', label: 'History', theme: 'light' },
+  { id: 'aircraft-health', label: 'Health', theme: 'light' },
+  { id: 'analytics', label: 'Analytics', theme: 'light' },
   { id: 'security', label: 'Security', theme: 'light' },
+  { id: 'final-cta', label: 'Get Started', theme: 'light' },
 ] as const;
 
 type Theme = (typeof SECTIONS)[number]['theme'];

@@ -4,11 +4,17 @@ import { LandingNav } from '../components/landing/LandingNav';
 import { Hero } from '../components/landing/Hero';
 import { ProblemSection } from '../components/landing/ProblemSection';
 import { SolutionFeature } from '../components/landing/SolutionFeature';
+import { DigitalTwinSection } from '../components/landing/DigitalTwinSection';
 import { ComponentPassport } from '../components/landing/ComponentPassport';
 import { HowItWorks } from '../components/landing/HowItWorks';
+import { ComponentExplorer } from '../components/landing/ComponentExplorer';
 import { TraceabilityTimeline } from '../components/landing/TraceabilityTimeline';
+import { BlockchainHistory } from '../components/landing/BlockchainHistory';
+import { AircraftHealth } from '../components/landing/AircraftHealth';
+import { AnalyticsTeaser } from '../components/landing/AnalyticsTeaser';
 import { CompanyAccessSection } from '../components/landing/CompanyAccessSection';
 import { SecuritySection } from '../components/landing/SecuritySection';
+import { FinalCTA } from '../components/landing/FinalCTA';
 import { Footer } from '../components/landing/Footer';
 import { SectionProgress } from '../components/landing/SectionProgress';
 import { AircraftCursor } from '../components/ui/aircraft-cursor';
@@ -67,11 +73,17 @@ export const LandingPage: React.FC = () => {
           <main>
             <ProblemSection />
             <SolutionFeature />
+            <DigitalTwinSection />
             <ComponentPassport />
             <HowItWorks />
+            <ComponentExplorer />
             <TraceabilityTimeline />
+            <BlockchainHistory />
+            <AircraftHealth />
+            <AnalyticsTeaser />
             <CompanyAccessSection />
             <SecuritySection />
+            <FinalCTA />
           </main>
           <Footer />
         </div>
