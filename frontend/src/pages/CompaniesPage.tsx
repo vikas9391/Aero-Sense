@@ -18,6 +18,9 @@ import {
 } from 'lucide-react';
 import { PasswordInput } from '../components/PasswordInput';
 import { useToast } from '../context/ToastContext';
+import { PageHeader } from '../components/ui/PageHeader';
+import { Card, CardHeader } from '../components/ui/Card';
+import { Badge } from '../components/ui/Badge';
 
 export const CompaniesPage: React.FC = () => {
   const [companies, setCompanies] = useState<CompanySummary[]>([]);
@@ -105,102 +108,94 @@ export const CompaniesPage: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      <div className="border-b border-slate-200/80 pb-5">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center space-x-3">
-          <Building2 className="h-7 w-7 text-indigo-600" />
-          <span>Company Management</span>
-        </h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Super Admin-only: onboard companies onto the platform, provision each one's first
-          admin, and manage every tenant's subscription status. Select a company to see its
-          users and their emails, or suspend/reactivate its access. Aircraft, component, and
-          maintenance records stay isolated to each company — you'll never see that
-          operational data here.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Super Admin"
+        title={
+          <span className="flex items-center gap-3">
+            <Building2 className="h-6 w-6 text-ash" />
+            <span>Company Management</span>
+          </span>
+        }
+      />
+      <p className="text-sm text-ash -mt-4">
+        Onboard companies onto the platform, provision each one's first admin, and manage every
+        tenant's subscription status. Select a company to see its users and their emails, or
+        suspend/reactivate its access. Aircraft, component, and maintenance records stay isolated
+        to each company — you'll never see that operational data here.
+      </p>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Create company form */}
-        <div className="lg:col-span-1 glass-card rounded-2xl p-6 border border-slate-200 h-fit space-y-6">
-          <h2 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
-            <PlusCircle className="h-4 w-4 text-indigo-600" />
-            <span>Onboard New Company</span>
-          </h2>
+        <Card className="lg:col-span-1 p-6 h-fit space-y-6">
+          <CardHeader title="Onboard New Company" icon={PlusCircle} />
 
           {companyError && (
-            <div className="flex items-center space-x-3 rounded-xl bg-rose-50/50 p-3 text-xs text-rose-600 border border-rose-200/60">
-              <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
+            <div className="flex items-center space-x-3 rounded-xl bg-[var(--status-critical-soft)] p-3 text-xs text-[var(--status-critical)] border border-[#f0cbc7]">
+              <AlertCircle className="h-4 w-4 shrink-0" />
               <span>{companyError}</span>
             </div>
           )}
           {companySuccess && (
-            <div className="flex items-center space-x-3 rounded-xl bg-emerald-50/50 p-3 text-xs text-emerald-600 border border-emerald-200/60">
-              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+            <div className="flex items-center space-x-3 rounded-xl bg-[var(--status-verified-soft)] p-3 text-xs text-[var(--status-verified)] border border-[#c9e8d7]">
+              <CheckCircle2 className="h-4 w-4 shrink-0" />
               <span>{companySuccess}</span>
             </div>
           )}
 
           <form onSubmit={handleCreateCompany} className="space-y-4">
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Company Name</label>
+              <label className="aero-eyebrow">Company Name</label>
               <input
                 type="text"
                 required
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
                 placeholder="e.g. Falcon Airlines"
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none"
+                className="w-full rounded-xl border border-pebble bg-white px-4 py-2.5 text-sm text-ink placeholder-ash focus:border-ink focus:outline-none"
               />
             </div>
 
             <button
               type="submit"
               disabled={creatingCompany}
-              className="w-full rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-3 font-semibold text-white shadow-lg shadow-indigo-500/20 hover:from-indigo-500 hover:to-indigo-600 disabled:opacity-50 text-sm"
+              className="pill-btn pill-btn-primary w-full text-sm disabled:opacity-50"
             >
               {creatingCompany ? 'Creating...' : 'Create Company'}
             </button>
           </form>
-        </div>
+        </Card>
 
         {/* Company list */}
-        <div className="lg:col-span-2 glass-card rounded-2xl border border-slate-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-200/80 flex items-center space-x-2">
-            <Building2 className="h-4 w-4 text-indigo-600" />
-            <h2 className="text-sm font-bold text-slate-900">All Companies</h2>
+        <Card className="lg:col-span-2 !p-0 overflow-hidden">
+          <div className="px-6 py-4 border-b border-pebble">
+            <CardHeader title="All Companies" icon={Building2} className="mb-0" />
           </div>
 
           {loading ? (
-            <div className="py-12 text-center text-slate-500 text-sm">Loading companies...</div>
+            <div className="py-12 text-center text-ash text-sm">Loading companies...</div>
           ) : companies.length === 0 ? (
-            <div className="py-12 text-center text-slate-500 text-sm">
+            <div className="py-12 text-center text-ash text-sm">
               No companies yet — create the first one to get started.
             </div>
           ) : (
-            <div className="divide-y divide-slate-200/60">
+            <div className="divide-y divide-pebble">
               {companies.map((c) => (
-                <div key={c.id} className="px-6 py-4 space-y-3 hover:bg-slate-50/60 transition">
+                <div key={c.id} className="px-6 py-4 space-y-3 hover:bg-[var(--bg-app)] transition">
                   <div className="flex items-center justify-between">
                     <Link to={`/companies/${c.id}`} className="flex-1 min-w-0 group">
                       <div className="flex items-center space-x-2">
-                        <div className="text-sm font-semibold text-slate-900 group-hover:text-indigo-600">{c.name}</div>
-                        <ChevronRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-indigo-600" />
+                        <div className="text-sm font-semibold text-ink group-hover:underline">{c.name}</div>
+                        <ChevronRight className="h-3.5 w-3.5 text-ash" />
                       </div>
-                      <div className="text-xs text-slate-500 font-mono">{c.slug}</div>
+                      <div className="text-xs text-ash aero-mono">{c.slug}</div>
                     </Link>
                     <div className="flex items-center space-x-3">
-                      <span
-                        className={`rounded px-2.5 py-1 text-xs font-mono border ${
-                          c.status === 'ACTIVE'
-                            ? 'bg-emerald-50/40 text-emerald-600 border-emerald-200/50'
-                            : 'bg-rose-50/50 text-rose-600 border-rose-200/50'
-                        }`}
-                      >
+                      <Badge tone={c.status === 'ACTIVE' ? 'verified' : 'critical'} mono>
                         {c.status}
-                      </span>
+                      </Badge>
                       <button
                         onClick={() => openAdminModal(c)}
-                        className="flex items-center space-x-1.5 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-indigo-600 border border-slate-300 hover:bg-slate-200"
+                        className="flex items-center space-x-1.5 rounded-lg border border-pebble px-3 py-1.5 text-xs font-semibold text-ink hover:bg-[var(--bg-app)]"
                       >
                         <UserPlus className="h-3.5 w-3.5" />
                         <span>Add Admin</span>
@@ -209,24 +204,24 @@ export const CompaniesPage: React.FC = () => {
                   </div>
 
                   <Link to={`/companies/${c.id}`} className="grid grid-cols-5 gap-2 text-xs">
-                    <div className="flex items-center space-x-1.5 text-slate-500">
-                      <Users className="h-3.5 w-3.5 text-indigo-600" />
+                    <div className="flex items-center space-x-1.5 text-ash">
+                      <Users className="h-3.5 w-3.5" />
                       <span>{c.user_count} users</span>
                     </div>
-                    <div className="flex items-center space-x-1.5 text-slate-500">
-                      <Plane className="h-3.5 w-3.5 text-indigo-600" />
+                    <div className="flex items-center space-x-1.5 text-ash">
+                      <Plane className="h-3.5 w-3.5" />
                       <span>{c.aircraft_count} aircraft</span>
                     </div>
-                    <div className="flex items-center space-x-1.5 text-slate-500">
-                      <Cpu className="h-3.5 w-3.5 text-indigo-600" />
+                    <div className="flex items-center space-x-1.5 text-ash">
+                      <Cpu className="h-3.5 w-3.5" />
                       <span>{c.component_count} components</span>
                     </div>
-                    <div className="flex items-center space-x-1.5 text-slate-500">
-                      <Wrench className="h-3.5 w-3.5 text-indigo-600" />
+                    <div className="flex items-center space-x-1.5 text-ash">
+                      <Wrench className="h-3.5 w-3.5" />
                       <span>{c.maintenance_count} records</span>
                     </div>
-                    <div className="flex items-center space-x-1.5 text-slate-500">
-                      <ScanLine className="h-3.5 w-3.5 text-indigo-600" />
+                    <div className="flex items-center space-x-1.5 text-ash">
+                      <ScanLine className="h-3.5 w-3.5" />
                       <span>{c.verification_count} scans</span>
                     </div>
                   </Link>
@@ -234,61 +229,61 @@ export const CompaniesPage: React.FC = () => {
               ))}
             </div>
           )}
-        </div>
+        </Card>
       </div>
 
       {/* Add Admin Modal */}
       {adminModalCompany && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-md glass-card rounded-2xl border border-slate-200 p-6 space-y-5">
+          <Card className="w-full max-w-md p-6 space-y-5">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-900">
+              <h3 className="text-sm font-semibold text-ink">
                 Add Admin — {adminModalCompany.name}
               </h3>
               <button
                 onClick={() => setAdminModalCompany(null)}
-                className="text-slate-500 hover:text-slate-700"
+                className="text-ash hover:text-ink"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             {adminError && (
-              <div className="flex items-center space-x-3 rounded-xl bg-rose-50/50 p-3 text-xs text-rose-600 border border-rose-200/60">
-                <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
+              <div className="flex items-center space-x-3 rounded-xl bg-[var(--status-critical-soft)] p-3 text-xs text-[var(--status-critical)] border border-[#f0cbc7]">
+                <AlertCircle className="h-4 w-4 shrink-0" />
                 <span>{adminError}</span>
               </div>
             )}
             {adminSuccess && (
-              <div className="flex items-center space-x-3 rounded-xl bg-emerald-50/50 p-3 text-xs text-emerald-600 border border-emerald-200/60">
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+              <div className="flex items-center space-x-3 rounded-xl bg-[var(--status-verified-soft)] p-3 text-xs text-[var(--status-verified)] border border-[#c9e8d7]">
+                <CheckCircle2 className="h-4 w-4 shrink-0" />
                 <span>{adminSuccess}</span>
               </div>
             )}
 
             <form onSubmit={handleCreateAdmin} className="space-y-4">
               <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Full Name</label>
+                <label className="aero-eyebrow">Full Name</label>
                 <input
                   type="text"
                   required
                   value={adminName}
                   onChange={(e) => setAdminName(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-xl border border-pebble bg-white px-4 py-2.5 text-sm text-ink focus:border-ink focus:outline-none"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Email</label>
+                <label className="aero-eyebrow">Email</label>
                 <input
                   type="email"
                   required
                   value={adminEmail}
                   onChange={(e) => setAdminEmail(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-xl border border-pebble bg-white px-4 py-2.5 text-sm text-ink focus:border-ink focus:outline-none"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Password</label>
+                <label className="aero-eyebrow">Password</label>
                 <PasswordInput
                   value={adminPassword}
                   onChange={setAdminPassword}
@@ -301,12 +296,12 @@ export const CompaniesPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={creatingAdmin}
-                className="w-full rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-3 font-semibold text-white shadow-lg shadow-indigo-500/20 hover:from-indigo-500 hover:to-indigo-600 disabled:opacity-50 text-sm"
+                className="pill-btn pill-btn-primary w-full text-sm disabled:opacity-50"
               >
                 {creatingAdmin ? 'Creating...' : 'Create Admin'}
               </button>
             </form>
-          </div>
+          </Card>
         </div>
       )}
     </div>

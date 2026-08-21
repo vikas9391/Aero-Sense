@@ -23,7 +23,7 @@ const THEME_CLASSES: Record<Theme, { label: string; dotIdle: string; dotHover: s
   light: {
     label: 'text-ink/60',
     dotIdle: 'border-ink/30 bg-transparent',
-    dotHover: 'group-hover:border-indigo-500',
+    dotHover: 'group-hover:border-ink/60',
   },
 };
 
@@ -112,8 +112,8 @@ export const SectionProgress: React.FC = () => {
                     className="group relative flex h-6 w-6 items-center justify-center focus-visible:outline-none"
                   >
                     <span
-                      className={`h-1.5 w-1.5 rounded-full border transition-all duration-300 focus-visible:ring-2 focus-visible:ring-indigo-500/40 focus-visible:ring-offset-2 ${theme.dotHover} ${
-                        isActive ? 'scale-125 border-indigo-600 bg-indigo-600' : theme.dotIdle
+                      className={`h-1.5 w-1.5 rounded-full border transition-all duration-300 focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 ${theme.dotHover} ${
+                        isActive ? 'scale-125 border-ink bg-ink' : theme.dotIdle
                       }`}
                     />
                   </button>

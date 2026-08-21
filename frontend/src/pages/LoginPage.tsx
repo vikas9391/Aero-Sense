@@ -2,8 +2,12 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, Mail, Building2, ArrowRight, AlertCircle } from 'lucide-react';
+import { Card } from '../components/ui/Card';
 import { PasswordInput } from '../components/PasswordInput';
-import showcaseImage from '../assets/aero-sense-showcase.png';
+// WebP instead of the original PNG — same 1616x973 source image at
+// visually-identical quality, ~13x smaller (122 KB vs 1.6 MB). The PNG
+// stays in assets/ as the source file if it's ever needed again.
+import showcaseImage from '../assets/aero-sense-showcase.webp';
 
 export const LoginPage: React.FC = () => {
   const [companyName, setCompanyName] = useState('');
@@ -37,16 +41,16 @@ export const LoginPage: React.FC = () => {
   const form = (
     <form onSubmit={handleSubmit} className="space-y-5">
       {error && (
-        <div className="flex items-center space-x-3 rounded-xl bg-rose-50/80 p-4 text-sm text-rose-600 border border-rose-200/60">
-          <AlertCircle className="h-5 w-5 shrink-0 text-rose-600" />
+        <div className="flex items-center space-x-3 rounded-xl bg-[var(--status-critical-soft)] p-4 text-sm text-[var(--status-critical)] border border-[#f0cbc7]">
+          <AlertCircle className="h-5 w-5 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       <div className="space-y-2">
-        <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Company Name</label>
+        <label className="aero-eyebrow">Company Name</label>
         <div className="relative">
-          <Building2 className="absolute left-3.5 top-3 h-5 w-5 text-slate-500" />
+          <Building2 className="absolute left-3.5 top-3 h-5 w-5 text-ash" />
           <input
             type="text"
             required
@@ -54,18 +58,18 @@ export const LoginPage: React.FC = () => {
             value={companyName}
             onChange={(e) => setCompanyName(e.target.value)}
             placeholder="Your Company Name"
-            className="w-full rounded-xl border border-slate-200 bg-white/90 pl-11 pr-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full rounded-xl border border-pebble bg-white/90 pl-11 pr-4 py-2.5 text-sm text-ink placeholder-ash focus:border-ink focus:outline-none"
           />
         </div>
-        <p className="text-[11px] text-slate-500">
+        <p className="text-[11px] text-ash">
           Platform administrators sign in with company name "Super Admin".
         </p>
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Email Address</label>
+        <label className="aero-eyebrow">Email Address</label>
         <div className="relative">
-          <Mail className="absolute left-3.5 top-3 h-5 w-5 text-slate-500" />
+          <Mail className="absolute left-3.5 top-3 h-5 w-5 text-ash" />
           <input
             type="email"
             required
@@ -73,13 +77,13 @@ export const LoginPage: React.FC = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@company.com"
-            className="w-full rounded-xl border border-slate-200 bg-white/90 pl-11 pr-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full rounded-xl border border-pebble bg-white/90 pl-11 pr-4 py-2.5 text-sm text-ink placeholder-ash focus:border-ink focus:outline-none"
           />
         </div>
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Password</label>
+        <label className="aero-eyebrow">Password</label>
         <PasswordInput
           value={password}
           onChange={setPassword}
@@ -94,7 +98,7 @@ export const LoginPage: React.FC = () => {
       <button
         type="submit"
         disabled={submitting}
-        className="w-full flex items-center justify-center space-x-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 px-4 py-3 font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:from-indigo-500 hover:to-indigo-600 disabled:opacity-50"
+        className="pill-btn pill-btn-primary w-full text-sm disabled:opacity-50"
       >
         <span>{submitting ? 'Authenticating...' : 'Sign In to Platform'}</span>
         <ArrowRight className="h-4 w-4" />
@@ -106,17 +110,17 @@ export const LoginPage: React.FC = () => {
   // form on mobile.
   const brand = (
     <div className="text-center space-y-2">
-      <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-700 shadow-lg shadow-indigo-500/25">
+      <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-ink">
         <ShieldCheck className="h-8 w-8 text-white" />
       </div>
-      <h1 className="text-xl font-extrabold tracking-tight text-slate-900">AERO-SENSE</h1>
-      <p className="text-xs text-slate-500">Aircraft Component Intelligence</p>
-      <div className="!mt-4 h-px w-full bg-slate-200" />
+      <h1 className="font-display text-xl font-semibold tracking-tight text-ink">AERO-SENSE</h1>
+      <p className="text-xs text-ash">Aircraft Component Intelligence</p>
+      <div className="!mt-4 h-px w-full bg-pebble" />
     </div>
   );
 
   return (
-    <div className="min-h-screen w-full bg-[#0b1023] text-slate-900">
+    <div className="min-h-screen w-full bg-ink text-ink">
       {/* ---- Desktop / tablet-landscape: full-bleed showcase image, form
            dropped into the white card baked into the artwork. The frame
            keeps the image's own 1616:973 aspect ratio but is scaled up to
@@ -160,12 +164,10 @@ export const LoginPage: React.FC = () => {
       {/* ---- Mobile / narrow viewports: the wide showcase image doesn't
            crop sensibly into a portrait frame, so fall back to a plain
            white card with the same branding instead. ---- */}
-      <div className="lg:hidden flex min-h-screen items-center justify-center p-6 bg-[#dde4ee]">
+      <div className="lg:hidden flex min-h-screen items-center justify-center p-6 bg-[var(--bg-app)]">
         <div className="w-full max-w-md space-y-6">
           {brand}
-          <div className="glass-card rounded-2xl p-8 shadow-2xl border border-slate-200/80 bg-white">
-            {form}
-          </div>
+          <Card className="p-8">{form}</Card>
         </div>
       </div>
     </div>

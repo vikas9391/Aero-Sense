@@ -66,7 +66,7 @@ export const TraceabilityTimeline: React.FC = () => {
               <span className="font-body text-xs text-ash">0{i + 1}</span>
               <span
                 className={`h-2 w-2 shrink-0 rounded-full border border-pebble transition-colors duration-300 ${
-                  activeIndex === i ? 'bg-indigo-600 border-indigo-600' : 'bg-transparent'
+                  activeIndex === i ? 'bg-ink border-ink' : 'bg-transparent'
                 }`}
               />
               <span className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">

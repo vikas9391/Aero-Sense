@@ -125,7 +125,7 @@ export const ComponentPassport: React.FC = () => {
             <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
               {LIFECYCLE.map((stage) => (
                 <div key={stage} className="flex items-center gap-2 font-body text-sm text-ink/75">
-                  <span className="h-1.5 w-1.5 rounded-full bg-indigo-600" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-clay)]" />
                   {stage}
                 </div>
               ))}
@@ -144,7 +144,7 @@ export const ComponentPassport: React.FC = () => {
                 type="button"
                 onClick={handleVerify}
                 disabled={verifyState !== 'idle'}
-                className="inline-flex items-center gap-2 border border-pebble px-4 py-2 font-body text-sm text-ink/90 transition-colors duration-300 hover:border-ink/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-default"
+                className="inline-flex items-center gap-2 border border-pebble px-4 py-2 font-body text-sm text-ink/90 transition-colors duration-300 hover:border-ink/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-default"
               >
                 {verifyState === 'idle' && 'Simulate Verification'}
                 {verifyState === 'verifying' && 'Verifying…'}
