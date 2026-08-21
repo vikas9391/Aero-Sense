@@ -2,9 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { componentsApi } from '../services/api';
 import { Component } from '../types';
 import { Link } from 'react-router-dom';
-import { Cpu, Plus, Search, ShieldCheck, ArrowRight, Plane, Tag } from 'lucide-react';
+import { Plus, Search, ShieldCheck, ArrowRight, Plane, Tag } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { PageHeader } from '../components/ui/PageHeader';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
 
 export const ComponentsPage: React.FC = () => {
   const [components, setComponents] = useState<Component[]>([]);
@@ -36,88 +39,82 @@ export const ComponentsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200/80 pb-5">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center space-x-3">
-            <Cpu className="h-7 w-7 text-indigo-600" />
-            <span>Aircraft Component Catalog</span>
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Registered physical components with digital NFC cryptographic identity mapping.
-          </p>
-        </div>
+      <PageHeader
+        eyebrow="Component Registry"
+        title="Aircraft Component Catalog"
+        action={
+          canRegister ? (
+            <div className="flex items-center gap-3">
+              <Link
+                to="/nfc/register"
+                className="inline-flex items-center gap-2 rounded-xl border border-pebble bg-white px-4 py-2.5 text-sm font-semibold text-ink hover:bg-[#f7f7f5] transition"
+              >
+                <Tag className="h-4 w-4" />
+                <span>Bind NFC / RFID Tag</span>
+              </Link>
+              <Button to="/components/register">
+                <Plus className="h-4 w-4" />
+                <span>Register Component</span>
+              </Button>
+            </div>
+          ) : undefined
+        }
+      />
+      <p className="-mt-4 text-sm text-ash">
+        Registered physical components with digital NFC cryptographic identity mapping.
+      </p>
 
-        {canRegister && (
-          <div className="flex items-center gap-3">
-            <Link
-              to="/nfc/register"
-              className="inline-flex items-center space-x-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 font-semibold text-slate-700 hover:bg-slate-50 transition"
-            >
-              <Tag className="h-4 w-4" />
-              <span>Bind NFC / RFID Tag</span>
-            </Link>
-            <Link
-              to="/components/register"
-              className="inline-flex items-center space-x-2 rounded-xl bg-indigo-600 px-4 py-2.5 font-semibold text-white shadow-lg shadow-indigo-500/20 hover:bg-indigo-500 transition"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Register Component</span>
-            </Link>
-          </div>
-        )}
-      </div>
-
-      {/* Search Filter Bar */}
+      {/* Search filter bar */}
       <div className="relative max-w-md">
-        <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-500" />
+        <Search className="absolute left-3.5 top-3 h-4 w-4 text-ash" />
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by Component ID, Serial #, Type, or Manufacturer..."
-          className="w-full rounded-xl border border-slate-200 bg-white/90 pl-10 pr-4 py-2 text-xs text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none"
+          className="w-full rounded-xl border border-pebble bg-white pl-10 pr-4 py-2 text-xs text-ink placeholder-ash focus:border-ink focus:outline-none"
         />
       </div>
 
       {loading ? (
-        <div className="py-12 text-center text-slate-500">Loading catalog...</div>
+        <div className="py-12 text-center text-ash text-sm">Loading catalog...</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((c) => (
-            <div key={c.id} className="glass-card rounded-2xl p-6 flex flex-col justify-between space-y-4">
+            <Card key={c.id} className="p-6 flex flex-col justify-between gap-4">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-extrabold text-base text-indigo-600">{c.component_uuid}</span>
-                  <span className="rounded bg-slate-100 px-2.5 py-1 text-xs font-mono text-slate-700 border border-slate-300">
+                  <span className="font-semibold text-base text-ink aero-mono">{c.component_uuid}</span>
+                  <span className="rounded border border-pebble bg-[#f7f7f5] px-2.5 py-1 text-xs font-semibold text-ink aero-mono">
                     SN: {c.serial_number}
                   </span>
                 </div>
 
                 <div>
-                  <h3 className="font-bold text-slate-900 text-sm">{c.component_type}</h3>
-                  <div className="text-xs text-slate-500 mt-0.5">{c.manufacturer}</div>
+                  <h3 className="font-semibold text-ink text-sm">{c.component_type}</h3>
+                  <div className="text-xs text-ash mt-0.5">{c.manufacturer}</div>
                 </div>
 
-                <div className="flex items-center space-x-2 text-xs text-slate-500 pt-2 border-t border-slate-200/60">
-                  <Plane className="h-3.5 w-3.5 text-slate-500" />
-                  <span>Aircraft: <strong className="text-slate-800">{c.aircraft_registration || 'Unassigned'}</strong></span>
+                <div className="flex items-center gap-2 text-xs text-ash pt-2 border-t border-pebble">
+                  <Plane className="h-3.5 w-3.5 text-ash" />
+                  <span>Aircraft: <strong className="text-ink">{c.aircraft_registration || 'Unassigned'}</strong></span>
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-200/80 flex items-center justify-between">
-                <span className="text-emerald-600 text-xs font-semibold flex items-center space-x-1">
+              <div className="pt-4 border-t border-pebble flex items-center justify-between">
+                <span className="text-[#0a7a4c] text-xs font-semibold flex items-center gap-1">
                   <ShieldCheck className="h-3.5 w-3.5" />
                   <span>{c.status}</span>
                 </span>
                 <Link
                   to={`/components/${c.id}`}
-                  className="flex items-center space-x-1 text-xs font-semibold text-indigo-600 hover:text-indigo-500"
+                  className="flex items-center gap-1 text-xs font-semibold text-ink hover:text-ash"
                 >
                   <span>Component Details</span>
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       )}

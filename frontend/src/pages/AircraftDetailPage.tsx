@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { aircraftApi } from '../services/api';
 import { AircraftWithComponents } from '../types';
 import { useToast } from '../context/ToastContext';
+import { Card, CardHeader } from '../components/ui/Card';
+import { Badge } from '../components/ui/Badge';
 import { Plane, Cpu, ArrowLeft, ShieldCheck, Plus } from 'lucide-react';
 
 export const AircraftDetailPage: React.FC = () => {
@@ -24,65 +26,60 @@ export const AircraftDetailPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  if (loading) return <div className="py-12 text-center text-slate-500">Loading aircraft details...</div>;
-  if (!data) return <div className="py-12 text-center text-rose-600">Aircraft not found.</div>;
+  if (loading) return <div className="py-12 text-center text-ash text-sm">Loading aircraft details...</div>;
+  if (!data) return <div className="py-12 text-center text-[#b13a2f] text-sm">Aircraft not found.</div>;
 
   return (
     <div className="space-y-6">
-      <Link to="/aircraft" className="inline-flex items-center space-x-2 text-xs font-semibold text-indigo-600 hover:text-indigo-500">
+      <Link to="/aircraft" className="inline-flex items-center gap-2 text-xs font-semibold text-ink hover:text-ash">
         <ArrowLeft className="h-4 w-4" />
         <span>Back to Fleet List</span>
       </Link>
 
-      {/* Main Aircraft Header Banner */}
-      <div className="glass-card rounded-2xl p-6 relative overflow-hidden border-indigo-200/30">
+      {/* Main aircraft header banner */}
+      <Card className="p-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="flex items-center space-x-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600/10 border border-indigo-500/30 text-indigo-600 shadow-lg shadow-indigo-500/10">
-              <Plane className="h-8 w-8" />
+          <div className="flex items-center gap-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-ink text-white">
+              <Plane className="h-7 w-7" />
             </div>
             <div>
-              <div className="flex items-center space-x-3">
-                <h1 className="text-2xl font-extrabold text-slate-900">{data.registration_number}</h1>
-                <span className="rounded-full bg-emerald-50/60 px-3 py-0.5 text-xs font-bold text-emerald-600 border border-emerald-200/40">
-                  {data.status}
-                </span>
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl font-semibold text-ink aero-mono">{data.registration_number}</h1>
+                <Badge tone="verified">{data.status}</Badge>
               </div>
-              <p className="text-sm text-slate-500 mt-1">{data.model} • Manufactured by {data.manufacturer}</p>
+              <p className="text-sm text-ash mt-1">{data.model} • Manufactured by {data.manufacturer}</p>
             </div>
           </div>
 
-          <div className="flex items-center space-x-6 text-xs text-slate-500 border-t md:border-t-0 md:border-l border-slate-200 pt-4 md:pt-0 md:pl-6">
+          <div className="flex items-center gap-6 border-t md:border-t-0 md:border-l border-pebble pt-4 md:pt-0 md:pl-6">
             <div>
-              <div className="text-slate-500 font-medium">Aircraft UUID</div>
-              <div className="font-mono text-slate-800 font-bold">{data.aircraft_uuid}</div>
+              <div className="aero-eyebrow text-[10px]">Aircraft UUID</div>
+              <div className="aero-mono text-ink font-semibold text-sm">{data.aircraft_uuid}</div>
             </div>
             <div>
-              <div className="text-slate-500 font-medium">Attached Components</div>
-              <div className="text-slate-800 font-bold text-base">{data.components.length} Items</div>
+              <div className="aero-eyebrow text-[10px]">Attached Components</div>
+              <div className="text-ink font-semibold text-base">{data.components.length} Items</div>
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
-      {/* Attached Components List */}
-      <div className="glass-card rounded-2xl p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-bold text-slate-900 flex items-center space-x-2">
-            <Cpu className="h-5 w-5 text-indigo-600" />
-            <span>Bound Aircraft Components</span>
-          </h2>
-          <Link
-            to="/components/register"
-            className="flex items-center space-x-1 text-xs font-semibold text-indigo-600 hover:text-indigo-500"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            <span>Add New Component</span>
-          </Link>
-        </div>
+      {/* Attached components list */}
+      <Card className="p-6">
+        <CardHeader
+          title="Bound Aircraft Components"
+          icon={Cpu}
+          action={
+            <Link to="/components/register" className="flex items-center gap-1 text-xs font-semibold text-ink hover:text-ash">
+              <Plus className="h-3.5 w-3.5" />
+              <span>Add New Component</span>
+            </Link>
+          }
+        />
 
         {data.components.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-200 p-8 text-center text-xs text-slate-500">
+          <div className="rounded-xl border border-dashed border-pebble p-8 text-center text-xs text-ash">
             No components currently assigned to this aircraft registration.
           </div>
         ) : (
@@ -91,18 +88,18 @@ export const AircraftDetailPage: React.FC = () => {
               <Link
                 key={c.id}
                 to={`/components/${c.id}`}
-                className="p-4 rounded-xl border border-slate-200 bg-white/60 hover:bg-slate-100/60 transition block space-y-2"
+                className="p-4 rounded-xl border border-pebble bg-white hover:bg-[#f7f7f5] transition block space-y-2"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-sm text-indigo-600">{c.component_uuid}</span>
-                  <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-mono text-slate-700">
+                  <span className="font-semibold text-sm text-ink aero-mono">{c.component_uuid}</span>
+                  <span className="rounded border border-pebble bg-[#f7f7f5] px-2 py-0.5 text-[10px] font-semibold text-ink aero-mono">
                     SN: {c.serial_number}
                   </span>
                 </div>
-                <div className="font-semibold text-slate-800 text-sm">{c.component_type}</div>
-                <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
+                <div className="font-semibold text-ink text-sm">{c.component_type}</div>
+                <div className="flex items-center justify-between text-xs text-ash pt-1">
                   <span>{c.manufacturer}</span>
-                  <span className="text-emerald-600 font-medium flex items-center space-x-1">
+                  <span className="text-[#0a7a4c] font-medium flex items-center gap-1">
                     <ShieldCheck className="h-3.5 w-3.5" />
                     <span>{c.status}</span>
                   </span>
@@ -111,7 +108,7 @@ export const AircraftDetailPage: React.FC = () => {
             ))}
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 };

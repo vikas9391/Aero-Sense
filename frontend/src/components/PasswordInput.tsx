@@ -38,7 +38,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
 
   return (
     <div className="relative">
-      {leadingIcon && <Lock className="absolute left-3.5 top-3 h-5 w-5 text-slate-500 pointer-events-none" />}
+      {leadingIcon && <Lock className="absolute left-3.5 top-3 h-5 w-5 text-ash pointer-events-none" />}
       <input
         id={id}
         type={visible ? 'text' : 'password'}
@@ -48,10 +48,10 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className={`w-full rounded-xl border border-slate-200 ${translucent ? 'bg-white/90' : 'bg-white'} py-2.5 ${
+        className={`w-full rounded-xl border border-pebble ${translucent ? 'bg-white/90' : 'bg-white'} py-2.5 ${
           leadingIcon ? 'pl-11' : 'pl-4'
-        } pr-11 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 ${
-          mono ? 'font-mono' : ''
+        } pr-11 text-sm text-ink placeholder-ash focus:border-ink focus:outline-none ${
+          mono ? 'aero-mono' : ''
         }`}
       />
       <button
@@ -59,7 +59,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
         tabIndex={-1}
         onClick={() => setVisible((v) => !v)}
         aria-label={visible ? 'Hide password' : 'Show password'}
-        className="absolute right-3 top-2.5 text-slate-400 transition hover:text-slate-600"
+        className="absolute right-3 top-2.5 text-ash transition hover:text-ink"
       >
         {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
       </button>

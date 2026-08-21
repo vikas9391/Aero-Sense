@@ -3,7 +3,9 @@ import { componentsApi, tagsApi } from '../services/api';
 import { Component } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
-import { Tag, ScanLine, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { ScanLine, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { PageHeader } from '../components/ui/PageHeader';
+import { Card } from '../components/ui/Card';
 
 export const RegisterTagPage: React.FC = () => {
   const [components, setComponents] = useState<Component[]>([]);
@@ -63,35 +65,30 @@ export const RegisterTagPage: React.FC = () => {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <div className="border-b border-slate-200/80 pb-5">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center space-x-3">
-          <Tag className="h-7 w-7 text-indigo-600" />
-          <span>Register & Bind NFC / RFID Tag</span>
-        </h1>
-      </div>
+      <PageHeader eyebrow="Identity Binding" title="Register & Bind NFC / RFID Tag" />
 
-      <div className="glass-card rounded-2xl p-8 border border-slate-200 space-y-6">
+      <Card className="p-8 space-y-6">
         {error && (
-          <div className="flex items-center space-x-3 rounded-xl bg-rose-50/50 p-4 text-sm text-rose-600 border border-rose-200/60">
-            <AlertCircle className="h-5 w-5 shrink-0 text-rose-600" />
+          <div className="flex items-center gap-3 rounded-xl bg-[#fbeceb]/60 p-4 text-sm text-[#b13a2f] border border-[#f0cbc7]">
+            <AlertCircle className="h-5 w-5 shrink-0" />
             <span>{error}</span>
           </div>
         )}
         {success && (
-          <div className="flex items-center space-x-3 rounded-xl bg-emerald-50/50 p-4 text-sm text-emerald-600 border border-emerald-200/60">
-            <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
+          <div className="flex items-center gap-3 rounded-xl bg-[#e9f6ef]/60 p-4 text-sm text-[#0a7a4c] border border-[#c9e8d7]">
+            <CheckCircle2 className="h-5 w-5 shrink-0" />
             <span>{success}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Target Aircraft Component</label>
+            <label className="aero-eyebrow text-[10px]">Target Aircraft Component</label>
             <select
               required
               value={componentId}
               onChange={(e) => setComponentId(e.target.value === '' ? '' : Number(e.target.value))}
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-xl border border-pebble bg-white px-4 py-2.5 text-sm text-ink focus:border-ink focus:outline-none"
             >
               <option value="">-- Select Target Component --</option>
               {components.map((c) => (
@@ -104,11 +101,11 @@ export const RegisterTagPage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Hardware Technology</label>
+              <label className="aero-eyebrow text-[10px]">Hardware Technology</label>
               <select
                 value={technology}
                 onChange={(e) => setTechnology(e.target.value as 'NFC' | 'UHF_RFID')}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none"
+                className="w-full rounded-xl border border-pebble bg-white px-4 py-2.5 text-sm text-ink focus:border-ink focus:outline-none"
               >
                 <option value="NFC">Secure NFC (13.56 MHz HF)</option>
                 <option value="UHF_RFID">UHF RFID (860-960 MHz RAIN)</option>
@@ -116,11 +113,11 @@ export const RegisterTagPage: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Security Type</label>
+              <label className="aero-eyebrow text-[10px]">Security Type</label>
               <select
                 value={securityType}
                 onChange={(e) => setSecurityType(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none"
+                className="w-full rounded-xl border border-pebble bg-white px-4 py-2.5 text-sm text-ink focus:border-ink focus:outline-none"
               >
                 <option value="MOCK">Mock Hardware</option>
                 <option value="BASIC_UID">Basic Factory UID</option>
@@ -129,17 +126,17 @@ export const RegisterTagPage: React.FC = () => {
             </div>
           </div>
 
-          {/* NFC Tap Simulation Action */}
-          <div className="p-5 rounded-xl border border-indigo-200/40 bg-indigo-50/20 space-y-4">
-            <div className="flex items-center justify-between">
+          {/* NFC tap simulation action */}
+          <div className="p-5 rounded-xl border border-pebble bg-[#f7f7f5] space-y-4">
+            <div className="flex items-center justify-between flex-wrap gap-3">
               <div>
-                <div className="font-bold text-sm text-slate-800">Simulate Physical Tag Scan / Tap</div>
-                <div className="text-xs text-slate-500">Reads physical hardware UID or simulates tap event.</div>
+                <div className="font-semibold text-sm text-ink">Simulate Physical Tag Scan / Tap</div>
+                <div className="text-xs text-ash">Reads physical hardware UID or simulates tap event.</div>
               </div>
               <button
                 type="button"
                 onClick={simulateTap}
-                className="flex items-center space-x-2 rounded-xl bg-indigo-600/20 border border-indigo-500/40 px-3.5 py-2 text-xs font-bold text-indigo-600 hover:bg-indigo-600/30 transition"
+                className="flex items-center gap-2 rounded-xl border border-pebble bg-white px-3.5 py-2 text-xs font-semibold text-ink hover:bg-[#f1f1ef] transition"
               >
                 <ScanLine className="h-4 w-4" />
                 <span>TAP NFC TAG</span>
@@ -147,28 +144,28 @@ export const RegisterTagPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="text-xs font-semibold uppercase text-slate-500">Captured Tag Identifier / UID</label>
+              <label className="aero-eyebrow text-[10px]">Captured Tag Identifier / UID</label>
               <input
                 type="text"
                 required
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                className="w-full mt-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-indigo-600 font-mono font-bold focus:border-indigo-500 focus:outline-none"
+                className="w-full mt-1 rounded-xl border border-pebble bg-white px-4 py-2.5 text-sm text-ink aero-mono font-semibold focus:border-ink focus:outline-none"
               />
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-200 flex justify-end">
+          <div className="pt-4 border-t border-pebble flex justify-end">
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-3 font-semibold text-white shadow-lg shadow-indigo-500/20 hover:from-indigo-500 hover:to-indigo-600 disabled:opacity-50 text-sm"
+              className="pill-btn pill-btn-primary text-sm disabled:opacity-50"
             >
               {submitting ? 'Binding...' : 'Register & Bind Tag'}
             </button>
           </div>
         </form>
-      </div>
+      </Card>
     </div>
   );
 };

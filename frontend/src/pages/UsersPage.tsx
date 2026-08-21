@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { usersApi } from '../services/api';
 import { User, UserRole } from '../types';
-import { Users as UsersIcon, UserPlus, AlertCircle, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { UserPlus, AlertCircle, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { PasswordInput } from '../components/PasswordInput';
 import { useToast } from '../context/ToastContext';
+import { PageHeader } from '../components/ui/PageHeader';
+import { Card, CardHeader } from '../components/ui/Card';
 
 // Company Admins can create any role within their own company except
 // SUPER_ADMIN and COMPANY_ADMIN's platform-level counterpart — the backend
@@ -62,61 +64,53 @@ export const UsersPage: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      <div className="border-b border-slate-200/80 pb-5">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center space-x-3">
-          <UsersIcon className="h-7 w-7 text-indigo-600" />
-          <span>User Management</span>
-        </h1>
-      </div>
+      <PageHeader eyebrow="Team & Access" title="User Management" />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Create user form */}
-        <div className="lg:col-span-1 glass-card rounded-2xl p-6 border border-slate-200 h-fit space-y-6">
-          <h2 className="text-sm font-bold text-slate-900 flex items-center space-x-2">
-            <UserPlus className="h-4 w-4 text-indigo-600" />
-            <span>Add New User</span>
-          </h2>
+        <Card className="lg:col-span-1 p-6 h-fit space-y-6">
+          <CardHeader title="Add New User" icon={UserPlus} />
 
           {error && (
-            <div className="flex items-center space-x-3 rounded-xl bg-rose-50/50 p-3 text-xs text-rose-600 border border-rose-200/60">
-              <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
+            <div className="flex items-center gap-3 rounded-xl bg-[#fbeceb]/60 p-3 text-xs text-[#b13a2f] border border-[#f0cbc7]">
+              <AlertCircle className="h-4 w-4 shrink-0" />
               <span>{error}</span>
             </div>
           )}
           {success && (
-            <div className="flex items-center space-x-3 rounded-xl bg-emerald-50/50 p-3 text-xs text-emerald-600 border border-emerald-200/60">
-              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+            <div className="flex items-center gap-3 rounded-xl bg-[#e9f6ef]/60 p-3 text-xs text-[#0a7a4c] border border-[#c9e8d7]">
+              <CheckCircle2 className="h-4 w-4 shrink-0" />
               <span>{success}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Full Name</label>
+              <label className="aero-eyebrow text-[10px]">Full Name</label>
               <input
                 type="text"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Jane Doe"
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none"
+                className="w-full rounded-xl border border-pebble bg-white px-4 py-2.5 text-sm text-ink placeholder-ash focus:border-ink focus:outline-none"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Email</label>
+              <label className="aero-eyebrow text-[10px]">Email</label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="e.g. jane@aircraft.com"
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none"
+                className="w-full rounded-xl border border-pebble bg-white px-4 py-2.5 text-sm text-ink placeholder-ash focus:border-ink focus:outline-none"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Password</label>
+              <label className="aero-eyebrow text-[10px]">Password</label>
               <PasswordInput
                 value={password}
                 onChange={setPassword}
@@ -128,11 +122,11 @@ export const UsersPage: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Role</label>
+              <label className="aero-eyebrow text-[10px]">Role</label>
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value as UserRole)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none"
+                className="w-full rounded-xl border border-pebble bg-white px-4 py-2.5 text-sm text-ink focus:border-ink focus:outline-none"
               >
                 {ROLES.map((r) => (
                   <option key={r} value={r}>
@@ -145,41 +139,41 @@ export const UsersPage: React.FC = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-3 font-semibold text-white shadow-lg shadow-indigo-500/20 hover:from-indigo-500 hover:to-indigo-600 disabled:opacity-50 text-sm"
+              className="pill-btn pill-btn-primary w-full text-sm disabled:opacity-50"
             >
               {submitting ? 'Creating...' : 'Create User'}
             </button>
           </form>
-        </div>
+        </Card>
 
         {/* User list */}
-        <div className="lg:col-span-2 glass-card rounded-2xl border border-slate-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-200/80 flex items-center space-x-2">
-            <ShieldCheck className="h-4 w-4 text-indigo-600" />
-            <h2 className="text-sm font-bold text-slate-900">Your Company's Accounts</h2>
+        <Card tight className="lg:col-span-2 overflow-hidden">
+          <div className="px-6 py-4 border-b border-pebble flex items-center gap-2">
+            <ShieldCheck className="h-4 w-4 text-ash" />
+            <h2 className="text-sm font-semibold text-ink">Your Company's Accounts</h2>
           </div>
 
           {loading ? (
-            <div className="py-12 text-center text-slate-500 text-sm">Loading users...</div>
+            <div className="py-12 text-center text-ash text-sm">Loading users...</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-xs uppercase tracking-wider text-slate-500 border-b border-slate-200/80">
-                    <th className="px-6 py-3 font-semibold">ID</th>
-                    <th className="px-6 py-3 font-semibold">Name</th>
-                    <th className="px-6 py-3 font-semibold">Email</th>
-                    <th className="px-6 py-3 font-semibold">Role</th>
+                  <tr className="text-left border-b border-pebble">
+                    <th className="aero-eyebrow text-[10px] px-6 py-3">ID</th>
+                    <th className="aero-eyebrow text-[10px] px-6 py-3">Name</th>
+                    <th className="aero-eyebrow text-[10px] px-6 py-3">Email</th>
+                    <th className="aero-eyebrow text-[10px] px-6 py-3">Role</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200/60">
+                <tbody className="divide-y divide-pebble">
                   {users.map((u) => (
-                    <tr key={u.id} className="hover:bg-white/40">
-                      <td className="px-6 py-3 font-mono text-slate-500">#{u.id}</td>
-                      <td className="px-6 py-3 text-slate-900">{u.name}</td>
-                      <td className="px-6 py-3 text-slate-700">{u.email}</td>
+                    <tr key={u.id} className="hover:bg-[#f7f7f5]">
+                      <td className="px-6 py-3 aero-mono text-ash">#{u.id}</td>
+                      <td className="px-6 py-3 text-ink">{u.name}</td>
+                      <td className="px-6 py-3 text-ash">{u.email}</td>
                       <td className="px-6 py-3">
-                        <span className="rounded bg-slate-100 px-2.5 py-1 text-xs font-mono text-indigo-600 border border-slate-300">
+                        <span className="rounded border border-pebble bg-[#f7f7f5] px-2.5 py-1 text-xs font-semibold text-ink aero-mono">
                           {u.role}
                         </span>
                       </td>
@@ -189,7 +183,7 @@ export const UsersPage: React.FC = () => {
               </table>
             </div>
           )}
-        </div>
+        </Card>
       </div>
     </div>
   );

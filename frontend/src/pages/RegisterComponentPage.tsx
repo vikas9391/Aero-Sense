@@ -3,7 +3,9 @@ import { aircraftApi, componentsApi } from '../services/api';
 import { Aircraft } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
-import { PlusCircle, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
+import { PageHeader } from '../components/ui/PageHeader';
+import { Card } from '../components/ui/Card';
 
 export const RegisterComponentPage: React.FC = () => {
   const [aircraftList, setAircraftList] = useState<Aircraft[]>([]);
@@ -45,28 +47,23 @@ export const RegisterComponentPage: React.FC = () => {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <div className="border-b border-slate-200/80 pb-5">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center space-x-3">
-          <PlusCircle className="h-7 w-7 text-indigo-600" />
-          <span>Register Aircraft Component</span>
-        </h1>
-      </div>
+      <PageHeader eyebrow="Component Registry" title="Register Aircraft Component" />
 
-      <div className="glass-card rounded-2xl p-8 border border-slate-200">
+      <Card className="p-8">
         {error && (
-          <div className="mb-6 flex items-center space-x-3 rounded-xl bg-rose-50/50 p-4 text-sm text-rose-600 border border-rose-200/60">
-            <AlertCircle className="h-5 w-5 shrink-0 text-rose-600" />
+          <div className="mb-6 flex items-center gap-3 rounded-xl bg-[#fbeceb]/60 p-4 text-sm text-[#b13a2f] border border-[#f0cbc7]">
+            <AlertCircle className="h-5 w-5 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Assigned Aircraft</label>
+            <label className="aero-eyebrow text-[10px]">Assigned Aircraft</label>
             <select
               value={aircraftId}
               onChange={(e) => setAircraftId(e.target.value === '' ? '' : Number(e.target.value))}
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-xl border border-pebble bg-white px-4 py-2.5 text-sm text-ink focus:border-ink focus:outline-none"
             >
               <option value="">-- Unassigned (Inventory Storage) --</option>
               {aircraftList.map((a) => (
@@ -78,54 +75,54 @@ export const RegisterComponentPage: React.FC = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Component Type</label>
+            <label className="aero-eyebrow text-[10px]">Component Type</label>
             <input
               type="text"
               required
               placeholder="e.g. Turbofan Engine (CFM LEAP-1A) or Avionics Flight Computer"
               value={componentType}
               onChange={(e) => setComponentType(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-xl border border-pebble bg-white px-4 py-2.5 text-sm text-ink placeholder-ash focus:border-ink focus:outline-none"
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Hardware Serial Number</label>
+              <label className="aero-eyebrow text-[10px]">Hardware Serial Number</label>
               <input
                 type="text"
                 required
                 placeholder="e.g. XZ928374"
                 value={serialNumber}
                 onChange={(e) => setSerialNumber(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none font-mono"
+                className="w-full rounded-xl border border-pebble bg-white px-4 py-2.5 text-sm text-ink placeholder-ash focus:border-ink focus:outline-none aero-mono"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Manufacturer</label>
+              <label className="aero-eyebrow text-[10px]">Manufacturer</label>
               <input
                 type="text"
                 required
                 placeholder="e.g. CFM International or Honeywell"
                 value={manufacturer}
                 onChange={(e) => setManufacturer(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none"
+                className="w-full rounded-xl border border-pebble bg-white px-4 py-2.5 text-sm text-ink placeholder-ash focus:border-ink focus:outline-none"
               />
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-200 flex justify-end">
+          <div className="pt-4 border-t border-pebble flex justify-end">
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-3 font-semibold text-white shadow-lg shadow-indigo-500/20 hover:from-indigo-500 hover:to-indigo-600 disabled:opacity-50 text-sm"
+              className="pill-btn pill-btn-primary text-sm disabled:opacity-50"
             >
               {submitting ? 'Registering...' : 'Register Component'}
             </button>
           </div>
         </form>
-      </div>
+      </Card>
     </div>
   );
 };
