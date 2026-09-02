@@ -68,7 +68,8 @@ export default function App() {
     {screen==="components"&&<Components data={components} onOpen={async(c)=>{setSelected(c);setHistory(await componentsApi.history(c.id));setScreen("maintenance")}} back={()=>setScreen("home")}/>}
     {screen==="aircraft"&&<AircraftList data={aircraft} back={()=>setScreen("home")}/>}
     {screen==="scan"&&<Scan onResult={setResult} result={result} back={()=>setScreen("home")}/>}
-    {screen==="maintenance"&&selected&&<Maintenance component={selected} history={history} back={()=>setScreen("components")} canWrite={user.role==="MAINTENANCE_TECHNICIAN"}/>}\n    {screen==="maintenanceLog"&&<MaintenanceLog back={()=>setScreen("home")}/>}
+    {screen==="maintenance"&&selected&&<Maintenance component={selected} history={history} back={()=>setScreen("components")} canWrite={user.role==="MAINTENANCE_TECHNICIAN"}/>}
+    {screen==="maintenanceLog"&&<MaintenanceLog back={()=>setScreen("home")}/>}
     <View style={styles.nav}>
       {([["home","Home"],["components","Parts"],["aircraft","Aircraft"],["scan","Scan"]] as const).map(([id,label])=>
         <TouchableOpacity key={id} onPress={()=>setScreen(id as any)} style={styles.navItem}><Text style={[styles.navText,screen===id&&{color:C.accent}]}>{label}</Text></TouchableOpacity>
