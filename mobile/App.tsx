@@ -1,11 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator, Alert, FlatList, SafeAreaView, ScrollView,
   StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View
 } from "react-native";
 import NfcManager, { NfcTech } from "react-native-nfc-manager";
 import * as SecureStore from "expo-secure-store";
-import { ShieldCheck, ScanLine, Plane, Wrench, LogOut, RefreshCw, ChevronRight } from "lucide-react-native";
+import { ShieldCheck, ScanLine, Wrench, LogOut, RefreshCw, ChevronRight } from "lucide-react-native";
 import { authApi, analyticsApi, aircraftApi, componentsApi, maintenanceApi, verificationApi } from "./src/api";
 import type { Analytics, Aircraft, Component, MaintenanceRecord, User, VerificationResponse } from "./src/types";
 
@@ -40,9 +40,14 @@ export default function App() {
     if(!user)return;
     setLoading(true);
     try {
-      const [a,c]=await Promise.all([analyticsApi.overview().catch(()=>null),componentsApi.list(),aircraftApi.list()]);
-      setAnalytics(a); setComponents(c); setAircraft(a?aircraftApi?aircraft:aircraft:[]); // replaced below
-      setAircraft(await aircraftApi.list());
+      const [a, c, ac] = await Promise.all([
+        analyticsApi.overview().catch(() => null),
+        componentsApi.list(),
+        aircraftApi.list(),
+      ]);
+      setAnalytics(a);
+      setComponents(c);
+      setAircraft(ac);
     } catch(e:any){ Alert.alert("Sync failed", e?.response?.data?.message ?? "Could not reach the Aero-Sense backend."); }
     finally { setLoading(false); }
   };
@@ -108,7 +113,7 @@ function AircraftList({data,back}:any){
 function Scan({onResult,result,back}:{onResult:(r:any)=>void,result:any,back:()=>void}){
  const [busy,setBusy]=useState(false);
  const scan=async()=>{
-  setBusy(true);setResultSafe(onResult,null);
+  setBusy(true);onResult(null);
   try{
    const supported=await NfcManager.isSupported(); if(!supported) throw new Error("NFC is not supported on this device.");
    await NfcManager.start(); await NfcManager.requestTechnology(NfcTech.Ndef,{alertMessage:"Hold the phone near the Aero-Sense NFC tag"});
@@ -124,11 +129,9 @@ function Scan({onResult,result,back}:{onResult:(r:any)=>void,result:any,back:()=
  {result&&<Card><Text style={[styles.result,result.verified?{color:C.good}:{color:C.bad}]}>{result.status}</Text><Text style={styles.cardTitle}>{result.component?.serial_number??"Unknown component"}</Text><Text style={styles.muted}>{result.failure_reason??"All available verification checks completed."}</Text>{Object.entries(result.checks).map(([k,v]:any)=><View style={styles.check} key={k}><Text style={styles.muted}>{k.replaceAll("_"," ")}</Text><Text style={{color:v?C.good:C.bad,fontWeight:"700"}}>{v?"PASS":"FAIL"}</Text></View>)}</Card>}
  </ScrollView>;
 }
-function setResultSafe(fn:any,v:any){fn(v)}
-
 function Maintenance({component,history,back,canWrite}:any){
  const [type,setType]=useState("Inspection");const [description,setDescription]=useState("");const [parts,setParts]=useState("");const [result,setResult]=useState<"PASSED"|"FAILED"|"WARNING">("PASSED");const [busy,setBusy]=useState(false);
- const save=async()=>{setBusy(true);try{await maintenanceApi.create({component_id:component.id,maintenance_type:type,description,parts_replaced:parts,inspection_result:result});Alert.alert("Saved","Maintenance record added to the audit chain.");setDescription("");setParts();}catch(e:any){Alert.alert("Could not save",e?.response?.data?.message??"You may not have technician permissions.")}finally{setBusy(false)}};
+ const save=async()=>{setBusy(true);try{await maintenanceApi.create({component_id:component.id,maintenance_type:type,description,parts_replaced:parts,inspection_result:result});Alert.alert("Saved","Maintenance record added to the audit chain.");setDescription("");setParts("");}catch(e:any){Alert.alert("Could not save",e?.response?.data?.message??"You may not have technician permissions.")}finally{setBusy(false)}};
  return <ScrollView contentContainerStyle={styles.content}><View style={styles.subhead}><Text style={styles.title}>{component.serial_number}</Text><TouchableOpacity onPress={back}><Text style={styles.link}>Parts</Text></TouchableOpacity></View>
  <Text style={styles.muted}>{component.component_type} · {component.manufacturer}</Text>
  {canWrite&&<Card><Text style={styles.cardTitle}>Add maintenance</Text><TextInput value={type} onChangeText={setType} style={styles.input} placeholder="Maintenance type" placeholderTextColor={C.muted}/><TextInput value={description} onChangeText={setDescription} style={[styles.input,{height:90}]} multiline placeholder="Description" placeholderTextColor={C.muted}/><TextInput value={parts} onChangeText={setParts} style={styles.input} placeholder="Parts replaced (optional)" placeholderTextColor={C.muted}/><Button title={busy?"Saving…":"Save maintenance"} onPress={save} disabled={busy} icon={<Wrench color={C.bg} size={17}/>}/></Card>}
