@@ -116,7 +116,7 @@ function Scan({onResult,result,back}:{onResult:(r:any)=>void,result:any,back:()=
   setBusy(true);onResult(null);
   try{
    const supported=await NfcManager.isSupported(); if(!supported) throw new Error("NFC is not supported on this device.");
-   await NfcManager.start(); await NfcManager.requestTechnology(NfcTech.Ndef,{alertMessage:"Hold the phone near the Aero-Sense NFC tag"});
+   await NfcManager.start(); await NfcManager.requestTechnology(NfcTech.NfcA,{alertMessage:"Hold the phone near the Aero-Sense NFC tag"});
    const tag:any=await NfcManager.getTag(); const id=tag?.id;
    if(!id)throw new Error("No NFC identifier was read.");
    const hex=Array.isArray(id)?id.map((x:number)=>x.toString(16).padStart(2,"0")).join("").toUpperCase():String(id);
