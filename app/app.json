@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "Aero-Sense",
+    "slug": "aero-sense",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "android": {
+      "package": "com.aerosense.mobile",
+      "permissions": ["NFC", "INTERNET"]
+    },
+    "plugins": ["expo-secure-store", "react-native-nfc-manager"],
+    "extra": {
+      "apiUrl": "http://localhost:8080/api"
+    }
+  }
+}
