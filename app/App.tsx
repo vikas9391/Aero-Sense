@@ -31,6 +31,7 @@ export default function App() {
   const [verificationLogs,setVerificationLogs]=useState<any[]>([]);
   const [result,setResult]=useState<VerificationResponse|null>(null);
   const [loading,setLoading]=useState(false);
+  const [query,setQuery]=useState("");
 
   useEffect(()=>{ (async()=>{
     try { const token=await SecureStore.getItemAsync("aero_sense_token"); if(token) setUser(await authApi.me()); }
@@ -66,7 +67,7 @@ export default function App() {
       <TouchableOpacity onPress={logout}><LogOut color={C.muted} size={21}/></TouchableOpacity>
     </View>
     {screen==="home"&&<Home analytics={analytics} user={user} refresh={refresh} loading={loading} go={setScreen}/>}
-    {screen==="components"&&<Components data={components} onOpen={async(c)=>{setSelected(c);setHistory(await componentsApi.history(c.id));setVerificationLogs(await verificationApi.componentLogs(c.id).catch(()=>[]));setScreen("maintenance")}} back={()=>setScreen("home")}/>}
+    {screen==="components"&&<Components data={components.filter((x)=>`${x.serial_number} ${x.component_type} ${x.manufacturer}`.toLowerCase().includes(query.toLowerCase()))} query={query} setQuery={setQuery} onOpen={async(c)=>{setSelected(c);setHistory(await componentsApi.history(c.id));setVerificationLogs(await verificationApi.componentLogs(c.id).catch(()=>[]));setScreen("maintenance")}} back={()=>setScreen("home")}/>}
     {screen==="aircraft"&&<AircraftList data={aircraft} back={()=>setScreen("home")}/>}
     {screen==="scan"&&<Scan onResult={setResult} result={result} back={()=>setScreen("home")}/>}
     {screen==="maintenance"&&selected&&<Maintenance component={selected} history={history} back={()=>setScreen("components")} canWrite={user.role==="MAINTENANCE_TECHNICIAN"}/>}
@@ -102,17 +103,20 @@ function Home({analytics,user,refresh,loading,go}:any){
   </ScrollView>;
 }
 
-function Components({data,onOpen,back}:any){
- return <View style={styles.flex}><View style={styles.subhead}><Text style={styles.title}>Components</Text><TouchableOpacity onPress={back}><Text style={styles.link}>Home</Text></TouchableOpacity></View>
+function Components({data,onOpen,back,query,setQuery}:any){
+ return <View style={styles.flex}><View style={styles.subhead}><View><Text style={styles.kicker}>DIGITAL INVENTORY</Text><Text style={styles.title}>Components</Text></View><TouchableOpacity onPress={back}><Text style={styles.link}>Home</Text></TouchableOpacity></View>
+ <View style={styles.searchWrap}><TextInput value={query} onChangeText={setQuery} placeholder="Search serial, type or manufacturer" placeholderTextColor={C.muted} style={styles.search}/></View>
  <FlatList data={data} keyExtractor={(x)=>String(x.id)} contentContainerStyle={styles.list} renderItem={({item})=><TouchableOpacity onPress={()=>onOpen(item)}><Card><View style={styles.row}><View style={{flex:1}}><Text style={styles.cardTitle}>{item.serial_number}</Text><Text style={styles.muted}>{item.component_type} · {item.manufacturer}</Text><Text style={styles.tag}>{item.status}</Text></View><ChevronRight color={C.muted}/></View></Card></TouchableOpacity>}/></View>;
 }
 
 function AircraftList({data,back}:any){
- return <View style={styles.flex}><View style={styles.subhead}><Text style={styles.title}>Aircraft</Text><TouchableOpacity onPress={back}><Text style={styles.link}>Home</Text></TouchableOpacity></View>
+ return <View style={styles.flex}><View style={styles.subhead}><View><Text style={styles.kicker}>FLEET REGISTER</Text><Text style={styles.title}>Aircraft</Text></View><TouchableOpacity onPress={back}><Text style={styles.link}>Home</Text></TouchableOpacity></View>
  <FlatList data={data} keyExtractor={(x)=>String(x.id)} contentContainerStyle={styles.list} renderItem={({item})=><Card><Text style={styles.cardTitle}>{item.registration_number}</Text><Text style={styles.muted}>{item.model} · {item.manufacturer}</Text><Text style={styles.tag}>{item.status}</Text></Card>}/></View>;
 }
 
 function Scan({onResult,result,back}:{onResult:(r:any)=>void,result:any,back:()=>void}){
+ const status = result?.status;
+ const statusLabel = status==="AUTHENTIC" ? "AUTHENTIC COMPONENT" : status==="SUSPICIOUS" ? "SUSPICIOUS COMPONENT" : status==="INVALID" ? "INVALID COMPONENT" : "READY TO VERIFY";
  const [busy,setBusy]=useState(false);
  const scan=async()=>{
   setBusy(true);onResult(null);
@@ -127,8 +131,8 @@ function Scan({onResult,result,back}:{onResult:(r:any)=>void,result:any,back:()=
   finally{try{await NfcManager.cancelTechnologyRequest()}catch{}setBusy(false)}
  };
  return <ScrollView contentContainerStyle={styles.content}><View style={styles.subhead}><Text style={styles.title}>NFC Verify</Text><TouchableOpacity onPress={back}><Text style={styles.link}>Home</Text></TouchableOpacity></View>
- <Card><View style={styles.center}><ScanLine color={C.accent} size={62}/><Text style={styles.cardTitle}>Scan a component tag</Text><Text style={styles.muted}>Use the physical NFC tag bound to an aircraft component.</Text><Button title={busy?"Scanning…":"Start NFC scan"} onPress={scan} disabled={busy}/></View></Card>
- {result&&<Card><Text style={[styles.result,result.verified?{color:C.good}:{color:C.bad}]}>{result.status}</Text><Text style={styles.cardTitle}>{result.component?.serial_number??"Unknown component"}</Text><Text style={styles.muted}>{result.failure_reason??"All available verification checks completed."}</Text>{Object.entries(result.checks).map(([k,v]:any)=><View style={styles.check} key={k}><Text style={styles.muted}>{k.replaceAll("_"," ")}</Text><Text style={{color:v?C.good:C.bad,fontWeight:"700"}}>{v?"PASS":"FAIL"}</Text></View>)}</Card>}
+ <Card><View style={styles.scanHero}><View style={styles.scanRing}><ScanLine color={C.accent} size={42}/></View><Text style={styles.cardEyebrow}>{statusLabel}</Text><Text style={styles.cardTitle}>Scan a component tag</Text><Text style={styles.muted}>Hold your phone near the registered NFC tag. Aero-Sense will validate its identity against the secure backend.</Text><Button title={busy?"Scanning…":"Start NFC scan"} onPress={scan} disabled={busy}/></View></Card>
+ {result&&<Card><View style={styles.resultBanner}><View style={[styles.resultDot,{backgroundColor:result.verified?C.good:C.bad}]}/><Text style={[styles.result,result.verified?{color:C.good}:{color:C.bad}]}>{result.status}</Text></View><Text style={styles.cardTitle}>{result.component?.serial_number??"Unknown component"}</Text><Text style={styles.muted}>{result.failure_reason??"All available verification checks completed."}</Text>{Object.entries(result.checks).map(([k,v]:any)=><View style={styles.check} key={k}><Text style={styles.muted}>{k.replaceAll("_"," ")}</Text><Text style={{color:v?C.good:C.bad,fontWeight:"700"}}>{v?"PASS":"FAIL"}</Text></View>)}</Card>}
  </ScrollView>;
 }
 function MaintenanceLog({back}:{back:()=>void}){
@@ -154,7 +158,7 @@ const styles=StyleSheet.create({
  safe:{flex:1,backgroundColor:C.bg},center:{flex:1,alignItems:"center",justifyContent:"center",backgroundColor:C.bg},flex:{flex:1,backgroundColor:C.bg},
  header:{paddingHorizontal:20,paddingVertical:15,flexDirection:"row",justifyContent:"space-between",alignItems:"center",borderBottomWidth:1,borderColor:C.line},headerBrand:{flexDirection:"row",alignItems:"center",gap:9},miniMark:{width:32,height:32,borderRadius:10,backgroundColor:C.panel2,alignItems:"center",justifyContent:"center",borderWidth:1,borderColor:C.line},
  brand:{fontSize:15,fontWeight:"900",letterSpacing:2,color:C.text},role:{fontSize:10,color:C.muted,marginTop:2},content:{padding:20,paddingBottom:100,gap:14},login:{flex:1,padding:28,justifyContent:"center",gap:12},logoMark:{width:68,height:68,borderRadius:20,backgroundColor:C.panel2,alignItems:"center",justifyContent:"center",borderWidth:1,borderColor:C.line,marginBottom:5},loginEyebrow:{fontSize:10,fontWeight:"800",letterSpacing:1.8,color:C.accent,marginTop:10},
- title:{fontSize:28,fontWeight:"800",color:C.text},subtitle:{fontSize:15,color:C.muted,marginBottom:20},kicker:{fontSize:10,color:C.accent,fontWeight:"900",letterSpacing:2},cardEyebrow:{fontSize:10,color:C.muted,fontWeight:"900",letterSpacing:1.4},healthIcon:{width:52,height:52,borderRadius:17,backgroundColor:"#102b24",alignItems:"center",justifyContent:"center",borderWidth:1,borderColor:"#21483b"},scanIcon:{width:52,height:52,borderRadius:16,backgroundColor:C.bg,alignItems:"center",justifyContent:"center",borderWidth:1,borderColor:C.line},
+ title:{fontSize:28,fontWeight:"800",color:C.text},subtitle:{fontSize:15,color:C.muted,marginBottom:20},kicker:{fontSize:10,color:C.accent,fontWeight:"900",letterSpacing:2},cardEyebrow:{fontSize:10,color:C.muted,fontWeight:"900",letterSpacing:1.4},healthIcon:{width:52,height:52,borderRadius:17,backgroundColor:"#102b24",alignItems:"center",justifyContent:"center",borderWidth:1,borderColor:"#21483b"},scanIcon:{width:52,height:52,borderRadius:16,backgroundColor:C.bg,alignItems:"center",justifyContent:"center",borderWidth:1,borderColor:C.line},searchWrap:{paddingHorizontal:20,paddingBottom:8},search:{backgroundColor:C.panel,borderWidth:1,borderColor:C.line,borderRadius:13,color:C.text,padding:13},scanHero:{alignItems:"center",gap:10,paddingVertical:12},scanRing:{width:96,height:96,borderRadius:48,borderWidth:1,borderColor:C.accent,alignItems:"center",justifyContent:"center",backgroundColor:C.bg},resultBanner:{flexDirection:"row",alignItems:"center",gap:9},resultDot:{width:9,height:9,borderRadius:5},
  input:{backgroundColor:C.panel,borderWidth:1,borderColor:C.line,borderRadius:12,color:C.text,padding:14,fontSize:15},button:{backgroundColor:C.accent,padding:15,borderRadius:13,alignItems:"center",justifyContent:"center",flexDirection:"row",gap:8,minHeight:50},buttonText:{color:C.bg,fontWeight:"900"},
  card:{backgroundColor:C.panel,borderWidth:1,borderColor:C.line,borderRadius:18,padding:17,gap:10,shadowColor:"#000",shadowOpacity:.18,shadowRadius:12,shadowOffset:{width:0,height:5},elevation:3},row:{flexDirection:"row",alignItems:"center",gap:12},muted:{color:C.muted,fontSize:13,lineHeight:19},big:{color:C.text,fontSize:32,fontWeight:"900",marginTop:5},cardTitle:{color:C.text,fontSize:16,fontWeight:"800"},grid:{flexDirection:"row",flexWrap:"wrap",gap:10},stat:{width:"48%",backgroundColor:C.panel,padding:15,borderRadius:16,borderWidth:1,borderColor:C.line,minHeight:95},statNum:{color:C.text,fontSize:25,fontWeight:"900",marginTop:7},scanCard:{backgroundColor:C.panel2,borderRadius:18,padding:17,flexDirection:"row",gap:14,alignItems:"center",borderWidth:1,borderColor:C.line},nav:{position:"absolute",bottom:0,left:0,right:0,height:74,backgroundColor:C.panel,borderTopWidth:1,borderColor:C.line,flexDirection:"row",justifyContent:"space-around",alignItems:"center",paddingBottom:Platform.OS==="ios"?8:0},navItem:{padding:10},navText:{color:C.muted,fontWeight:"700"},subhead:{padding:20,paddingBottom:8,flexDirection:"row",justifyContent:"space-between",alignItems:"center"},link:{color:C.accent,fontWeight:"700"},list:{padding:20,paddingBottom:100,gap:10},tag:{alignSelf:"flex-start",marginTop:7,color:C.accent,fontSize:11,fontWeight:"800"},result:{fontSize:24,fontWeight:"900"},check:{flexDirection:"row",justifyContent:"space-between",paddingVertical:9,borderBottomWidth:1,borderColor:C.line},section:{color:C.text,fontSize:18,fontWeight:"800",marginTop:5}
 });
