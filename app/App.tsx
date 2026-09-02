@@ -28,6 +28,7 @@ export default function App() {
   const [aircraft,setAircraft]=useState<Aircraft[]>([]);
   const [selected,setSelected]=useState<Component|null>(null);
   const [history,setHistory]=useState<MaintenanceRecord[]>([]);
+  const [verificationLogs,setVerificationLogs]=useState<any[]>([]);
   const [result,setResult]=useState<VerificationResponse|null>(null);
   const [loading,setLoading]=useState(false);
 
@@ -65,7 +66,7 @@ export default function App() {
       <TouchableOpacity onPress={logout}><LogOut color={C.muted} size={21}/></TouchableOpacity>
     </View>
     {screen==="home"&&<Home analytics={analytics} user={user} refresh={refresh} loading={loading} go={setScreen}/>}
-    {screen==="components"&&<Components data={components} onOpen={async(c)=>{setSelected(c);setHistory(await componentsApi.history(c.id));setScreen("maintenance")}} back={()=>setScreen("home")}/>}
+    {screen==="components"&&<Components data={components} onOpen={async(c)=>{setSelected(c);setHistory(await componentsApi.history(c.id));setVerificationLogs(await verificationApi.componentLogs(c.id).catch(()=>[]));setScreen("maintenance")}} back={()=>setScreen("home")}/>}
     {screen==="aircraft"&&<AircraftList data={aircraft} back={()=>setScreen("home")}/>}
     {screen==="scan"&&<Scan onResult={setResult} result={result} back={()=>setScreen("home")}/>}
     {screen==="maintenance"&&selected&&<Maintenance component={selected} history={history} back={()=>setScreen("components")} canWrite={user.role==="MAINTENANCE_TECHNICIAN"}/>}
@@ -145,8 +146,8 @@ function Maintenance({component,history,back,canWrite}:any){
  return <ScrollView contentContainerStyle={styles.content}><View style={styles.subhead}><Text style={styles.title}>{component.serial_number}</Text><TouchableOpacity onPress={back}><Text style={styles.link}>Parts</Text></TouchableOpacity></View>
  <Text style={styles.muted}>{component.component_type} · {component.manufacturer}</Text>
  {canWrite&&<Card><Text style={styles.cardTitle}>Add maintenance</Text><TextInput value={type} onChangeText={setType} style={styles.input} placeholder="Maintenance type" placeholderTextColor={C.muted}/><TextInput value={description} onChangeText={setDescription} style={[styles.input,{height:90}]} multiline placeholder="Description" placeholderTextColor={C.muted}/><TextInput value={parts} onChangeText={setParts} style={styles.input} placeholder="Parts replaced (optional)" placeholderTextColor={C.muted}/><Button title={busy?"Saving…":"Save maintenance"} onPress={save} disabled={busy} icon={<Wrench color={C.bg} size={17}/>}/></Card>}
- <Text style={styles.section}>History</Text>{history.map((h:MaintenanceRecord)=><Card key={h.id}><View style={styles.row}><View style={{flex:1}}><Text style={styles.cardTitle}>{h.maintenance_type}</Text><Text style={styles.muted}>{h.description}</Text><Text style={styles.muted}>{h.technician_name} · {new Date(h.created_at).toLocaleDateString()}</Text></View><Text style={{color:h.inspection_result==="PASSED"?C.good:h.inspection_result==="WARNING"?C.warn:C.bad,fontWeight:"800"}}>{h.inspection_result}</Text></View></Card>)}
- </ScrollView>;
+ <Text style={styles.section}>Maintenance history</Text>{history.map((h:MaintenanceRecord)=><Card key={h.id}><View style={styles.row}><View style={{flex:1}}><Text style={styles.cardTitle}>{h.maintenance_type}</Text><Text style={styles.muted}>{h.description}</Text><Text style={styles.muted}>{h.technician_name} · {new Date(h.created_at).toLocaleDateString()}</Text></View><Text style={{color:h.inspection_result==="PASSED"?C.good:h.inspection_result==="WARNING"?C.warn:C.bad,fontWeight:"800"}}>{h.inspection_result}</Text></View></Card>)}
+ <Text style={styles.section}>Verification history</Text>{verificationLogs.map((v:any)=><Card key={`v-${v.id}`}><View style={styles.row}><View style={{flex:1}}><Text style={styles.cardTitle}>{v.status ?? v.result}</Text><Text style={styles.muted}>{v.created_at ? new Date(v.created_at).toLocaleString() : "Verification record"}</Text></View><Text style={{color:(v.verified??v.status==="AUTHENTIC")?C.good:C.bad,fontWeight:"800"}}>{(v.verified??v.status==="AUTHENTIC")?"VALID":"CHECK"}</Text></View></Card>)}</ScrollView>;
 }
 
 const styles=StyleSheet.create({
