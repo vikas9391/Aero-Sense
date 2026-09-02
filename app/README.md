@@ -15,7 +15,7 @@ For a local Android emulator use `http://10.0.2.2:8080/api`. For a physical phon
 ## Run
 
 ```bash
-cd mobile
+cd app
 npm install
 npx expo prebuild
 npx expo run:android
