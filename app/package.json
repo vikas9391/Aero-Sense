@@ -7,7 +7,10 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "build": "npx expo export"
+    "build": "npx expo export",
+    "typecheck": "tsc --noEmit",
+    "android:preview": "eas build --platform android --profile preview",
+    "android:production": "eas build --platform android --profile production"
   },
   "dependencies": {
     "@react-native-picker/picker": "^2.11.1",
