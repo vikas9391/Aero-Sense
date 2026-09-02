@@ -22,7 +22,7 @@ function Card({children}:any){return <View style={styles.card}>{children}</View>
 export default function App() {
   const [user,setUser]=useState<User|null>(null);
   const [boot,setBoot]=useState(true);
-  const [screen,setScreen]=useState<"home"|"components"|"aircraft"|"scan"|"maintenance">("home");
+  const [screen,setScreen]=useState<"home"|"components"|"aircraft"|"scan"|"maintenance"|"maintenanceLog">("home");
   const [analytics,setAnalytics]=useState<Analytics|null>(null);
   const [components,setComponents]=useState<Component[]>([]);
   const [aircraft,setAircraft]=useState<Aircraft[]>([]);
@@ -68,7 +68,7 @@ export default function App() {
     {screen==="components"&&<Components data={components} onOpen={async(c)=>{setSelected(c);setHistory(await componentsApi.history(c.id));setScreen("maintenance")}} back={()=>setScreen("home")}/>}
     {screen==="aircraft"&&<AircraftList data={aircraft} back={()=>setScreen("home")}/>}
     {screen==="scan"&&<Scan onResult={setResult} result={result} back={()=>setScreen("home")}/>}
-    {screen==="maintenance"&&selected&&<Maintenance component={selected} history={history} back={()=>setScreen("components")} canWrite={user.role==="MAINTENANCE_TECHNICIAN"}/>}
+    {screen==="maintenance"&&selected&&<Maintenance component={selected} history={history} back={()=>setScreen("components")} canWrite={user.role==="MAINTENANCE_TECHNICIAN"}/>}\n    {screen==="maintenanceLog"&&<MaintenanceLog back={()=>setScreen("home")}/>}
     <View style={styles.nav}>
       {([["home","Home"],["components","Parts"],["aircraft","Aircraft"],["scan","Scan"]] as const).map(([id,label])=>
         <TouchableOpacity key={id} onPress={()=>setScreen(id as any)} style={styles.navItem}><Text style={[styles.navText,screen===id&&{color:C.accent}]}>{label}</Text></TouchableOpacity>
@@ -90,7 +90,7 @@ function Login({onLogin}:{onLogin:(u:User)=>void}) {
 }
 
 function Home({analytics,user,refresh,loading,go}:any){
-  const cards=[["Aircraft",analytics?.total_aircraft??0,"aircraft"],["Components",analytics?.total_components??0,"components"],["Maintenance",analytics?.total_maintenance_records??0,"maintenance"],["Verifications",analytics?.total_verifications??0,"scan"]];
+  const cards=[["Aircraft",analytics?.total_aircraft??0,"aircraft"],["Components",analytics?.total_components??0,"components"],["Maintenance",analytics?.total_maintenance_records??0,"maintenanceLog"],["Verifications",analytics?.total_verifications??0,"scan"]];
   return <ScrollView contentContainerStyle={styles.content}>
     <Text style={styles.kicker}>FIELD CONTROL</Text><Text style={styles.title}>Good to see you, {user.name.split(" ")[0]}</Text>
     <Card><View style={styles.row}><View><Text style={styles.muted}>Verification health</Text><Text style={styles.big}>{analytics?.verifications_passed??0}<Text style={styles.muted}> passed</Text></Text></View><ShieldCheck color={C.good} size={34}/></View></Card>
@@ -129,6 +129,15 @@ function Scan({onResult,result,back}:{onResult:(r:any)=>void,result:any,back:()=
  {result&&<Card><Text style={[styles.result,result.verified?{color:C.good}:{color:C.bad}]}>{result.status}</Text><Text style={styles.cardTitle}>{result.component?.serial_number??"Unknown component"}</Text><Text style={styles.muted}>{result.failure_reason??"All available verification checks completed."}</Text>{Object.entries(result.checks).map(([k,v]:any)=><View style={styles.check} key={k}><Text style={styles.muted}>{k.replaceAll("_"," ")}</Text><Text style={{color:v?C.good:C.bad,fontWeight:"700"}}>{v?"PASS":"FAIL"}</Text></View>)}</Card>}
  </ScrollView>;
 }
+function MaintenanceLog({back}:{back:()=>void}){
+ const [items,setItems]=useState<MaintenanceRecord[]>([]);
+ const [busy,setBusy]=useState(true);
+ useEffect(()=>{maintenanceApi.list().then(setItems).catch(()=>Alert.alert("Load failed","Could not load maintenance records.")).finally(()=>setBusy(false))},[]);
+ return <View style={styles.flex}><View style={styles.subhead}><Text style={styles.title}>Maintenance</Text><TouchableOpacity onPress={back}><Text style={styles.link}>Home</Text></TouchableOpacity></View>
+ {busy?<View style={styles.center}><ActivityIndicator color={C.accent}/></View>:<FlatList data={items} keyExtractor={x=>String(x.id)} contentContainerStyle={styles.list} ListEmptyComponent={<Text style={styles.muted}>No maintenance records yet.</Text>} renderItem={({item})=><Card><View style={styles.row}><View style={{flex:1}}><Text style={styles.cardTitle}>{item.maintenance_type}</Text><Text style={styles.muted}>{item.description}</Text><Text style={styles.muted}>Component #{item.component_id} · {item.technician_name}</Text><Text style={styles.tag}>{item.record_hash.slice(0,18)}…</Text></View><Text style={{color:item.inspection_result==="PASSED"?C.good:item.inspection_result==="WARNING"?C.warn:C.bad,fontWeight:"800"}}>{item.inspection_result}</Text></View></Card>)}/>}
+ </View>;
+}
+
 function Maintenance({component,history,back,canWrite}:any){
  const [type,setType]=useState("Inspection");const [description,setDescription]=useState("");const [parts,setParts]=useState("");const [result,setResult]=useState<"PASSED"|"FAILED"|"WARNING">("PASSED");const [busy,setBusy]=useState(false);
  const save=async()=>{setBusy(true);try{await maintenanceApi.create({component_id:component.id,maintenance_type:type,description,parts_replaced:parts,inspection_result:result});Alert.alert("Saved","Maintenance record added to the audit chain.");setDescription("");setParts("");}catch(e:any){Alert.alert("Could not save",e?.response?.data?.message??"You may not have technician permissions.")}finally{setBusy(false)}};
