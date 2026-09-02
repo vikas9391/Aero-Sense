@@ -61,6 +61,8 @@ export const verificationApi = {
   nfc: async (tag_identifier: string, payload?: string) =>
     (await api.post("/verification/nfc", { tag_identifier, payload })).data,
   logs: async () => (await api.get("/verification/logs")).data,
+  componentLogs: async (id: number) => (await api.get(`/verification/components/${id}`)).data,
+  blockchain: async (record_id: number) => (await api.post("/verification/blockchain", { record_id })).data,
 };
 
 export default api;
