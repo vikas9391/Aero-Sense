@@ -16,13 +16,13 @@ api.interceptors.request.use(async (config) => {
 });
 
 api.interceptors.response.use(
-  (r) => r,
+  (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
       await SecureStore.deleteItemAsync("aero_sense_token");
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export const authApi = {
@@ -44,6 +44,7 @@ export const componentsApi = {
   list: async () => (await api.get("/components")).data,
   get: async (id: number) => (await api.get(`/components/${id}`)).data,
   history: async (id: number) => (await api.get(`/components/${id}/history`)).data,
+  verifications: async (id: number) => (await api.get(`/components/${id}/verification`)).data,
 };
 
 export const maintenanceApi = {
@@ -61,8 +62,8 @@ export const verificationApi = {
   nfc: async (tag_identifier: string, payload?: string) =>
     (await api.post("/verification/nfc", { tag_identifier, payload })).data,
   logs: async () => (await api.get("/verification/logs")).data,
-  componentLogs: async (id: number) => (await api.get(`/verification/components/${id}`)).data,
-  blockchain: async (record_id: number) => (await api.post("/verification/blockchain", { record_id })).data,
+  blockchain: async (record_id: number) =>
+    (await api.post("/blockchain/verify", { record_id })).data,
 };
 
 export default api;
