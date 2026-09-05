@@ -2,16 +2,23 @@
   "expo": {
     "name": "Aero-Sense",
     "slug": "aero-sense",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "backgroundColor": "#F4F1EC",
+    "primaryColor": "#34439B",
+    "androidStatusBar": {
+      "barStyle": "dark-content",
+      "backgroundColor": "#F4F1EC",
+      "translucent": false
+    },
     "android": {
       "package": "com.aerosense.mobile",
       "permissions": [
         "android.permission.NFC",
         "android.permission.INTERNET"
       ],
-      "versionCode": 2
+      "versionCode": 3
     },
     "plugins": [
       "expo-secure-store",
