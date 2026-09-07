@@ -33,10 +33,12 @@ class _MobileDashboardScreenState extends State<MobileDashboardScreen> {
   }
 
   Future<void> load() async {
-    setState(() {
-      loading = true;
-      error = null;
-    });
+    if (mounted) {
+      setState(() {
+        loading = true;
+        error = null;
+      });
+    }
     try {
       aircraft = await api.aircraft();
       components = await api.components();
@@ -97,15 +99,22 @@ class _MobileDashboardScreenState extends State<MobileDashboardScreen> {
           if (loading)
             const LinearProgressIndicator(color: accent)
           else
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                _stat('Aircraft', aircraft.length, Icons.flight_outlined),
-                _stat('Components', components.length, Icons.memory_outlined),
-                _stat('Operational', verified, Icons.verified_outlined),
-                _stat('Security Alerts', tampered, Icons.warning_amber_outlined),
-              ],
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final columns = constraints.maxWidth >= 520 ? 4 : 2;
+                final gap = 10.0;
+                final width = (constraints.maxWidth - gap * (columns - 1)) / columns;
+                return Wrap(
+                  spacing: gap,
+                  runSpacing: gap,
+                  children: [
+                    _stat(width, 'Aircraft', aircraft.length, Icons.flight_outlined),
+                    _stat(width, 'Components', components.length, Icons.memory_outlined),
+                    _stat(width, 'Operational', verified, Icons.verified_outlined),
+                    _stat(width, 'Security Alerts', tampered, Icons.warning_amber_outlined),
+                  ],
+                );
+              },
             ),
           const SizedBox(height: 14),
           CardBox(
@@ -138,17 +147,18 @@ class _MobileDashboardScreenState extends State<MobileDashboardScreen> {
     );
   }
 
-  Widget _stat(String label, int value, IconData icon) {
+  Widget _stat(double width, String label, int value, IconData icon) {
     return SizedBox(
-      width: MediaQuery.sizeOf(context).width / 2 - 25,
-      height: 105,
+      width: width,
+      height: 118,
       child: CardBox(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Icon(icon, color: accent),
+            const Spacer(),
             Text('$value', style: const TextStyle(fontSize: 27, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 2),
             Text(label, style: const TextStyle(color: muted)),
           ],
         ),
