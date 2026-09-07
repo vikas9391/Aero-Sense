@@ -41,7 +41,66 @@ class _CompanyDetailState extends State<CompanyDetailScreen> {
   late CompanySummary company; List<User> users = []; bool loading = true; String? error;
   @override void initState() { super.initState(); company = widget.company; load(); }
   Future<void> load() async { try { final values = await Future.wait([api.company(widget.company.id), api.companyUsers(widget.company.id)]); company = values[0] as CompanySummary; users = values[1] as List<User>; } catch (e) { error = api.errorMessage(e); } if (mounted) setState(() => loading = false); }
-  @override Widget build(BuildContext context) { final active = company.status == 'ACTIVE'; return Scaffold(backgroundColor: bg, appBar: AppBar(title: const Text('Company details'), backgroundColor: bg), body: RefreshIndicator(onRefresh: load, child: ListView(padding: const EdgeInsets.all(20), children: [if (error != null) CardBox(child: Text(error!, style: const TextStyle(color: Colors.red))), CardBox(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Row(children: [Container(width: 52, height: 52, decoration: BoxDecoration(color: soft, borderRadius: BorderRadius.circular(15)), child: const Icon(Icons.business_outlined, color: accent, size: 28)), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(company.name, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w800)), Text(company.slug, style: const TextStyle(color: muted, fontSize: 11))])), StatusPill(company.status)]), const SizedBox(height: 18), Wrap(spacing: 14, runSpacing: 10, children: [_metric(Icons.people_outline, '${company.userCount} users'), _metric(Icons.flight_outlined, '${company.aircraftCount} aircraft'), _metric(Icons.memory_outlined, '${company.componentCount} components'), _metric(Icons.build_outlined, '${company.maintenanceCount} records'), _metric(Icons.nfc_outlined, '${company.verificationCount} scans')]), const SizedBox(height: 18), SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: () async { await api.updateCompanyStatus(company.id, active ? 'SUSPENDED' : 'ACTIVE'); await load(); }, icon: Icon(active ? Icons.block_outlined : Icons.play_arrow_outlined), label: Text(active ? 'Suspend Company' : 'Reactivate Company')))])), const SizedBox(height: 14), CardBox(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text('Employees & Accounts', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)), const SizedBox(height: 5), Text('${users.length} account${users.length == 1 ? '' : 's'} in ${company.name}', style: const TextStyle(color: muted)), const SizedBox(height: 14), if (loading) const Center(child: CircularProgressIndicator(color: accent)) else if (users.isEmpty) const Text('No users yet. Use Add Admin from Company Management.', style: TextStyle(color: muted)) else ...users.map((u) => Padding(padding: const EdgeInsets.only(bottom: 12), child: ListTile(contentPadding: EdgeInsets.zero, leading: CircleAvatar(backgroundColor: soft, child: const Icon(Icons.person_outline, color: accent)), title: Text(u.name, style: const TextStyle(fontWeight: FontWeight.w700)), subtitle: Text(u.email, style: const TextStyle(color: muted)), trailing: StatusPill(u.role))))]))])); }
+  @override Widget build(BuildContext context) {
+    final active = company.status == 'ACTIVE';
+    return Scaffold(
+      backgroundColor: bg,
+      appBar: AppBar(title: const Text('Company details'), backgroundColor: bg),
+      body: RefreshIndicator(
+        onRefresh: load,
+        child: ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
+            if (error != null) CardBox(child: Text(error!, style: const TextStyle(color: Colors.red))),
+            CardBox(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(children: [
+                    Container(width: 52, height: 52, decoration: BoxDecoration(color: soft, borderRadius: BorderRadius.circular(15)), child: const Icon(Icons.business_outlined, color: accent, size: 28)),
+                    const SizedBox(width: 12),
+                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(company.name, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w800)), Text(company.slug, style: const TextStyle(color: muted, fontSize: 11))])),
+                    StatusPill(company.status),
+                  ]),
+                  const SizedBox(height: 18),
+                  Wrap(spacing: 14, runSpacing: 10, children: [_metric(Icons.people_outline, '${company.userCount} users'), _metric(Icons.flight_outlined, '${company.aircraftCount} aircraft'), _metric(Icons.memory_outlined, '${company.componentCount} components'), _metric(Icons.build_outlined, '${company.maintenanceCount} records'), _metric(Icons.nfc_outlined, '${company.verificationCount} scans')]),
+                  const SizedBox(height: 18),
+                  SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: () async { await api.updateCompanyStatus(company.id, active ? 'SUSPENDED' : 'ACTIVE'); await load(); }, icon: Icon(active ? Icons.block_outlined : Icons.play_arrow_outlined), label: Text(active ? 'Suspend Company' : 'Reactivate Company'))),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            CardBox(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Employees & Accounts', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                  const SizedBox(height: 5),
+                  Text('${users.length} account${users.length == 1 ? '' : 's'} in ${company.name}', style: const TextStyle(color: muted)),
+                  const SizedBox(height: 14),
+                  if (loading)
+                    const Center(child: CircularProgressIndicator(color: accent))
+                  else if (users.isEmpty)
+                    const Text('No users yet. Use Add Admin from Company Management.', style: TextStyle(color: muted))
+                  else
+                    ...users.map((u) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: CircleAvatar(backgroundColor: soft, child: const Icon(Icons.person_outline, color: accent)),
+                        title: Text(u.name, style: const TextStyle(fontWeight: FontWeight.w700)),
+                        subtitle: Text(u.email, style: const TextStyle(color: muted)),
+                        trailing: StatusPill(u.role),
+                      ),
+                    )),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
   Widget _metric(IconData icon, String text) => Row(mainAxisSize: MainAxisSize.min, children: [Icon(icon, size: 15, color: muted), const SizedBox(width: 5), Text(text, style: const TextStyle(color: muted, fontSize: 12))]);
 }
 
