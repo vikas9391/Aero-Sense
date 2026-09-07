@@ -118,12 +118,20 @@ class _MobileDashboardScreenState extends State<MobileDashboardScreen> {
             const Text('REGISTERED AIRCRAFT', style: TextStyle(color: muted, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.1)),
             const SizedBox(height: 10),
             if (!loading && aircraft.isEmpty) const Text('No aircraft registered yet.', style: TextStyle(color: muted)),
-            ...aircraft.take(5).map((a) => ListTile(contentPadding: EdgeInsets.zero, leading: const Icon(Icons.flight_outlined, color: accent), title: Text(a.registration, style: const TextStyle(fontWeight: FontWeight.w800)), subtitle: Text('${a.model} · ${a.manufacturer}', style: const TextStyle(color: muted)), trailing: StatusPill(a.status))),
+            if (!loading)
+              ...aircraft.take(5).map((a) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _AircraftRow(aircraft: a),
+                  )),
           ])),
           if (canVerify) ...[
             const SizedBox(height: 12),
             CardBox(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [const Expanded(child: Text('Recent NFC Verification Logs', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800))), if (canAudit) IconButton(onPressed: () => context.go('/security'), icon: const Icon(Icons.arrow_forward))]),
+              Row(children: [
+                const Expanded(child: Text('Recent NFC Verification Logs', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800))),
+                if (canAudit)
+                  IconButton(onPressed: () => context.go('/security'), icon: const Icon(Icons.arrow_forward), tooltip: 'Open security audit'),
+              ]),
               const SizedBox(height: 6),
               if (verifications.isEmpty) const Text('No verification scans recorded yet.', style: TextStyle(color: muted))
               else ...verifications.take(5).map((v) => EventRow(title: v.status, subtitle: '${v.createdAt}${v.reason.isEmpty ? '' : ' · ${v.reason}'}', ok: v.status == 'AUTHENTIC' || v.status == 'PASSED')),
@@ -145,4 +153,43 @@ class _MobileDashboardScreenState extends State<MobileDashboardScreen> {
           Text(label, style: const TextStyle(color: muted)),
         ])),
       );
+}
+
+class _AircraftRow extends StatelessWidget {
+  final Aircraft aircraft;
+
+  const _AircraftRow({required this.aircraft});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const Icon(Icons.flight_outlined, color: accent),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                aircraft.registration,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                '${aircraft.model} · ${aircraft.manufacturer}',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: muted, fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        Flexible(child: Align(alignment: Alignment.centerRight, child: StatusPill(aircraft.status))),
+      ],
+    );
+  }
 }
