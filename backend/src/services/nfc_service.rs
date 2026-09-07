@@ -24,16 +24,19 @@ impl DeviceNfcService {
     }
 
     fn normalize_identifier(identifier: &str) -> String {
-        identifier
-            .trim()
-            .replace('-', ":")
-            .to_uppercase()
+        identifier.trim().replace('-', ":").to_uppercase()
     }
 
     fn valid_uid(identifier: &str) -> bool {
         let parts: Vec<&str> = identifier.split(':').filter(|p| !p.is_empty()).collect();
         matches!(parts.len(), 4..=10)
             && parts.iter().all(|part| part.len() == 2 && part.chars().all(|c| c.is_ascii_hexdigit()))
+    }
+}
+
+impl Default for DeviceNfcService {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -60,9 +63,6 @@ impl NfcService for DeviceNfcService {
             });
         }
 
-        // A UID-only NTAG213 scan is an authentic hardware read, but the UID
-        // itself is not a cryptographic secret. Strong cryptographic
-        // authentication requires a signed/dynamic payload from a secure tag.
         let security_type = if scan_data.cmac_signature.is_some() || scan_data.dynamic_counter.is_some() {
             "SECURE_NFC_PAYLOAD".to_string()
         } else {
