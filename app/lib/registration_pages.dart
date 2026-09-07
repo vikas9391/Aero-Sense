@@ -84,7 +84,7 @@ class _RegisterTagState extends State<RegisterTagScreen> {
       Row(children: [
         Expanded(child: OutlinedButton.icon(onPressed: scanning ? null : readNfc, icon: const Icon(Icons.nfc), label: Text(scanning ? 'Reading…' : 'Read NFC'))),
         const SizedBox(width: 10),
-        Expanded(child: FilledButton.icon(onPressed: saving ? null : save, icon: const Icon(Icons.link), label: Text(saving ? 'Saving…' : 'Bind Tag')),
+        Expanded(child: FilledButton.icon(onPressed: saving ? null : save, icon: const Icon(Icons.link), label: Text(saving ? 'Saving…' : 'Bind Tag'))),
       ]),
     ])),
   ]));
