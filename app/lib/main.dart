@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'core/api.dart';
-import 'screens.dart';
+import 'app_router.dart';
 import 'theme.dart';
 
 void main() {
@@ -13,15 +12,15 @@ class AeroSenseApp extends StatelessWidget {
   const AeroSenseApp({super.key});
 
   @override
-  Widget build(BuildContext context) => MaterialApp(
+  Widget build(BuildContext context) => MaterialApp.router(
         debugShowCheckedModeBanner: false,
         title: 'Aero-Sense',
+        routerConfig: appRouter,
         builder: (context, child) {
-          // Aero-Sense uses a compact fixed mobile layout. Keep Android
-          // system font/display scaling from changing the geometry of the
-          // verification and profile screens into oversized one-word lines.
+          // Keep the mobile layout stable even when Android display/font
+          // scaling is set very high. Individual pages remain scrollable.
           final media = MediaQuery.of(context).copyWith(
-            textScaler: TextScaler.noScaling,
+            textScaler: const TextScaler.linear(1.0),
           );
           return MediaQuery(data: media, child: child ?? const SizedBox.shrink());
         },
@@ -45,53 +44,15 @@ class AeroSenseApp extends StatelessWidget {
               borderSide: const BorderSide(color: accent, width: 1.5),
             ),
           ),
-          navigationBarTheme: NavigationBarThemeData(
+          navigationBarTheme: const NavigationBarThemeData(
             backgroundColor: panel,
-            indicatorColor: const Color(0xFFE8E9F7),
+            indicatorColor: Color(0xFFE8E9F7),
             labelTextStyle: WidgetStatePropertyAll(
-              const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+              TextStyle(fontSize: 10, fontWeight: FontWeight.w700),
             ),
           ),
         ),
-        home: const SessionGate(),
       );
-}
-
-class SessionGate extends StatefulWidget {
-  const SessionGate({super.key});
-
-  @override
-  State<SessionGate> createState() => _SessionGateState();
-}
-
-class _SessionGateState extends State<SessionGate> {
-  bool loading = true;
-  bool authenticated = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _check();
-  }
-
-  Future<void> _check() async {
-    final token = await api.storage.read(key: tokenKey);
-    if (token != null && token.isNotEmpty) {
-      try {
-        await api.me();
-        authenticated = true;
-      } catch (_) {
-        await api.storage.delete(key: tokenKey);
-      }
-    }
-    if (mounted) setState(() => loading = false);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (loading) return const SplashScreen();
-    return authenticated ? const AppShell() : const LoginScreen();
-  }
 }
 
 class SplashScreen extends StatelessWidget {
@@ -115,11 +76,7 @@ class SplashScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: muted, letterSpacing: 1.6),
               ),
               SizedBox(height: 22),
-              SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(strokeWidth: 2.5, color: accent),
-              ),
+              SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: accent)),
             ],
           ),
         ),
