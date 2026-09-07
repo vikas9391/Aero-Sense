@@ -71,6 +71,7 @@ pub async fn list_maintenance(
     State(pool): State<DbPool>,
     user: AuthenticatedUser,
 ) -> Result<Json<Vec<MaintenanceRecordResponse>>, AppError> {
+    require_role(&user, &[UserRole::CompanyAdmin, UserRole::MaintenanceTechnician])?;
     let company_id = require_company_scope(&user)?;
     let records: Vec<MaintenanceRecord> = sqlx::query_as(
         "SELECT * FROM maintenance_records WHERE company_id = $1 ORDER BY id DESC",
@@ -110,6 +111,7 @@ pub async fn get_component_history(
     user: AuthenticatedUser,
     Path(component_id): Path<i64>,
 ) -> Result<Json<Vec<MaintenanceRecordResponse>>, AppError> {
+    require_role(&user, &[UserRole::CompanyAdmin, UserRole::MaintenanceTechnician])?;
     let company_id = require_company_scope(&user)?;
     let records: Vec<MaintenanceRecord> = sqlx::query_as(
         "SELECT * FROM maintenance_records WHERE component_id = $1 AND company_id = $2 ORDER BY id DESC",
