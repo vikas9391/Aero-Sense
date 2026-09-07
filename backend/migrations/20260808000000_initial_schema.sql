@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
     role TEXT NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP::text
 );
 
 CREATE TABLE IF NOT EXISTS aircraft (
@@ -17,8 +17,8 @@ CREATE TABLE IF NOT EXISTS aircraft (
     model TEXT NOT NULL,
     manufacturer TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'ACTIVE',
-    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP::text,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP::text
 );
 
 CREATE TABLE IF NOT EXISTS components (
@@ -29,8 +29,8 @@ CREATE TABLE IF NOT EXISTS components (
     component_type TEXT NOT NULL,
     manufacturer TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'OPERATIONAL',
-    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP::text,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP::text
 );
 
 CREATE TABLE IF NOT EXISTS component_tags (
@@ -40,8 +40,8 @@ CREATE TABLE IF NOT EXISTS component_tags (
     identifier TEXT UNIQUE NOT NULL,
     security_type TEXT NOT NULL,
     tamper_status TEXT NOT NULL DEFAULT 'INTACT',
-    registered_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    registered_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP::text,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP::text
 );
 
 CREATE TABLE IF NOT EXISTS maintenance_records (
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS maintenance_records (
     parts_replaced TEXT,
     inspection_result TEXT NOT NULL,
     record_hash TEXT NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP::text
 );
 
 CREATE TABLE IF NOT EXISTS verification_logs (
@@ -66,10 +66,9 @@ CREATE TABLE IF NOT EXISTS verification_logs (
     blockchain_result BOOLEAN NOT NULL,
     final_result TEXT NOT NULL,
     failure_reason TEXT,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP::text
 );
 
--- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_uuid ON users(uuid);
 CREATE INDEX IF NOT EXISTS idx_aircraft_uuid ON aircraft(aircraft_uuid);
