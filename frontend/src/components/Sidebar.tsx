@@ -10,8 +10,8 @@ import {
   ShieldAlert,
   User,
   Users,
-  Building2,
   BarChart3,
+  Building2,
 } from 'lucide-react';
 
 type NavItem = {
@@ -36,8 +36,8 @@ const NavGroup: React.FC<{ title: string; items: NavItem[] }> = ({ title, items 
                 isActive
                   ? 'bg-[#f1f1ef] text-ink'
                   : item.highlight
-                  ? 'text-[#0a7a4c] hover:bg-[#e9f6ef]'
-                  : 'text-[#4b4b52] hover:bg-[#f7f7f5] hover:text-ink'
+                    ? 'text-[#0a7a4c] hover:bg-[#e9f6ef]'
+                    : 'text-[#4b4b52] hover:bg-[#f7f7f5] hover:text-ink'
               }`
             }
           >
@@ -61,14 +61,12 @@ const NavGroup: React.FC<{ title: string; items: NavItem[] }> = ({ title, items 
 export const Sidebar: React.FC = () => {
   const { user } = useAuth();
   const role = user?.role;
-
   const isSuperAdmin = role === 'SUPER_ADMIN';
   const isCompanyAdmin = role === 'COMPANY_ADMIN';
+  const canVerify = isCompanyAdmin || role === 'MANUFACTURER' || role === 'MAINTENANCE_TECHNICIAN' || role === 'INSPECTOR';
   const canMaintain = isCompanyAdmin || role === 'MAINTENANCE_TECHNICIAN';
+  const canAudit = isCompanyAdmin || role === 'INSPECTOR';
 
-  // The Super Admin doesn't belong to any company, so it has no aircraft,
-  // components, maintenance, or verification data to show — its only job is
-  // managing the tenant list itself.
   if (isSuperAdmin) {
     return (
       <aside className="w-64 shrink-0 bg-white border-r border-pebble p-4 flex flex-col justify-between sticky top-[65px] h-[calc(100vh-65px)] overflow-y-auto">
@@ -85,14 +83,11 @@ export const Sidebar: React.FC = () => {
 
   const coreItems: NavItem[] = [
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { to: '/verify', label: 'Verify Component', icon: ScanLine, highlight: true },
+    ...(canVerify ? [{ to: '/verify', label: 'Verify Component', icon: ScanLine, highlight: true }] : []),
     { to: '/aircraft', label: 'Aircraft Fleet', icon: Plane },
     { to: '/components', label: 'Component Catalog', icon: Cpu },
   ];
 
-  // Registering a component and binding an NFC tag both live as in-page
-  // actions on the Component Catalog now, rather than as their own sidebar
-  // destinations — one place to manage components instead of three.
   const managementItems: NavItem[] = [
     ...(canMaintain ? [{ to: '/maintenance', label: 'Log Maintenance', icon: Wrench }] : []),
     ...(isCompanyAdmin
@@ -101,7 +96,7 @@ export const Sidebar: React.FC = () => {
           { to: '/analytics', label: 'Work Analytics', icon: BarChart3 },
         ]
       : []),
-    { to: '/security', label: 'Security & Audit', icon: ShieldAlert },
+    ...(canAudit ? [{ to: '/security', label: 'Security & Audit', icon: ShieldAlert }] : []),
   ];
 
   return (
@@ -110,7 +105,6 @@ export const Sidebar: React.FC = () => {
         <NavGroup title="Core Operations" items={coreItems} />
         {managementItems.length > 0 && <NavGroup title="Management & Audit" items={managementItems} />}
       </div>
-
       <div className="space-y-3">
         <NavLink
           to="/profile"
