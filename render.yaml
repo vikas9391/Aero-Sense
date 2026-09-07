@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: aero-sense-backend
+    runtime: rust
+    rootDir: backend
+    plan: free
+    buildCommand: cargo build --release
+    startCommand: cargo run --release
+    healthCheckPath: /health
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        value: sqlite://aircraft_verification.db?mode=rwc
+      - key: SUPER_ADMIN_EMAIL
+        sync: false
+      - key: SUPER_ADMIN_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DEMO_SEED
+        value: "true"
+      - key: ALLOW_VERIFICATION_SIMULATION
+        value: "true"
+      - key: ALLOWED_ORIGINS
+        value: "*"
