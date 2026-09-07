@@ -12,7 +12,6 @@ impl TagService {
         company_id: i64,
         req: RegisterTagRequest,
     ) -> Result<ComponentTag, AppError> {
-        // The component must belong to the caller's own company.
         let component_exists: Option<(i64,)> = sqlx::query_as(
             "SELECT id FROM components WHERE id = ? AND company_id = ?"
         )
@@ -25,7 +24,12 @@ impl TagService {
             return Err(AppError::ComponentNotFound);
         }
 
-        let security_type = req.security_type.unwrap_or_else(|| "MOCK".to_string());
+        let identifier = req.identifier.trim().replace('-', ":").to_uppercase();
+        if identifier.is_empty() {
+            return Err(AppError::BadRequest("NFC tag identifier cannot be empty".to_string()));
+        }
+
+        let security_type = req.security_type.unwrap_or_else(|| "BASIC_UID".to_string());
 
         let res = sqlx::query(
             "INSERT INTO component_tags (component_id, technology, identifier, security_type, tamper_status, company_id)
@@ -33,7 +37,7 @@ impl TagService {
         )
         .bind(req.component_id)
         .bind(&req.technology)
-        .bind(&req.identifier)
+        .bind(&identifier)
         .bind(&security_type)
         .bind(company_id)
         .execute(pool)
@@ -63,23 +67,19 @@ impl TagService {
         Ok(tag)
     }
 
-    /// Used by the verification pipeline, which is itself scoped to the
-    /// scanning user's company — a tag identifier belonging to another
-    /// company is treated exactly like an unknown/unregistered tag.
     pub async fn get_tag_by_identifier(
         pool: &DbPool,
         company_id: i64,
         identifier: &str,
     ) -> Result<ComponentTag, AppError> {
-        let tag: ComponentTag = sqlx::query_as(
+        let normalized = identifier.trim().replace('-', ":").to_uppercase();
+        sqlx::query_as(
             "SELECT * FROM component_tags WHERE identifier = ? AND company_id = ?"
         )
-        .bind(identifier)
+        .bind(&normalized)
         .bind(company_id)
         .fetch_optional(pool)
         .await?
-        .ok_or_else(|| AppError::NfcTagNotRegistered)?;
-
-        Ok(tag)
+        .ok_or_else(|| AppError::NfcTagNotRegistered)
     }
 }
