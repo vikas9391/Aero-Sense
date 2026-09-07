@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'core/api.dart';
+import 'dashboard_page.dart';
 import 'management_pages.dart';
 import 'nfc_pages.dart';
 import 'registration_pages.dart';
@@ -10,124 +11,6 @@ import 'theme.dart';
 import 'widgets.dart';
 
 final api = Api();
-
-class Dashboard extends StatefulWidget {
-  const Dashboard({super.key});
-
-  @override
-  State<Dashboard> createState() => _DashboardState();
-}
-
-class _DashboardState extends State<Dashboard> {
-  Analytics? data;
-  bool loading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    load();
-  }
-
-  Future<void> load() async {
-    try {
-      data = await api.analytics();
-    } catch (_) {}
-    if (mounted) {
-      setState(() => loading = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final total = data?.verifications ?? 0;
-    final passed = data?.passed ?? 0;
-    final health = total == 0 ? 0.0 : (passed / total).clamp(0.0, 1.0);
-    return RefreshIndicator(
-      onRefresh: load,
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
-        children: [
-          const Text('OPERATIONS CONSOLE', style: TextStyle(color: muted, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
-          const SizedBox(height: 5),
-          const Text('Aero-Sense', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 5),
-          const Text('Fleet and component intelligence at a glance.', style: TextStyle(color: muted, height: 1.4)),
-          const SizedBox(height: 18),
-          CardBox(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(Icons.nfc_outlined, color: accent, size: 30),
-                const SizedBox(height: 12),
-                const Text('VERIFICATION CONTROL', style: TextStyle(color: accent, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.1)),
-                const SizedBox(height: 6),
-                const Text('Verify an aircraft component', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800)),
-                const SizedBox(height: 7),
-                const Text('Scan a registered physical NFC tag and validate its component identity.', style: TextStyle(color: muted, height: 1.4)),
-                const SizedBox(height: 15),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NfcVerificationScreen())),
-                    icon: const Icon(Icons.nfc),
-                    label: const Text('Start NFC verification'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          const Text('Live overview', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 12),
-          if (loading)
-            const LinearProgressIndicator(color: accent)
-          else
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                _stat('Aircraft', data?.aircraft ?? 0, Icons.flight_outlined),
-                _stat('Components', data?.components ?? 0, Icons.inventory_2_outlined),
-                _stat('Maintenance', data?.maintenance ?? 0, Icons.build_outlined),
-                _stat('Verifications', data?.verifications ?? 0, Icons.fact_check_outlined),
-              ],
-            ),
-          const SizedBox(height: 14),
-          CardBox(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('VERIFICATION HEALTH', style: TextStyle(color: muted, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.1)),
-                const SizedBox(height: 8),
-                Text('$passed passed / ${data?.failed ?? 0} failed', style: const TextStyle(fontWeight: FontWeight.w700)),
-                const SizedBox(height: 10),
-                LinearProgressIndicator(value: health, minHeight: 8, borderRadius: BorderRadius.circular(8), color: good, backgroundColor: soft),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _stat(String label, int value, IconData icon) {
-    return SizedBox(
-      width: MediaQuery.sizeOf(context).width / 2 - 25,
-      height: 105,
-      child: CardBox(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Icon(icon, color: accent),
-            Text('$value', style: const TextStyle(fontSize: 27, fontWeight: FontWeight.w800)),
-            Text(label, style: const TextStyle(color: muted)),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class ComponentsScreen extends StatefulWidget {
   const ComponentsScreen({super.key});
@@ -147,9 +30,7 @@ class _ComponentsState extends State<ComponentsScreen> {
     super.initState();
     load();
     api.me().then((value) {
-      if (mounted) {
-        setState(() => user = value);
-      }
+      if (mounted) setState(() => user = value);
     }).catchError((_) {});
   }
 
@@ -157,9 +38,7 @@ class _ComponentsState extends State<ComponentsScreen> {
     try {
       items = await api.components();
     } catch (_) {}
-    if (mounted) {
-      setState(() => loading = false);
-    }
+    if (mounted) setState(() => loading = false);
   }
 
   bool get canRegister {
@@ -203,10 +82,7 @@ class _ComponentsState extends State<ComponentsScreen> {
             ),
             const SizedBox(height: 14),
           ],
-          TextField(
-            onChanged: (value) => setState(() => query = value),
-            decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Search serial, type or manufacturer'),
-          ),
+          TextField(onChanged: (value) => setState(() => query = value), decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Search serial, type or manufacturer')),
           const SizedBox(height: 12),
           if (loading)
             const Center(child: CircularProgressIndicator(color: accent))
@@ -245,6 +121,7 @@ class _PassportState extends State<PassportScreen> {
   List<MaintenanceRecord> maintenance = [];
   List<VerificationLog> checks = [];
   bool loading = true;
+  User? user;
 
   @override
   void initState() {
@@ -254,22 +131,27 @@ class _PassportState extends State<PassportScreen> {
 
   Future<void> load() async {
     try {
-      maintenance = (await api.maintenance()).where((item) => item.componentId == widget.component.id).toList();
-    } catch (_) {
-      maintenance = [];
+      user = await api.me();
+    } catch (_) {}
+    final role = (user?.role ?? '').toUpperCase();
+    if (role == 'COMPANY_ADMIN' || role == 'MAINTENANCE_TECHNICIAN') {
+      try {
+        maintenance = (await api.maintenance()).where((item) => item.componentId == widget.component.id).toList();
+      } catch (_) {}
     }
-    try {
-      checks = await api.componentVerifications(widget.component.id);
-    } catch (_) {
-      checks = [];
+    if (role == 'COMPANY_ADMIN' || role == 'MANUFACTURER' || role == 'MAINTENANCE_TECHNICIAN' || role == 'INSPECTOR') {
+      try {
+        checks = await api.componentVerifications(widget.component.id);
+      } catch (_) {}
     }
-    if (mounted) {
-      setState(() => loading = false);
-    }
+    if (mounted) setState(() => loading = false);
   }
 
   @override
   Widget build(BuildContext context) {
+    final role = (user?.role ?? '').toUpperCase();
+    final canSeeMaintenance = role == 'COMPANY_ADMIN' || role == 'MAINTENANCE_TECHNICIAN';
+    final canSeeVerification = role == 'COMPANY_ADMIN' || role == 'MANUFACTURER' || role == 'MAINTENANCE_TECHNICIAN' || role == 'INSPECTOR';
     return Scaffold(
       backgroundColor: bg,
       appBar: AppBar(title: const Text('Component passport'), backgroundColor: bg),
@@ -291,41 +173,37 @@ class _PassportState extends State<PassportScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 12),
-          Section(
-            title: 'Verification history',
-            child: loading
-                ? const CircularProgressIndicator(color: accent)
-                : checks.isEmpty
-                    ? const Text('No verification records available for this account.', style: TextStyle(color: muted))
-                    : Column(children: checks.map((item) => EventRow(title: item.status, subtitle: item.createdAt, ok: item.status == 'AUTHENTIC' || item.status == 'PASSED')).toList()),
-          ),
-          const SizedBox(height: 12),
-          Section(
-            title: 'Maintenance history',
-            child: loading
-                ? const CircularProgressIndicator(color: accent)
-                : maintenance.isEmpty
-                    ? const Text('No maintenance records available for this account.', style: TextStyle(color: muted))
-                    : Column(children: maintenance.map((item) => EventRow(title: item.type, subtitle: '${item.createdAt} · ${item.technician}', ok: item.result == 'PASSED')).toList()),
-          ),
+          if (canSeeVerification) ...[
+            const SizedBox(height: 12),
+            Section(
+              title: 'Verification history',
+              child: loading
+                  ? const CircularProgressIndicator(color: accent)
+                  : checks.isEmpty
+                      ? const Text('No verification records available for this account.', style: TextStyle(color: muted))
+                      : Column(children: checks.map((item) => EventRow(title: item.status, subtitle: item.createdAt, ok: item.status == 'AUTHENTIC' || item.status == 'PASSED')).toList()),
+            ),
+          ],
+          if (canSeeMaintenance) ...[
+            const SizedBox(height: 12),
+            Section(
+              title: 'Maintenance history',
+              child: loading
+                  ? const CircularProgressIndicator(color: accent)
+                  : maintenance.isEmpty
+                      ? const Text('No maintenance records available for this account.', style: TextStyle(color: muted))
+                      : Column(children: maintenance.map((item) => EventRow(title: item.type, subtitle: '${item.createdAt} · ${item.technician}', ok: item.result == 'PASSED')).toList()),
+            ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _kv(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 9),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(child: Text(label, style: const TextStyle(color: muted))),
-          Expanded(child: Text(value, style: const TextStyle(fontWeight: FontWeight.w700))),
-        ],
-      ),
-    );
-  }
+  Widget _kv(String label, String value) => Padding(
+        padding: const EdgeInsets.only(bottom: 9),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Expanded(child: Text(label, style: const TextStyle(color: muted))), Expanded(child: Text(value, style: const TextStyle(fontWeight: FontWeight.w700)))]),
+      );
 }
 
 class ProfileScreen extends StatefulWidget {
@@ -349,16 +227,9 @@ class _ProfileState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    load();
-  }
-
-  Future<void> load() async {
-    try {
-      final value = await api.me();
-      if (mounted) {
-        setState(() => user = value);
-      }
-    } catch (_) {}
+    api.me().then((value) {
+      if (mounted) setState(() => user = value);
+    }).catchError((_) {});
   }
 
   Future<void> signOut() async {
@@ -369,9 +240,7 @@ class _ProfileState extends State<ProfileScreen> {
 
   Future<void> changePassword() async {
     final result = await showDialog<bool>(context: context, builder: (_) => const _ChangePasswordDialog());
-    if (result == true && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password updated successfully.')));
-    }
+    if (result == true && mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password updated successfully.')));
   }
 
   @override
@@ -471,40 +340,32 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Change password'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (error != null) Padding(padding: const EdgeInsets.only(bottom: 10), child: Text(error!, style: const TextStyle(color: Colors.red))),
-            _passwordField(current, 'Current password', hideCurrent, () => setState(() => hideCurrent = !hideCurrent)),
-            const SizedBox(height: 10),
-            _passwordField(next, 'New password', hideNext, () => setState(() => hideNext = !hideNext), hint: 'Minimum 8 characters'),
-            const SizedBox(height: 10),
-            _passwordField(confirm, 'Confirm new password', hideConfirm, () => setState(() => hideConfirm = !hideConfirm)),
-          ],
+  Widget build(BuildContext context) => AlertDialog(
+        title: const Text('Change password'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (error != null) Padding(padding: const EdgeInsets.only(bottom: 10), child: Text(error!, style: const TextStyle(color: Colors.red))),
+              _field(current, 'Current password', hideCurrent, () => setState(() => hideCurrent = !hideCurrent)),
+              const SizedBox(height: 10),
+              _field(next, 'New password', hideNext, () => setState(() => hideNext = !hideNext), hint: 'Minimum 8 characters'),
+              const SizedBox(height: 10),
+              _field(confirm, 'Confirm new password', hideConfirm, () => setState(() => hideConfirm = !hideConfirm)),
+            ],
+          ),
         ),
-      ),
-      actions: [
-        TextButton(onPressed: saving ? null : () => Navigator.pop(context), child: const Text('Cancel')),
-        FilledButton(onPressed: saving ? null : submit, child: Text(saving ? 'Updating…' : 'Update password')),
-      ],
-    );
-  }
+        actions: [
+          TextButton(onPressed: saving ? null : () => Navigator.pop(context), child: const Text('Cancel')),
+          FilledButton(onPressed: saving ? null : submit, child: Text(saving ? 'Updating…' : 'Update password')),
+        ],
+      );
 
-  Widget _passwordField(TextEditingController controller, String label, bool hidden, VoidCallback toggle, {String? hint}) {
-    return TextField(
-      controller: controller,
-      obscureText: hidden,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        suffixIcon: IconButton(onPressed: toggle, icon: Icon(hidden ? Icons.visibility_outlined : Icons.visibility_off_outlined)),
-      ),
-    );
-  }
+  Widget _field(TextEditingController controller, String label, bool hidden, VoidCallback toggle, {String? hint}) => TextField(
+        controller: controller,
+        obscureText: hidden,
+        decoration: InputDecoration(labelText: label, hintText: hint, suffixIcon: IconButton(onPressed: toggle, icon: Icon(hidden ? Icons.visibility_outlined : Icons.visibility_off_outlined))),
+      );
 }
 
 class LoginScreen extends StatefulWidget {
@@ -548,41 +409,39 @@ class _LoginState extends State<LoginScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: bg,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 520),
-              child: CardBox(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(Icons.flight_takeoff_rounded, color: accent, size: 42),
-                    const SizedBox(height: 18),
-                    const Text('AERO-SENSE', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, letterSpacing: 1.4)),
-                    const SizedBox(height: 4),
-                    const Text('Secure aircraft component intelligence', style: TextStyle(color: muted)),
-                    const SizedBox(height: 25),
-                    TextField(controller: company, decoration: const InputDecoration(labelText: 'Company name', prefixIcon: Icon(Icons.business_outlined))),
-                    const SizedBox(height: 12),
-                    TextField(controller: email, keyboardType: TextInputType.emailAddress, decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.email_outlined))),
-                    const SizedBox(height: 12),
-                    TextField(controller: password, obscureText: true, onSubmitted: (_) { if (!busy) go(); }, decoration: const InputDecoration(labelText: 'Password', prefixIcon: Icon(Icons.lock_outline))),
-                    const SizedBox(height: 18),
-                    SizedBox(width: double.infinity, height: 52, child: FilledButton.icon(onPressed: busy ? null : go, icon: const Icon(Icons.login), label: Text(busy ? 'Signing in…' : 'Sign in'))),
-                  ],
+  Widget build(BuildContext context) => Scaffold(
+        backgroundColor: bg,
+        body: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 520),
+                child: CardBox(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.flight_takeoff_rounded, color: accent, size: 42),
+                      const SizedBox(height: 18),
+                      const Text('AERO-SENSE', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, letterSpacing: 1.4)),
+                      const SizedBox(height: 4),
+                      const Text('Secure aircraft component intelligence', style: TextStyle(color: muted)),
+                      const SizedBox(height: 25),
+                      TextField(controller: company, decoration: const InputDecoration(labelText: 'Company name', prefixIcon: Icon(Icons.business_outlined))),
+                      const SizedBox(height: 12),
+                      TextField(controller: email, keyboardType: TextInputType.emailAddress, decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.email_outlined))),
+                      const SizedBox(height: 12),
+                      TextField(controller: password, obscureText: true, onSubmitted: (_) { if (!busy) go(); }, decoration: const InputDecoration(labelText: 'Password', prefixIcon: Icon(Icons.lock_outline))),
+                      const SizedBox(height: 18),
+                      SizedBox(width: double.infinity, height: 52, child: FilledButton.icon(onPressed: busy ? null : go, icon: const Icon(Icons.login), label: Text(busy ? 'Signing in…' : 'Sign in'))),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
         ),
-      ),
-    );
-  }
+      );
 }
 
 class AppShell extends StatefulWidget {
@@ -607,27 +466,21 @@ class _AppShellState extends State<AppShell> {
   String get role => (user?.role ?? '').toUpperCase();
   bool get isSuperAdmin => role == 'SUPER_ADMIN';
   bool get isCompanyAdmin => role == 'COMPANY_ADMIN';
-  bool get canBind => isCompanyAdmin || role == 'MANUFACTURER';
   bool get canVerify => isCompanyAdmin || role == 'MANUFACTURER' || role == 'MAINTENANCE_TECHNICIAN' || role == 'INSPECTOR';
   bool get canAudit => isCompanyAdmin || role == 'INSPECTOR';
   bool get canMaintain => isCompanyAdmin || role == 'MAINTENANCE_TECHNICIAN';
 
   List<_NavItem> get nav {
     if (isSuperAdmin) {
-      return const [
-        _NavItem('Companies', Icons.business_outlined),
-        _NavItem('Profile', Icons.person_outline),
-      ];
+      return const [_NavItem('Companies', Icons.business_outlined), _NavItem('Profile', Icons.person_outline)];
     }
-    final items = <_NavItem>[];
-    if (isCompanyAdmin) items.add(const _NavItem('Dashboard', Icons.dashboard_outlined));
+    final items = <_NavItem>[
+      const _NavItem('Dashboard', Icons.dashboard_outlined),
+    ];
     if (canVerify) items.add(const _NavItem('Verify', Icons.verified_user_outlined));
-    if (canBind) items.add(const _NavItem('NFC & Tags', Icons.nfc_outlined));
-    items.add(const _NavItem('Aircraft', Icons.flight_outlined));
-    items.add(const _NavItem('Components', Icons.memory_outlined));
+    items.addAll(const [_NavItem('Aircraft', Icons.flight_outlined), _NavItem('Components', Icons.memory_outlined)]);
     if (canMaintain) items.add(const _NavItem('Maintenance', Icons.build_outlined));
-    if (isCompanyAdmin) items.add(const _NavItem('Users', Icons.people_outline));
-    if (isCompanyAdmin) items.add(const _NavItem('Analytics', Icons.analytics_outlined));
+    if (isCompanyAdmin) items.addAll(const [_NavItem('Users', Icons.people_outline), _NavItem('Analytics', Icons.analytics_outlined)]);
     if (canAudit) items.add(const _NavItem('Security & Audit', Icons.security_outlined));
     items.add(const _NavItem('Profile', Icons.person_outline));
     return items;
@@ -636,9 +489,8 @@ class _AppShellState extends State<AppShell> {
   Widget pageFor(String title) {
     switch (title) {
       case 'Companies': return const CompanyManagementScreen();
-      case 'Dashboard': return const Dashboard();
+      case 'Dashboard': return MobileDashboardScreen(role: role);
       case 'Verify': return const NfcVerificationScreen();
-      case 'NFC & Tags': return const NfcCenterScreen();
       case 'Aircraft': return const AircraftScreen();
       case 'Components': return const ComponentsScreen();
       case 'Maintenance': return const MaintenanceScreen();
@@ -668,7 +520,7 @@ class _AppShellState extends State<AppShell> {
         backgroundColor: bg,
         title: Text(current.label, style: const TextStyle(fontWeight: FontWeight.w800)),
         actions: [
-          if (canBind) IconButton(onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterTagScreen())), icon: const Icon(Icons.add_link_outlined), tooltip: 'Bind NFC / RFID'),
+          if (canVerify) IconButton(onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NfcVerificationScreen())), icon: const Icon(Icons.nfc), tooltip: 'Verify NFC tag'),
           IconButton(onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen())), icon: const Icon(Icons.account_circle_outlined)),
         ],
       ),
@@ -683,19 +535,11 @@ class _AppShellState extends State<AppShell> {
               if (user != null)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(user!.name, style: const TextStyle(fontWeight: FontWeight.w800)), const SizedBox(height: 3), Text(user!.role, style: const TextStyle(color: muted, fontSize: 11))]),
-                  ),
+                  child: Align(alignment: Alignment.centerLeft, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(user!.name, style: const TextStyle(fontWeight: FontWeight.w800)), const SizedBox(height: 3), Text(user!.role, style: const TextStyle(color: muted, fontSize: 11))])),
                 ),
               const SizedBox(height: 12),
               const Divider(height: 1),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: items.length,
-                  itemBuilder: (_, i) => ListTile(selected: i == index, leading: Icon(items[i].icon), title: Text(items[i].label), onTap: () { setState(() => index = i); Navigator.pop(context); }),
-                ),
-              ),
+              Expanded(child: ListView.builder(itemCount: items.length, itemBuilder: (_, i) => ListTile(selected: i == index, leading: Icon(items[i].icon), title: Text(items[i].label), onTap: () { setState(() => index = i); Navigator.pop(context); }))),
               const Divider(height: 1),
               ListTile(leading: const Icon(Icons.logout), title: const Text('Sign out'), onTap: signOut),
             ],
