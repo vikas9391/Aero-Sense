@@ -21,11 +21,8 @@ class _UsersState extends State<UsersScreen> {
   Future<void> create() async {
     final d = await showDialog<List<String>>(context: context, builder: (_) => const _UserDialog());
     if (d == null) return;
-    try {
-      await api.createUser(d[0], d[1], d[2], d[3]);
-      await load();
-      if (mounted) _msg('User created successfully.');
-    } catch (e) { if (mounted) _msg(api.errorMessage(e), true); }
+    try { await api.createUser(d[0], d[1], d[2], d[3]); await load(); if (mounted) _msg('User created successfully.'); }
+    catch (e) { if (mounted) _msg(api.errorMessage(e), true); }
   }
   void _msg(String s, [bool error = false]) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(s), backgroundColor: error ? Colors.red : null));
   @override Widget build(BuildContext context) => Scaffold(
@@ -141,31 +138,35 @@ class _UserDialogState extends State<_UserDialog> {
   final n = TextEditingController(), e = TextEditingController(), p = TextEditingController();
   String role = 'VIEWER'; bool obscure = true;
   final roles = const ['COMPANY_ADMIN', 'MANUFACTURER', 'MAINTENANCE_TECHNICIAN', 'INSPECTOR', 'VIEWER'];
+  bool get canSubmit => n.text.trim().isNotEmpty && e.text.trim().isNotEmpty && p.text.length >= 8;
+  void refresh() => setState(() {});
   @override void dispose() { n.dispose(); e.dispose(); p.dispose(); super.dispose(); }
   @override Widget build(BuildContext context) => AlertDialog(
     title: const Text('Add New User'),
     content: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, children: [
-      TextField(controller: n, decoration: const InputDecoration(labelText: 'Full Name')), const SizedBox(height: 10),
-      TextField(controller: e, keyboardType: TextInputType.emailAddress, decoration: const InputDecoration(labelText: 'Email')), const SizedBox(height: 10),
-      TextField(controller: p, obscureText: obscure, decoration: InputDecoration(labelText: 'Password', hintText: 'Minimum 8 characters', suffixIcon: IconButton(onPressed: () => setState(() => obscure = !obscure), icon: Icon(obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined)))), const SizedBox(height: 10),
+      TextField(controller: n, onChanged: (_) => refresh(), decoration: const InputDecoration(labelText: 'Full Name')), const SizedBox(height: 10),
+      TextField(controller: e, onChanged: (_) => refresh(), keyboardType: TextInputType.emailAddress, decoration: const InputDecoration(labelText: 'Email')), const SizedBox(height: 10),
+      TextField(controller: p, onChanged: (_) => refresh(), obscureText: obscure, decoration: InputDecoration(labelText: 'Password', hintText: 'Minimum 8 characters', suffixIcon: IconButton(onPressed: () => setState(() => obscure = !obscure), icon: Icon(obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined)))), const SizedBox(height: 10),
       DropdownButtonFormField<String>(initialValue: role, decoration: const InputDecoration(labelText: 'Role'), items: roles.map((r) => DropdownMenuItem(value: r, child: Text(r.replaceAll('_', ' ')))).toList(), onChanged: (v) => setState(() => role = v!)),
     ])),
-    actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')), FilledButton(onPressed: n.text.trim().isEmpty || e.text.trim().isEmpty || p.text.length < 8 ? null : () => Navigator.pop(context, [n.text.trim(), e.text.trim(), p.text, role]), child: const Text('Create User'))],
+    actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')), FilledButton(onPressed: canSubmit ? () => Navigator.pop(context, [n.text.trim(), e.text.trim(), p.text, role]) : null, child: const Text('Create User'))],
   );
 }
 
 class _AircraftDialog extends StatefulWidget { const _AircraftDialog(); @override State<_AircraftDialog> createState() => _AircraftDialogState(); }
 class _AircraftDialogState extends State<_AircraftDialog> {
   final r = TextEditingController(), m = TextEditingController(), man = TextEditingController(); String status = 'ACTIVE';
+  bool get canSubmit => r.text.trim().isNotEmpty && m.text.trim().isNotEmpty && man.text.trim().isNotEmpty;
+  void refresh() => setState(() {});
   @override void dispose() { r.dispose(); m.dispose(); man.dispose(); super.dispose(); }
   @override Widget build(BuildContext context) => AlertDialog(
     title: const Text('Add Aircraft'), content: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, children: [
-      TextField(controller: r, decoration: const InputDecoration(labelText: 'Registration Number')), const SizedBox(height: 10),
-      TextField(controller: m, decoration: const InputDecoration(labelText: 'Model')), const SizedBox(height: 10),
-      TextField(controller: man, decoration: const InputDecoration(labelText: 'Manufacturer')), const SizedBox(height: 10),
+      TextField(controller: r, onChanged: (_) => refresh(), decoration: const InputDecoration(labelText: 'Registration Number')), const SizedBox(height: 10),
+      TextField(controller: m, onChanged: (_) => refresh(), decoration: const InputDecoration(labelText: 'Model')), const SizedBox(height: 10),
+      TextField(controller: man, onChanged: (_) => refresh(), decoration: const InputDecoration(labelText: 'Manufacturer')), const SizedBox(height: 10),
       DropdownButtonFormField<String>(initialValue: status, decoration: const InputDecoration(labelText: 'Status'), items: const [DropdownMenuItem(value: 'ACTIVE', child: Text('ACTIVE')), DropdownMenuItem(value: 'INACTIVE', child: Text('INACTIVE'))], onChanged: (v) => setState(() => status = v!)),
     ])),
-    actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')), FilledButton(onPressed: r.text.trim().isEmpty || m.text.trim().isEmpty || man.text.trim().isEmpty ? null : () => Navigator.pop(context, [r.text.trim(), m.text.trim(), man.text.trim(), status]), child: const Text('Create'))],
+    actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')), FilledButton(onPressed: canSubmit ? () => Navigator.pop(context, [r.text.trim(), m.text.trim(), man.text.trim(), status]) : null, child: const Text('Create'))],
   );
 }
 
@@ -176,16 +177,18 @@ class _MaintenanceDialog extends StatefulWidget {
 }
 class _MaintenanceDialogState extends State<_MaintenanceDialog> {
   late String component; final type = TextEditingController(), desc = TextEditingController(), parts = TextEditingController(); String result = 'PASSED';
+  bool get canSubmit => type.text.trim().isNotEmpty && desc.text.trim().isNotEmpty;
+  void refresh() => setState(() {});
   @override void initState() { super.initState(); component = '${widget.components.first.id}'; }
   @override void dispose() { type.dispose(); desc.dispose(); parts.dispose(); super.dispose(); }
   @override Widget build(BuildContext context) => AlertDialog(
     title: const Text('Log Maintenance'), content: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, children: [
       DropdownButtonFormField<String>(initialValue: component, decoration: const InputDecoration(labelText: 'Component'), items: widget.components.map((c) => DropdownMenuItem(value: '${c.id}', child: Text(c.serial))).toList(), onChanged: (v) => setState(() => component = v!)), const SizedBox(height: 10),
-      TextField(controller: type, decoration: const InputDecoration(labelText: 'Maintenance Type')), const SizedBox(height: 10),
-      TextField(controller: desc, maxLines: 3, decoration: const InputDecoration(labelText: 'Description')), const SizedBox(height: 10),
+      TextField(controller: type, onChanged: (_) => refresh(), decoration: const InputDecoration(labelText: 'Maintenance Type')), const SizedBox(height: 10),
+      TextField(controller: desc, onChanged: (_) => refresh(), maxLines: 3, decoration: const InputDecoration(labelText: 'Description')), const SizedBox(height: 10),
       TextField(controller: parts, decoration: const InputDecoration(labelText: 'Parts Replaced')), const SizedBox(height: 10),
       DropdownButtonFormField<String>(initialValue: result, decoration: const InputDecoration(labelText: 'Inspection Result'), items: const [DropdownMenuItem(value: 'PASSED', child: Text('PASSED')), DropdownMenuItem(value: 'FAILED', child: Text('FAILED'))], onChanged: (v) => setState(() => result = v!)),
     ])),
-    actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')), FilledButton(onPressed: type.text.trim().isEmpty || desc.text.trim().isEmpty ? null : () => Navigator.pop(context, [component, type.text.trim(), desc.text.trim(), parts.text.trim(), result]), child: const Text('Save Record'))],
+    actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')), FilledButton(onPressed: canSubmit ? () => Navigator.pop(context, [component, type.text.trim(), desc.text.trim(), parts.text.trim(), result]) : null, child: const Text('Save Record'))],
   );
 }
