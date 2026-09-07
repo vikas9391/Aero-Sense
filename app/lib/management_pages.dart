@@ -42,7 +42,7 @@ class _AircraftState extends State<AircraftScreen> {
     if (mounted) setState(() => loading = false);
   }
   @override void initState() { super.initState(); load(); }
-  bool get canCreate => (user?.role ?? '').toUpperCase() == 'COMPANY_ADMIN' || (user?.role ?? '').toUpperCase() == 'MANUFACTURER';
+  bool get canCreate => (user?.role ?? '').toUpperCase() == 'COMPANY_ADMIN';
   Future<void> create() async {
     if (!canCreate) return;
     final d = await showDialog<List<String>>(context: context, builder: (_) => const _AircraftDialog());
