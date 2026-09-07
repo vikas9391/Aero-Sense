@@ -1,0 +1,24 @@
+name: aero_sense_mobile
+description: Aero-Sense aircraft component intelligence mobile application.
+publish_to: "none"
+version: 1.0.3+4
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  dio: ^5.8.0+1
+  flutter_secure_storage: ^9.2.4
+  nfc_manager: ^3.5.0
+
+  flutter_lints: ^5.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
