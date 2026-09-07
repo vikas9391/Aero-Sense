@@ -1,20 +1,42 @@
-name: Android App Validation
+name: Flutter Android App
+
 on:
   push:
     branches: [mobile-app]
   pull_request:
-    branches: [mobile-app]
+    branches: [main]
+
 jobs:
-  validate:
+  build:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: app
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
-          node-version: 20
-      - run: npm install
-      - run: npm run typecheck
-      - run: npx expo export --platform android
+          channel: stable
+          cache: true
+
+      - name: Generate Android project files
+        run: flutter create . --platforms android --project-name aero_sense_mobile --org com.aerosense
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Build debug APK
+        run: flutter build apk --debug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: aero-sense-debug-apk
+          path: app/build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 14
