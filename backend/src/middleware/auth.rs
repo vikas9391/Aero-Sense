@@ -142,3 +142,58 @@ pub fn require_company_scope(user: &AuthenticatedUser) -> Result<i64, AppError> 
         )
     })
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn user(role: &str, company_id: Option<i64>) -> AuthenticatedUser {
+        AuthenticatedUser(Claims {
+            sub: 1,
+            uuid: "test-user".to_string(),
+            name: "Test User".to_string(),
+            email: "test@example.com".to_string(),
+            role: role.to_string(),
+            company_id,
+            exp: usize::MAX,
+        })
+    }
+
+    #[test]
+    fn company_admin_is_allowed_on_company_operations() {
+        let admin = user("COMPANY_ADMIN", Some(10));
+        assert!(require_role(&admin, &[UserRole::Manufacturer]).is_ok());
+        assert!(require_role(&admin, &[UserRole::MaintenanceTechnician]).is_ok());
+    }
+
+    #[test]
+    fn non_allowed_company_role_is_forbidden() {
+        let viewer = user("VIEWER", Some(10));
+        assert!(matches!(
+            require_role(&viewer, &[UserRole::Inspector]),
+            Err(AppError::Forbidden(_))
+        ));
+    }
+
+    #[test]
+    fn super_admin_does_not_bypass_company_role_checks() {
+        let super_admin = user("SUPER_ADMIN", None);
+        assert!(matches!(
+            require_role(&super_admin, &[UserRole::CompanyAdmin]),
+            Err(AppError::Forbidden(_))
+        ));
+        assert!(require_super_admin(&super_admin).is_ok());
+    }
+
+    #[test]
+    fn company_scope_requires_a_tenant() {
+        let scoped = user("VIEWER", Some(42));
+        assert_eq!(require_company_scope(&scoped).unwrap(), 42);
+
+        let unscoped = user("SUPER_ADMIN", None);
+        assert!(matches!(
+            require_company_scope(&unscoped),
+            Err(AppError::Forbidden(_))
+        ));
+    }
+}
