@@ -53,6 +53,9 @@ pub struct VerificationLogWithComponent {
 pub struct NfcVerificationRequest {
     pub tag_identifier: String,
     pub payload: Option<String>,
+    /// Required only for a platform Super Admin, who has no tenant in their JWT.
+    /// Company users must leave this unset; their JWT company scope is authoritative.
+    pub company_id: Option<i64>,
     pub simulate_scenario: Option<String>,
 }
 
