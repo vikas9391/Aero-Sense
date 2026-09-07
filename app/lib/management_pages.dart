@@ -3,6 +3,8 @@ import 'core/api.dart';
 import 'theme.dart';
 import 'widgets.dart';
 
+final api = Api();
+
 class UsersScreen extends StatefulWidget {
   const UsersScreen({super.key});
   @override State<UsersScreen> createState() => _UsersState();
