@@ -22,15 +22,11 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Generate Android project files
+      - name: Verify Android project configuration
         run: |
-          flutter create . --platforms android --project-name aero_sense_mobile --org com.aerosense --no-pub
-          rm -rf test
-
-      - name: Configure Android application id and NFC
-        run: |
-          sed -i 's/com\.aerosense\.aero_sense_mobile/com.aerosense.mobile/g' android/app/build.gradle android/app/build.gradle.kts 2>/dev/null || true
-          sed -i '/<manifest/a\    <uses-permission android:name="android.permission.NFC" />\n    <uses-feature android:name="android.hardware.nfc" android:required="false" />' android/app/src/main/AndroidManifest.xml
+          grep -q 'com.aerosense.mobile' android/app/build.gradle.kts
+          grep -q 'android.permission.NFC' android/app/src/main/AndroidManifest.xml
+          test -f android/app/src/main/kotlin/com/aerosense/mobile/MainActivity.kt
 
       - name: Get dependencies
         run: flutter pub get
