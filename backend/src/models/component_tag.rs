@@ -17,6 +17,6 @@ pub struct ComponentTag {
 pub struct RegisterTagRequest {
     pub component_id: i64,
     pub technology: String, // e.g. "NFC", "UHF_RFID"
-    pub identifier: String, // e.g. "04:A3:91:XX"
-    pub security_type: Option<String>, // e.g. "MOCK", "BASIC_UID", "SECURE_NTAG424"
+    pub identifier: String, // physical NFC UID, e.g. "04:A3:91:2B:7C:11:80"
+    pub security_type: Option<String>, // "BASIC_UID" or a supported secure NFC payload type
 }
