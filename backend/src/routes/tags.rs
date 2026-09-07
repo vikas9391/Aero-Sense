@@ -16,7 +16,7 @@ pub async fn register_tag(
     user: AuthenticatedUser,
     Json(req): Json<RegisterTagRequest>,
 ) -> Result<(StatusCode, Json<ComponentTag>), AppError> {
-    require_role(&user, &[UserRole::Manufacturer])?;
+    require_role(&user, &[UserRole::CompanyAdmin, UserRole::Manufacturer])?;
     let company_id = require_company_scope(&user)?;
     let tag = TagService::register_tag(&pool, company_id, req).await?;
     Ok((StatusCode::CREATED, Json(tag)))
