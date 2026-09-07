@@ -150,7 +150,9 @@ class _MobileDashboardScreenState extends State<MobileDashboardScreen> {
   Widget _stat(double width, String label, int value, IconData icon) {
     return SizedBox(
       width: width,
-      height: 118,
+      // Keep a small safety margin for CardBox's internal padding and
+      // fractional device-pixel rounding on compact displays.
+      height: 116,
       child: CardBox(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
