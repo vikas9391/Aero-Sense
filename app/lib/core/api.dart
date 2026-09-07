@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-const defaultApiBase = 'http://10.0.2.2:8080/api';
+const defaultApiBase = 'https://aero-sense-backend-0y3l.onrender.com/api';
 const tokenKey = 'aero_sense_token';
 
 class Api {
@@ -14,9 +14,9 @@ class Api {
         : configured;
     dio = Dio(BaseOptions(
       baseUrl: normalized,
-      connectTimeout: const Duration(seconds: 12),
-      receiveTimeout: const Duration(seconds: 15),
-      sendTimeout: const Duration(seconds: 12),
+      connectTimeout: const Duration(seconds: 20),
+      receiveTimeout: const Duration(seconds: 30),
+      sendTimeout: const Duration(seconds: 20),
       headers: const {'Content-Type': 'application/json'},
       validateStatus: (status) => status != null && status < 500,
     ));
