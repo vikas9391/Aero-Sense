@@ -17,6 +17,13 @@ use crate::{
 use axum::{extract::{Path, State}, Extension, Json};
 use std::sync::Arc;
 
+const VERIFICATION_ROLES: [UserRole; 4] = [
+    UserRole::CompanyAdmin,
+    UserRole::Manufacturer,
+    UserRole::MaintenanceTechnician,
+    UserRole::Inspector,
+];
+
 pub async fn verify_nfc(
     State(pool): State<DbPool>,
     Extension(blockchain): Extension<Arc<BlockchainService>>,
@@ -29,15 +36,7 @@ pub async fn verify_nfc(
     // and Inspector. Viewer is read-only. Super Admin is handled separately
     // because it has no tenant in the JWT and is allowed platform-wide lookup.
     if user.0.company_id.is_some() {
-        require_role(
-            &user,
-            &[
-                UserRole::CompanyAdmin,
-                UserRole::Manufacturer,
-                UserRole::MaintenanceTechnician,
-                UserRole::Inspector,
-            ],
-        )?;
+        require_role(&user, &VERIFICATION_ROLES)?;
     }
 
     // Company users are always scoped by the company_id in their JWT. A platform
@@ -119,6 +118,7 @@ pub async fn list_verifications(
     State(pool): State<DbPool>,
     user: AuthenticatedUser,
 ) -> Result<Json<Vec<VerificationLog>>, AppError> {
+    require_role(&user, &VERIFICATION_ROLES)?;
     let company_id = require_company_scope(&user)?;
     Ok(Json(
         sqlx::query_as(
@@ -135,6 +135,7 @@ pub async fn get_component_verifications(
     user: AuthenticatedUser,
     Path(component_id): Path<i64>,
 ) -> Result<Json<Vec<VerificationLog>>, AppError> {
+    require_role(&user, &VERIFICATION_ROLES)?;
     let company_id = require_company_scope(&user)?;
     Ok(Json(
         sqlx::query_as(
@@ -153,6 +154,7 @@ pub async fn verify_blockchain_record(
     user: AuthenticatedUser,
     Json(req): Json<BlockchainVerifyRequest>,
 ) -> Result<Json<BlockchainVerifyResponse>, AppError> {
+    require_role(&user, &[UserRole::CompanyAdmin, UserRole::Inspector])?;
     let company_id = require_company_scope(&user)?;
     let record: Option<(String,)> = sqlx::query_as(
         "SELECT record_hash FROM maintenance_records WHERE id = $1 AND company_id = $2",
