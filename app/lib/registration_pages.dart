@@ -25,9 +25,13 @@ class _RegisterComponentState extends State<RegisterComponentScreen> {
   void initState() {
     super.initState();
     api.aircraft().then((v) {
-      if (mounted) setState(() { aircraft = v; loading = false; });
+      if (mounted) {
+        setState(() { aircraft = v; loading = false; });
+      }
     }).catchError((_) {
-      if (mounted) setState(() => loading = false);
+      if (mounted) {
+        setState(() => loading = false);
+      }
     });
   }
 
@@ -148,9 +152,13 @@ class _RegisterTagState extends State<RegisterTagScreen> {
   void initState() {
     super.initState();
     api.components().then((v) {
-      if (mounted) setState(() { components = v; loading = false; });
+      if (mounted) {
+        setState(() { components = v; loading = false; });
+      }
     }).catchError((_) {
-      if (mounted) setState(() => loading = false);
+      if (mounted) {
+        setState(() => loading = false);
+      }
     });
   }
 
