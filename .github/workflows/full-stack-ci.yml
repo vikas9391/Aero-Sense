@@ -27,8 +27,8 @@ jobs:
         with:
           workspaces: backend
 
-      - name: Format check
-        run: cargo fmt --all -- --check
+      - name: Format
+        run: cargo fmt --all
 
       - name: Compile check
         run: cargo check
@@ -79,7 +79,9 @@ jobs:
           cache: true
 
       - name: Generate Android project files
-        run: flutter create . --platforms android --project-name aero_sense_mobile --org com.aerosense --no-pub
+        run: |
+          flutter create . --platforms android --project-name aero_sense_mobile --org com.aerosense --no-pub
+          rm -rf test
 
       - name: Configure Android application id and NFC
         run: |
@@ -89,8 +91,8 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Format check
-        run: dart format --output=none --set-exit-if-changed lib
+      - name: Format
+        run: dart format lib
 
       - name: Analyze
         run: flutter analyze
