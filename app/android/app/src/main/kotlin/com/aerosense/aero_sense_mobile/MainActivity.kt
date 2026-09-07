@@ -1,4 +1,4 @@
-package com.aerosense.aero_sense_mobile
+package com.aerosense.mobile
 
 import io.flutter.embedding.android.FlutterActivity
 
