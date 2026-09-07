@@ -15,6 +15,11 @@ class AeroSenseApp extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Aero-Sense',
+        builder: (context, child) => MediaQuery.withClampedTextScaling(
+          minScaleFactor: 1.0,
+          maxScaleFactor: 1.25,
+          child: child!,
+        ),
         theme: ThemeData(
           useMaterial3: true,
           scaffoldBackgroundColor: bg,
