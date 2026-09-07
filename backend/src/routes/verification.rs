@@ -4,20 +4,32 @@ use std::sync::Arc;
 
 pub async fn verify_nfc(State(pool): State<DbPool>, Extension(blockchain): Extension<Arc<BlockchainService>>, Extension(config): Extension<Arc<Config>>, user: AuthenticatedUser, Json(mut req): Json<NfcVerificationRequest>) -> Result<Json<VerificationResponse>, AppError> {
     // Company users are always scoped by the company_id in their JWT. A platform
-    // Super Admin has no tenant in the JWT, so they must explicitly choose a
-    // company. This preserves tenant isolation while allowing platform oversight
-    // to perform a real verification against one selected tenant.
+    // Super Admin has no tenant in the JWT. For the normal mobile scan flow, the
+    // backend resolves the registered tag to exactly one company, so the app does
+    // not need a separate tenant-selection screen. An explicit company_id is also
+    // accepted for future platform-admin UI, but is never trusted for company users.
     let company_id = match user.0.company_id {
         Some(company_id) => {
-            // Never let a company user override their JWT tenant with a request field.
             req.company_id = None;
             company_id
         }
         None => {
             require_super_admin(&user)?;
-            let selected_company_id = req.company_id.ok_or_else(|| {
-                AppError::ValidationError("A company must be selected for Super Admin verification".to_string())
-            })?;
+
+            let company_ids: Vec<(i64,)> = sqlx::query_as(
+                "SELECT DISTINCT company_id FROM component_tags WHERE identifier = $1 AND company_id IS NOT NULL",
+            )
+            .bind(&req.tag_identifier)
+            .fetch_all(&pool)
+            .await?;
+
+            let selected_company_id = match req.company_id {
+                Some(id) if company_ids.iter().any(|(candidate,)| *candidate == id) => id,
+                Some(_) => return Err(AppError::Forbidden("The selected company does not own this NFC tag".to_string())),
+                None if company_ids.len() == 1 => company_ids[0].0,
+                None if company_ids.is_empty() => return Err(AppError::NotFound("NFC tag is not registered to any company".to_string())),
+                None => return Err(AppError::ValidationError("This NFC identifier is registered to multiple companies; select a company before verifying".to_string())),
+            };
 
             let company: Option<(i64, String)> = sqlx::query_as(
                 "SELECT id, status FROM companies WHERE id = $1",
