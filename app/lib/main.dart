@@ -17,13 +17,13 @@ class AeroSenseApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: 'Aero-Sense',
         builder: (context, child) {
-          // The mobile UI is designed around a compact fixed type scale.
-          // Prevent Android display/font-size accessibility scaling from
-          // expanding headings into one-word-per-line layouts.
+          // Aero-Sense uses a compact fixed mobile layout. Keep Android
+          // system font/display scaling from changing the geometry of the
+          // verification and profile screens into oversized one-word lines.
           final media = MediaQuery.of(context).copyWith(
-            textScaler: const TextScaler.linear(1.0),
+            textScaler: TextScaler.noScaling,
           );
-          return MediaQuery(data: media, child: child!);
+          return MediaQuery(data: media, child: child ?? const SizedBox.shrink());
         },
         theme: ThemeData(
           useMaterial3: true,
