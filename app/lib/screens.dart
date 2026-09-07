@@ -508,6 +508,13 @@ class _AppShellState extends State<AppShell> {
     Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const LoginScreen()), (_) => false);
   }
 
+  void selectPage(String title) {
+    final target = nav.indexWhere((item) => item.label == title);
+    if (target >= 0 && mounted) {
+      setState(() => index = target);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final items = nav;
@@ -520,8 +527,17 @@ class _AppShellState extends State<AppShell> {
         backgroundColor: bg,
         title: Text(current.label, style: const TextStyle(fontWeight: FontWeight.w800)),
         actions: [
-          if (canVerify) IconButton(onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NfcVerificationScreen())), icon: const Icon(Icons.nfc), tooltip: 'Verify NFC tag'),
-          IconButton(onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen())), icon: const Icon(Icons.account_circle_outlined)),
+          if (canVerify)
+            IconButton(
+              onPressed: () => selectPage('Verify'),
+              icon: const Icon(Icons.nfc),
+              tooltip: 'Verify NFC tag',
+            ),
+          IconButton(
+            onPressed: () => selectPage('Profile'),
+            icon: const Icon(Icons.account_circle_outlined),
+            tooltip: 'Profile',
+          ),
         ],
       ),
       drawer: Drawer(
