@@ -35,10 +35,24 @@ class _ComponentsState extends State<ComponentsScreen> {
   List<Component> items = []; String query = ''; bool loading = true;
   Future<void> load() async { try { items = await api.components(); } catch (_) {} if (mounted) setState(() => loading = false); }
   @override void initState() { super.initState(); load(); }
-  @override Widget build(BuildContext context) { final filtered = items.where((x) => '${x.serial} ${x.type} ${x.manufacturer} ${x.status}'.toLowerCase().contains(query.toLowerCase())).toList(); return RefreshIndicator(onRefresh: load, child: ListView(padding: const EdgeInsets.fromLTRB(22, 18, 22, 100), children: [
-    const Text('COMPONENT REGISTRY', style: TextStyle(color: muted, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.3)), const SizedBox(height: 4), const Text('Components', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800)), const SizedBox(height: 15), TextField(onChanged: (v) => setState(() => query = v), decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Search serial, type or manufacturer')), const SizedBox(height: 12),
-    if (loading) const Center(child: CircularProgressIndicator(color: accent)) else if (filtered.isEmpty) const CardBox(child: Text('No matching components found.', style: TextStyle(color: muted))) else ...filtered.map<Widget>((x) => CardBox(margin: const EdgeInsets.only(bottom: 10), child: ListTile(contentPadding: EdgeInsets.zero, title: Text(x.serial, style: const TextStyle(fontWeight: FontWeight.w800)), subtitle: Text('${x.manufacturer} · ${x.type}\n${x.aircraftRegistration ?? 'Unassigned'}', style: const TextStyle(color: muted)), trailing: StatusPill(x.status), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PassportScreen(component: x))))))),
-  ])); }
+  @override Widget build(BuildContext context) {
+    final filtered = items.where((x) => '${x.serial} ${x.type} ${x.manufacturer} ${x.status}'.toLowerCase().contains(query.toLowerCase())).toList();
+    return RefreshIndicator(onRefresh: load, child: ListView(padding: const EdgeInsets.fromLTRB(22, 18, 22, 100), children: [
+      const Text('COMPONENT REGISTRY', style: TextStyle(color: muted, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.3)), const SizedBox(height: 4), const Text('Components', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800)), const SizedBox(height: 15), TextField(onChanged: (v) => setState(() => query = v), decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Search serial, type or manufacturer')), const SizedBox(height: 12),
+      if (loading) const Center(child: CircularProgressIndicator(color: accent))
+      else if (filtered.isEmpty) const CardBox(child: Text('No matching components found.', style: TextStyle(color: muted)))
+      else ...filtered.map<Widget>((x) => CardBox(
+        margin: const EdgeInsets.only(bottom: 10),
+        child: ListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(x.serial, style: const TextStyle(fontWeight: FontWeight.w800)),
+          subtitle: Text('${x.manufacturer} · ${x.type}\n${x.aircraftRegistration ?? 'Unassigned'}', style: const TextStyle(color: muted)),
+          trailing: StatusPill(x.status),
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PassportScreen(component: x))),
+        ),
+      )),
+    ]));
+  }
 }
 
 class PassportScreen extends StatefulWidget { final Component component; const PassportScreen({required this.component, super.key}); @override State<PassportScreen> createState() => _PassportState(); }
