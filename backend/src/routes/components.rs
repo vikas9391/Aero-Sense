@@ -16,7 +16,7 @@ pub async fn create_component(
     user: AuthenticatedUser,
     Json(req): Json<CreateComponentRequest>,
 ) -> Result<(StatusCode, Json<ComponentResponse>), AppError> {
-    require_role(&user, &[UserRole::Manufacturer])?;
+    require_role(&user, &[UserRole::CompanyAdmin, UserRole::Manufacturer])?;
     let company_id = require_company_scope(&user)?;
     let component = ComponentService::create_component(&pool, company_id, req).await?;
     Ok((StatusCode::CREATED, Json(component)))
