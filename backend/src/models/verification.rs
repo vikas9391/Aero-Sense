@@ -4,8 +4,8 @@ use sqlx::FromRow;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NfcTagScanData {
     pub identifier: String,       // Hardware UID (e.g., "04:A3:91:XX")
-    pub technology: String,       // "NFC" or "UHF_RFID"
-    pub security_type: String,    // "MOCK", "BASIC_UID", "SECURE_NTAG424"
+    pub technology: String,       // NFC
+    pub security_type: String,    // BASIC_UID or SECURE_NFC_PAYLOAD
     pub raw_payload: Option<String>,
     pub dynamic_counter: Option<u32>,
     pub cmac_signature: Option<String>,
@@ -33,10 +33,6 @@ pub struct VerificationLog {
     pub created_at: String,
 }
 
-/// Same fields as `VerificationLog`, plus the scanned component's serial
-/// number and type — needed once a log listing spans every component in
-/// the company instead of one already-known component, so the UI has
-/// something to identify each row by.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct VerificationLogWithComponent {
     pub id: i64,
@@ -55,9 +51,9 @@ pub struct VerificationLogWithComponent {
 
 #[derive(Debug, Deserialize)]
 pub struct NfcVerificationRequest {
-    pub tag_identifier: String, // e.g. "04:A3:91:XX"
+    pub tag_identifier: String,
     pub payload: Option<String>,
-    pub simulate_scenario: Option<String>, // "VALID", "UNKNOWN_TAG", "INVALID_TAG", "TAMPERED_TAG", "BLOCKCHAIN_MISMATCH"
+    pub simulate_scenario: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -70,7 +66,7 @@ pub struct VerificationChecks {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct VerificationComponentInfo {
-    pub id: String, // Component UUID or ID (e.g. ENG-0001)
+    pub id: String,
     pub aircraft: String,
     pub serial_number: String,
 }
@@ -78,7 +74,7 @@ pub struct VerificationComponentInfo {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct VerificationResponse {
     pub verified: bool,
-    pub status: String, // "AUTHENTIC", "SUSPICIOUS", "INVALID"
+    pub status: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub component: Option<VerificationComponentInfo>,
     pub checks: VerificationChecks,
