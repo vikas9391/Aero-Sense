@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 const defaultApiBase = 'https://aero-sense-backend-0y3l.onrender.com/api';
@@ -14,20 +15,28 @@ class Api {
         : configured;
     dio = Dio(BaseOptions(
       baseUrl: normalized,
-      connectTimeout: const Duration(seconds: 20),
-      receiveTimeout: const Duration(seconds: 30),
-      sendTimeout: const Duration(seconds: 20),
+      connectTimeout: const Duration(seconds: 45),
+      receiveTimeout: const Duration(seconds: 45),
+      sendTimeout: const Duration(seconds: 30),
       headers: const {'Content-Type': 'application/json'},
       validateStatus: (status) => status != null && status < 500,
     ));
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
         final token = await storage.read(key: tokenKey);
-        if (token != null && token.isNotEmpty)
+        if (token != null && token.isNotEmpty) {
           options.headers['Authorization'] = 'Bearer $token';
+        }
+        if (kDebugMode) {
+          debugPrint('[Aero-Sense] ${options.method} ${options.uri}');
+        }
         handler.next(options);
       },
       onResponse: (response, handler) {
+        if (kDebugMode) {
+          debugPrint(
+              '[Aero-Sense] ${response.statusCode} ${response.requestOptions.uri}');
+        }
         if (response.statusCode != null && response.statusCode! >= 400) {
           handler.reject(DioException.badResponse(
               statusCode: response.statusCode!,
@@ -38,8 +47,13 @@ class Api {
         handler.next(response);
       },
       onError: (error, handler) async {
-        if (error.response?.statusCode == 401)
+        if (kDebugMode) {
+          debugPrint(
+              '[Aero-Sense] ERROR ${error.type} ${error.response?.statusCode ?? ''} ${error.requestOptions.uri}');
+        }
+        if (error.response?.statusCode == 401) {
           await storage.delete(key: tokenKey);
+        }
         handler.next(error);
       },
     ));
@@ -65,6 +79,7 @@ class Api {
         'password': password
       }))
           .data as Map);
+
   Future<User> me() async => User.fromJson(
       Map<String, dynamic>.from((await dio.get('/auth/me')).data));
   Future<Analytics> analytics() async => Analytics.fromJson(
@@ -77,7 +92,7 @@ class Api {
           .toList();
   Future<Component> component(int id) async => Component.fromJson(
       Map<String, dynamic>.from((await dio.get('/components/$id')).data));
-  Future<List<MaintenanceRecord>> maintenance() async =>
+  Future<List<MaintenanceRecord> > maintenance() async =>
       _list((await dio.get('/maintenance')).data)
           .map(MaintenanceRecord.fromJson)
           .toList();
