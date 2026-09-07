@@ -16,7 +16,7 @@ pub async fn create_aircraft(
     user: AuthenticatedUser,
     Json(req): Json<CreateAircraftRequest>,
 ) -> Result<(StatusCode, Json<Aircraft>), AppError> {
-    require_role(&user, &[UserRole::CompanyAdmin, UserRole::Manufacturer])?;
+    require_role(&user, &[UserRole::CompanyAdmin])?;
     let company_id = require_company_scope(&user)?;
     let aircraft = ComponentService::create_aircraft(&pool, company_id, req).await?;
     Ok((StatusCode::CREATED, Json(aircraft)))
