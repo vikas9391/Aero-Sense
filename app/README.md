@@ -24,19 +24,17 @@ Flutter Android application for the Aero-Sense aircraft component intelligence p
 
 ## API configuration
 
-Android emulator default:
+The mobile app is configured by default to use the deployed production backend:
 
 ```text
-http://10.0.2.2:8080/api
+https://aero-sense-backend-0y3l.onrender.com/api
 ```
 
-For a physical Android phone, use the computer's LAN address:
+You can override it for another environment with:
 
 ```text
-flutter run --dart-define=API_BASE_URL=http://YOUR_PC_IP:8080/api
+flutter run --dart-define=API_BASE_URL=https://YOUR_BACKEND_URL/api
 ```
-
-The backend must listen on `0.0.0.0:8080` and the phone and computer must be on the same network.
 
 ## Run
 
@@ -45,20 +43,12 @@ flutter pub get
 flutter run
 ```
 
-## Android project
-
-If `android/` is not present locally, generate the Android platform files with:
-
-```text
-flutter create . --platforms android --org com.aerosense --project-name aero_sense_mobile
-```
-
-Then run:
+## Build APK
 
 ```text
 flutter pub get
 flutter analyze
-flutter build apk --debug
+flutter build apk --release
 ```
 
 The Android application id should be `com.aerosense.mobile`.
