@@ -1,36 +1,64 @@
 # Aero-Sense Mobile
 
-Android-first field app for the Aero-Sense aircraft component verification platform.
+Flutter Android application for the Aero-Sense aircraft component intelligence platform.
 
-## Backend
+## Stack
 
-The app uses the existing Rust/Axum backend in ../backend. Set the API origin with:
+- Flutter / Dart
+- Rust + Axum backend (shared with the web frontend)
+- Dio for HTTP
+- Flutter Secure Storage for JWT credentials
+- NFC Manager for NFC tag verification
 
-```bash
-EXPO_PUBLIC_API_URL=https://your-api.example.com/api
+## Features
+
+- JWT authentication
+- Role-aware user profile
+- Fleet analytics dashboard
+- Aircraft component registry and search
+- Component passport
+- Maintenance history
+- Verification history and audit activity
+- NFC component verification
+- Backend blockchain verification support
+
+## API configuration
+
+Android emulator default:
+
+```text
+http://10.0.2.2:8080/api
 ```
 
-For a local Android emulator use `http://10.0.2.2:8080/api`. For a physical phone, use the computer's LAN IP, for example `http://192.168.1.20:8080/api`.
+For a physical Android phone, use the computer's LAN address:
+
+```text
+flutter run --dart-define=API_BASE_URL=http://YOUR_PC_IP:8080/api
+```
+
+The backend must listen on `0.0.0.0:8080` and the phone and computer must be on the same network.
 
 ## Run
 
-```bash
-cd app
-npm install
-npx expo prebuild
-npx expo run:android
+```text
+flutter pub get
+flutter run
 ```
 
-NFC requires a development/native Android build; Expo Go is not sufficient.
+## Android project
 
-## Included workflows
+If `android/` is not present locally, generate the Android platform files with:
 
-- Secure JWT login
-- Role-aware dashboard
-- Aircraft and component lookup
-- NFC tag scanning and server verification
-- Component maintenance history
-- Technician maintenance entry
-- Verification result and audit log display
+```text
+flutter create . --platforms android --org com.aerosense --project-name aero_sense_mobile
+```
 
-No new backend is introduced: all data is read/written through the existing /api routes.
+Then run:
+
+```text
+flutter pub get
+flutter analyze
+flutter build apk --debug
+```
+
+The Android application id should be `com.aerosense.mobile`.
