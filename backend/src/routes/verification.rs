@@ -8,7 +8,7 @@ use crate::{
         VerificationLog, VerificationResponse,
     },
     services::{
-        blockchain_service::BlockchainService, nfc_service::MockNfcService,
+        blockchain_service::BlockchainService, nfc_service::DeviceNfcService,
         verification_service::VerificationService,
     },
 };
@@ -27,11 +27,9 @@ pub async fn verify_nfc(
 ) -> Result<Json<VerificationResponse>, AppError> {
     let company_id = require_company_scope(&user)?;
 
-    // `simulate_scenario` fabricates verification outcomes (including audit
-    // log entries) without touching real NFC/blockchain checks. It exists to
-    // demo failure states, so it's off unless the deployment explicitly opts
-    // in via ALLOW_VERIFICATION_SIMULATION, and even then only a Company
-    // Admin can invoke it — never a regular technician account.
+    // Simulation is retained only as an explicitly enabled admin-only test
+    // facility. A normal request always represents a physical NFC scan from a
+    // client device and goes through DeviceNfcService.
     if req.simulate_scenario.is_some() {
         if !config.allow_verification_simulation {
             return Err(AppError::Forbidden(
@@ -43,8 +41,8 @@ pub async fn verify_nfc(
         req.simulate_scenario = None;
     }
 
-    let mock_nfc = MockNfcService::new();
-    let res = VerificationService::verify_nfc_tag(&pool, company_id, &mock_nfc, &blockchain, req).await?;
+    let nfc = DeviceNfcService::new();
+    let res = VerificationService::verify_nfc_tag(&pool, company_id, &nfc, &blockchain, req).await?;
     Ok(Json(res))
 }
 
