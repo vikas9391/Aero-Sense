@@ -29,26 +29,26 @@ final appRouter = GoRouter(
         GoRoute(path: '/security', builder: (context, state) => const SecurityAuditScreen()),
         GoRoute(path: '/profile', builder: (context, state) => const ProfileScreen()),
         GoRoute(path: '/companies', builder: (context, state) => const CompanyManagementScreen()),
-        GoRoute(path: '/nfc-center', builder: (context, state) => const NfcCenterScreen()),
-        GoRoute(path: '/register-component', builder: (context, state) => const RegisterComponentScreen()),
-        GoRoute(path: '/register-tag', builder: (context, state) => const RegisterTagScreen()),
-        GoRoute(
-          path: '/passport',
-          builder: (context, state) {
-            final component = state.extra;
-            if (component is! Component) return const ComponentsScreen();
-            return PassportScreen(component: component);
-          },
-        ),
-        GoRoute(
-          path: '/company-detail',
-          builder: (context, state) {
-            final company = state.extra;
-            if (company is! CompanySummary) return const CompanyManagementScreen();
-            return CompanyDetailScreen(company: company);
-          },
-        ),
       ],
+    ),
+    GoRoute(path: '/nfc-center', builder: (context, state) => const NfcCenterScreen()),
+    GoRoute(path: '/register-component', builder: (context, state) => const RegisterComponentScreen()),
+    GoRoute(path: '/register-tag', builder: (context, state) => const RegisterTagScreen()),
+    GoRoute(
+      path: '/passport',
+      builder: (context, state) {
+        final component = state.extra;
+        if (component is! Component) return const ComponentsScreen();
+        return PassportScreen(component: component);
+      },
+    ),
+    GoRoute(
+      path: '/company-detail',
+      builder: (context, state) {
+        final company = state.extra;
+        if (company is! CompanySummary) return const CompanyManagementScreen();
+        return CompanyDetailScreen(company: company);
+      },
     ),
   ],
   redirect: (context, state) async {
@@ -116,9 +116,7 @@ class _AppShellFrameState extends State<AppShellFrame> {
         _RouteNavItem('Profile', '/profile', Icons.person_outline),
       ];
     }
-    final result = <_RouteNavItem>[
-      const _RouteNavItem('Dashboard', '/dashboard', Icons.dashboard_outlined),
-    ];
+    final result = <_RouteNavItem>[const _RouteNavItem('Dashboard', '/dashboard', Icons.dashboard_outlined)];
     if (canVerify) result.add(const _RouteNavItem('Verify', '/verify', Icons.verified_user_outlined));
     result.add(const _RouteNavItem('Components', '/components', Icons.memory_outlined));
     result.add(const _RouteNavItem('Profile', '/profile', Icons.person_outline));
@@ -127,10 +125,7 @@ class _AppShellFrameState extends State<AppShellFrame> {
 
   List<_RouteNavItem> get drawerItems {
     if (isSuperAdmin) return items;
-    final result = <_RouteNavItem>[
-      ...items,
-      const _RouteNavItem('Aircraft', '/aircraft', Icons.flight_outlined),
-    ];
+    final result = <_RouteNavItem>[...items, const _RouteNavItem('Aircraft', '/aircraft', Icons.flight_outlined)];
     if (canMaintain) result.add(const _RouteNavItem('Maintenance', '/maintenance', Icons.build_outlined));
     if (isCompanyAdmin) {
       result.addAll(const [
@@ -152,7 +147,7 @@ class _AppShellFrameState extends State<AppShellFrame> {
 
   void go(String route) {
     if (drawerItems.any((item) => item.route == route) ||
-        ['/register-component', '/register-tag', '/passport', '/company-detail', '/nfc-center'].contains(route)) {
+        const ['/register-component', '/register-tag', '/passport', '/company-detail', '/nfc-center'].contains(route)) {
       context.go(route);
     } else {
       context.go('/dashboard');
@@ -169,7 +164,8 @@ class _AppShellFrameState extends State<AppShellFrame> {
     final primary = items;
     final drawer = drawerItems;
     final current = currentItem;
-    final selectedIndex = current == null ? 0 : primary.indexWhere((item) => item.route == current.route).clamp(0, primary.length - 1);
+    final rawIndex = current == null ? 0 : primary.indexWhere((item) => item.route == current.route);
+    final selectedIndex = rawIndex < 0 ? 0 : rawIndex;
 
     return Scaffold(
       backgroundColor: bg,
@@ -177,64 +173,59 @@ class _AppShellFrameState extends State<AppShellFrame> {
         backgroundColor: bg,
         title: Text(current?.label ?? 'Aero-Sense', style: const TextStyle(fontWeight: FontWeight.w800)),
         actions: [
-          if (canVerify)
-            IconButton(onPressed: () => go('/verify'), icon: const Icon(Icons.nfc), tooltip: 'Verify NFC tag'),
+          if (canVerify) IconButton(onPressed: () => go('/verify'), icon: const Icon(Icons.nfc), tooltip: 'Verify NFC tag'),
           IconButton(onPressed: () => go('/profile'), icon: const Icon(Icons.account_circle_outlined), tooltip: 'Profile'),
         ],
       ),
       drawer: Drawer(
         child: SafeArea(
-          child: Column(
-            children: [
+          child: Column(children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 14),
+              child: Row(children: [
+                const Icon(Icons.flight_takeoff_rounded, color: accent, size: 30),
+                const SizedBox(width: 10),
+                const Expanded(child: Text('AERO-SENSE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.2))),
+              ]),
+            ),
+            if (user != null)
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 14),
-                child: Row(children: [
-                  const Icon(Icons.flight_takeoff_rounded, color: accent, size: 30),
-                  const SizedBox(width: 10),
-                  const Expanded(child: Text('AERO-SENSE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.2))),
-                ]),
-              ),
-              if (user != null)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text(user!.name, style: const TextStyle(fontWeight: FontWeight.w800)),
-                      const SizedBox(height: 3),
-                      Text(user!.role, style: const TextStyle(color: muted, fontSize: 11)),
-                    ]),
-                  ),
-                ),
-              const SizedBox(height: 12),
-              const Divider(height: 1),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: drawer.length,
-                  itemBuilder: (_, i) => ListTile(
-                    selected: drawer[i].route == current?.route,
-                    leading: Icon(drawer[i].icon),
-                    title: Text(drawer[i].label),
-                    onTap: () {
-                      Navigator.pop(context);
-                      go(drawer[i].route);
-                    },
-                  ),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(user!.name, style: const TextStyle(fontWeight: FontWeight.w800)),
+                    const SizedBox(height: 3),
+                    Text(user!.role, style: const TextStyle(color: muted, fontSize: 11)),
+                  ]),
                 ),
               ),
-              const Divider(height: 1),
-              ListTile(leading: const Icon(Icons.logout), title: const Text('Sign out'), onTap: signOut),
-            ],
-          ),
+            const SizedBox(height: 12),
+            const Divider(height: 1),
+            Expanded(
+              child: ListView.builder(
+                itemCount: drawer.length,
+                itemBuilder: (_, i) => ListTile(
+                  selected: drawer[i].route == current?.route,
+                  leading: Icon(drawer[i].icon),
+                  title: Text(drawer[i].label),
+                  onTap: () {
+                    Navigator.pop(context);
+                    go(drawer[i].route);
+                  },
+                ),
+              ),
+            ),
+            const Divider(height: 1),
+            ListTile(leading: const Icon(Icons.logout), title: const Text('Sign out'), onTap: signOut),
+          ]),
         ),
       ),
       body: widget.child,
       bottomNavigationBar: NavigationBar(
         selectedIndex: selectedIndex,
         onDestinationSelected: (index) => go(primary[index].route),
-        destinations: [
-          for (final item in primary) NavigationDestination(icon: Icon(item.icon), label: item.label),
-        ],
+        destinations: [for (final item in primary) NavigationDestination(icon: Icon(item.icon), label: item.label)],
       ),
     );
   }
