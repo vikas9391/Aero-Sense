@@ -10,9 +10,6 @@ class MobileDashboardScreen extends StatefulWidget {
 
   const MobileDashboardScreen({required this.role, super.key});
 
-  bool get canVerify => role == 'COMPANY_ADMIN' || role == 'MANUFACTURER' || role == 'MAINTENANCE_TECHNICIAN' || role == 'INSPECTOR';
-  bool get canAudit => role == 'COMPANY_ADMIN' || role == 'INSPECTOR';
-
   @override
   State<MobileDashboardScreen> createState() => _MobileDashboardScreenState();
 }
@@ -24,19 +21,30 @@ class _MobileDashboardScreenState extends State<MobileDashboardScreen> {
   List<VerificationLog> verifications = [];
   bool loading = true;
   String? error;
+  String role = '';
+
+  bool get canVerify => role == 'COMPANY_ADMIN' || role == 'MANUFACTURER' || role == 'MAINTENANCE_TECHNICIAN' || role == 'INSPECTOR';
+  bool get canAudit => role == 'COMPANY_ADMIN' || role == 'INSPECTOR';
 
   @override
   void initState() {
     super.initState();
+    role = widget.role.toUpperCase();
     load();
   }
 
   Future<void> load() async {
     if (mounted) setState(() { loading = true; error = null; });
     try {
+      if (role.isEmpty) {
+        try {
+          final user = await api.me();
+          role = (user.role).toUpperCase();
+        } catch (_) {}
+      }
       aircraft = await api.aircraft();
       components = await api.components();
-      if (widget.canVerify) {
+      if (canVerify) {
         try {
           verifications = await api.verificationLogs();
         } catch (_) {
@@ -70,28 +78,19 @@ class _MobileDashboardScreenState extends State<MobileDashboardScreen> {
             CardBox(child: Text(error!, style: const TextStyle(color: Colors.red, height: 1.35))),
           ],
           const SizedBox(height: 18),
-          if (widget.canVerify)
-            CardBox(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const Icon(Icons.nfc_outlined, color: accent, size: 30),
-                const SizedBox(height: 12),
-                const Text('VERIFICATION CONTROL', style: TextStyle(color: accent, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.1)),
-                const SizedBox(height: 6),
-                const Text('Verify an aircraft component', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-                const SizedBox(height: 7),
-                const Text('Scan a registered physical NFC tag and validate its component identity.', style: TextStyle(color: muted, height: 1.4)),
-                const SizedBox(height: 15),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: () => context.go('/verify'),
-                    icon: const Icon(Icons.nfc),
-                    label: const Text('Start NFC verification'),
-                  ),
-                ),
-              ]),
-            ),
-          if (widget.canVerify) const SizedBox(height: 20),
+          if (canVerify)
+            CardBox(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Icon(Icons.nfc_outlined, color: accent, size: 30),
+              const SizedBox(height: 12),
+              const Text('VERIFICATION CONTROL', style: TextStyle(color: accent, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.1)),
+              const SizedBox(height: 6),
+              const Text('Verify an aircraft component', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 7),
+              const Text('Scan a registered physical NFC tag and validate its component identity.', style: TextStyle(color: muted, height: 1.4)),
+              const SizedBox(height: 15),
+              SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: () => context.go('/verify'), icon: const Icon(Icons.nfc), label: const Text('Start NFC verification'))),
+            ])),
+          if (canVerify) const SizedBox(height: 20),
           const Text('Live overview', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
           const SizedBox(height: 12),
           if (loading)
@@ -115,55 +114,35 @@ class _MobileDashboardScreenState extends State<MobileDashboardScreen> {
               },
             ),
           const SizedBox(height: 14),
-          CardBox(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('REGISTERED AIRCRAFT', style: TextStyle(color: muted, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.1)),
-              const SizedBox(height: 10),
-              if (!loading && aircraft.isEmpty) const Text('No aircraft registered yet.', style: TextStyle(color: muted)),
-              ...aircraft.take(5).map((a) => ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.flight_outlined, color: accent),
-                    title: Text(a.registration, style: const TextStyle(fontWeight: FontWeight.w800)),
-                    subtitle: Text('${a.model} · ${a.manufacturer}', style: const TextStyle(color: muted)),
-                    trailing: StatusPill(a.status),
-                  )),
-            ]),
-          ),
-          if (widget.canVerify) ...[
+          CardBox(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Text('REGISTERED AIRCRAFT', style: TextStyle(color: muted, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.1)),
+            const SizedBox(height: 10),
+            if (!loading && aircraft.isEmpty) const Text('No aircraft registered yet.', style: TextStyle(color: muted)),
+            ...aircraft.take(5).map((a) => ListTile(contentPadding: EdgeInsets.zero, leading: const Icon(Icons.flight_outlined, color: accent), title: Text(a.registration, style: const TextStyle(fontWeight: FontWeight.w800)), subtitle: Text('${a.model} · ${a.manufacturer}', style: const TextStyle(color: muted)), trailing: StatusPill(a.status))),
+          ])),
+          if (canVerify) ...[
             const SizedBox(height: 12),
-            CardBox(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Row(children: [
-                  const Expanded(child: Text('Recent NFC Verification Logs', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800))),
-                  if (widget.canAudit)
-                    IconButton(onPressed: () => context.go('/security'), icon: const Icon(Icons.arrow_forward)),
-                ]),
-                const SizedBox(height: 6),
-                if (verifications.isEmpty)
-                  const Text('No verification scans recorded yet.', style: TextStyle(color: muted))
-                else
-                  ...verifications.take(5).map((v) => EventRow(title: v.status, subtitle: '${v.createdAt}${v.reason.isEmpty ? '' : ' · ${v.reason}'}', ok: v.status == 'AUTHENTIC' || v.status == 'PASSED')),
-              ]),
-            ),
+            CardBox(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [const Expanded(child: Text('Recent NFC Verification Logs', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800))), if (canAudit) IconButton(onPressed: () => context.go('/security'), icon: const Icon(Icons.arrow_forward))]),
+              const SizedBox(height: 6),
+              if (verifications.isEmpty) const Text('No verification scans recorded yet.', style: TextStyle(color: muted))
+              else ...verifications.take(5).map((v) => EventRow(title: v.status, subtitle: '${v.createdAt}${v.reason.isEmpty ? '' : ' · ${v.reason}'}', ok: v.status == 'AUTHENTIC' || v.status == 'PASSED')),
+            ])),
           ],
         ],
       ),
     );
   }
 
-  Widget _stat(double width, String label, int value, IconData icon) {
-    return SizedBox(
-      width: width,
-      height: 116,
-      child: CardBox(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+  Widget _stat(double width, String label, int value, IconData icon) => SizedBox(
+        width: width,
+        height: 116,
+        child: CardBox(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Icon(icon, color: accent),
           const Spacer(),
           Text('$value', style: const TextStyle(fontSize: 27, fontWeight: FontWeight.w800)),
           const SizedBox(height: 2),
           Text(label, style: const TextStyle(color: muted)),
-        ]),
-      ),
-    );
-  }
+        ])),
+      );
 }
