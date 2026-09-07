@@ -99,10 +99,8 @@ class _RegisterComponentState extends State<RegisterComponentScreen> {
                 DropdownButtonFormField<String>(
                   initialValue: aircraftId,
                   decoration: const InputDecoration(labelText: 'Aircraft (optional)'),
-                  items: [
-                    const DropdownMenuItem<String>(value: null, child: Text('Unassigned')),
-                    ...aircraft.map((a) => DropdownMenuItem<String>(value: '${a.id}', child: Text(a.registration))),
-                  ],
+                  hint: const Text('Unassigned'),
+                  items: aircraft.map((a) => DropdownMenuItem<String>(value: '${a.id}', child: Text(a.registration))).toList(),
                   onChanged: (v) => setState(() => aircraftId = v),
                 ),
               const SizedBox(height: 12),
