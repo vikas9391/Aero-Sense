@@ -23,7 +23,9 @@ jobs:
           cache: true
 
       - name: Generate Android project files
-        run: flutter create . --platforms android --project-name aero_sense_mobile --org com.aerosense --no-pub
+        run: |
+          flutter create . --platforms android --project-name aero_sense_mobile --org com.aerosense --no-pub
+          rm -rf test
 
       - name: Configure Android application id and NFC
         run: |
