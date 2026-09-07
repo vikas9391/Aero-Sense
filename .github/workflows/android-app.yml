@@ -2,7 +2,7 @@ name: Flutter Android App
 
 on:
   push:
-    branches: [mobile-app]
+    branches: [main, mobile-app]
   pull_request:
     branches: [main]
 
