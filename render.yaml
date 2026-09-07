@@ -11,7 +11,7 @@ services:
       - key: HOST
         value: 0.0.0.0
       - key: DATABASE_URL
-        value: sqlite://aircraft_verification.db?mode=rwc
+        sync: false
       - key: SUPER_ADMIN_EMAIL
         sync: false
       - key: SUPER_ADMIN_PASSWORD
@@ -19,10 +19,8 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: DEMO_SEED
-        value: "true"
+        value: "false"
       - key: ALLOW_VERIFICATION_SIMULATION
         value: "false"
-      # Set this to the exact deployed frontend origin after the website is deployed.
-      # Example: https://aero-sense-frontend.onrender.com
       - key: ALLOWED_ORIGINS
         sync: false
