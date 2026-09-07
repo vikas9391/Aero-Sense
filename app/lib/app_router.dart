@@ -19,7 +19,7 @@ final appRouter = GoRouter(
     ShellRoute(
       builder: (context, state, child) => AppShellFrame(child: child),
       routes: [
-        GoRoute(path: '/dashboard', builder: (context, state) => MobileDashboardScreen(role: AppShellFrame.currentRole(context))),
+        GoRoute(path: '/dashboard', builder: (context, state) => const _DashboardRoute()),
         GoRoute(path: '/verify', builder: (context, state) => const NfcVerificationScreen()),
         GoRoute(path: '/aircraft', builder: (context, state) => const AircraftScreen()),
         GoRoute(path: '/components', builder: (context, state) => const ComponentsScreen()),
@@ -36,9 +36,7 @@ final appRouter = GoRouter(
           path: '/passport',
           builder: (context, state) {
             final component = state.extra;
-            if (component is! Component) {
-              return const ComponentsScreen();
-            }
+            if (component is! Component) return const ComponentsScreen();
             return PassportScreen(component: component);
           },
         ),
@@ -46,9 +44,7 @@ final appRouter = GoRouter(
           path: '/company-detail',
           builder: (context, state) {
             final company = state.extra;
-            if (company is! CompanySummary) {
-              return const CompanyManagementScreen();
-            }
+            if (company is! CompanySummary) return const CompanyManagementScreen();
             return CompanyDetailScreen(company: company);
           },
         ),
@@ -59,13 +55,8 @@ final appRouter = GoRouter(
     final token = await api.storage.read(key: tokenKey);
     final authenticated = token != null && token.isNotEmpty;
     final location = state.uri.path;
-
-    if (!authenticated && location != '/login') {
-      return '/login';
-    }
-    if (authenticated && (location == '/' || location == '/login')) {
-      return '/dashboard';
-    }
+    if (!authenticated && location != '/login') return '/login';
+    if (authenticated && (location == '/' || location == '/login')) return '/dashboard';
     return null;
   },
 );
@@ -75,6 +66,13 @@ class _RouteGate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const SplashScreen();
+}
+
+class _DashboardRoute extends StatelessWidget {
+  const _DashboardRoute();
+
+  @override
+  Widget build(BuildContext context) => MobileDashboardScreen(role: AppShellFrame.currentRole(context));
 }
 
 class AppShellFrame extends StatefulWidget {
@@ -118,15 +116,21 @@ class _AppShellFrameState extends State<AppShellFrame> {
         _RouteNavItem('Profile', '/profile', Icons.person_outline),
       ];
     }
-
     final result = <_RouteNavItem>[
       const _RouteNavItem('Dashboard', '/dashboard', Icons.dashboard_outlined),
     ];
     if (canVerify) result.add(const _RouteNavItem('Verify', '/verify', Icons.verified_user_outlined));
-    result.addAll(const [
-      _RouteNavItem('Aircraft', '/aircraft', Icons.flight_outlined),
-      _RouteNavItem('Components', '/components', Icons.memory_outlined),
-    ]);
+    result.add(const _RouteNavItem('Components', '/components', Icons.memory_outlined));
+    result.add(const _RouteNavItem('Profile', '/profile', Icons.person_outline));
+    return result;
+  }
+
+  List<_RouteNavItem> get drawerItems {
+    if (isSuperAdmin) return items;
+    final result = <_RouteNavItem>[
+      ...items,
+      const _RouteNavItem('Aircraft', '/aircraft', Icons.flight_outlined),
+    ];
     if (canMaintain) result.add(const _RouteNavItem('Maintenance', '/maintenance', Icons.build_outlined));
     if (isCompanyAdmin) {
       result.addAll(const [
@@ -135,20 +139,20 @@ class _AppShellFrameState extends State<AppShellFrame> {
       ]);
     }
     if (canAudit) result.add(const _RouteNavItem('Security & Audit', '/security', Icons.security_outlined));
-    result.add(const _RouteNavItem('Profile', '/profile', Icons.person_outline));
     return result;
   }
 
   _RouteNavItem? get currentItem {
     final path = GoRouterState.of(context).uri.path;
-    for (final item in items) {
+    for (final item in drawerItems) {
       if (path == item.route) return item;
     }
     return null;
   }
 
   void go(String route) {
-    if (items.any((item) => item.route == route)) {
+    if (drawerItems.any((item) => item.route == route) ||
+        ['/register-component', '/register-tag', '/passport', '/company-detail', '/nfc-center'].contains(route)) {
       context.go(route);
     } else {
       context.go('/dashboard');
@@ -162,9 +166,10 @@ class _AppShellFrameState extends State<AppShellFrame> {
 
   @override
   Widget build(BuildContext context) {
-    final navItems = items;
+    final primary = items;
+    final drawer = drawerItems;
     final current = currentItem;
-    final selectedIndex = current == null ? 0 : navItems.indexOf(current);
+    final selectedIndex = current == null ? 0 : primary.indexWhere((item) => item.route == current.route).clamp(0, primary.length - 1);
 
     return Scaffold(
       backgroundColor: bg,
@@ -173,16 +178,8 @@ class _AppShellFrameState extends State<AppShellFrame> {
         title: Text(current?.label ?? 'Aero-Sense', style: const TextStyle(fontWeight: FontWeight.w800)),
         actions: [
           if (canVerify)
-            IconButton(
-              onPressed: () => go('/verify'),
-              icon: const Icon(Icons.nfc),
-              tooltip: 'Verify NFC tag',
-            ),
-          IconButton(
-            onPressed: () => go('/profile'),
-            icon: const Icon(Icons.account_circle_outlined),
-            tooltip: 'Profile',
-          ),
+            IconButton(onPressed: () => go('/verify'), icon: const Icon(Icons.nfc), tooltip: 'Verify NFC tag'),
+          IconButton(onPressed: () => go('/profile'), icon: const Icon(Icons.account_circle_outlined), tooltip: 'Profile'),
         ],
       ),
       drawer: Drawer(
@@ -191,41 +188,36 @@ class _AppShellFrameState extends State<AppShellFrame> {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 14),
-                child: Row(
-                  children: [
-                    const Icon(Icons.flight_takeoff_rounded, color: accent, size: 30),
-                    const SizedBox(width: 10),
-                    const Expanded(child: Text('AERO-SENSE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.2))),
-                  ],
-                ),
+                child: Row(children: [
+                  const Icon(Icons.flight_takeoff_rounded, color: accent, size: 30),
+                  const SizedBox(width: 10),
+                  const Expanded(child: Text('AERO-SENSE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.2))),
+                ]),
               ),
               if (user != null)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Align(
                     alignment: Alignment.centerLeft,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(user!.name, style: const TextStyle(fontWeight: FontWeight.w800)),
-                        const SizedBox(height: 3),
-                        Text(user!.role, style: const TextStyle(color: muted, fontSize: 11)),
-                      ],
-                    ),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text(user!.name, style: const TextStyle(fontWeight: FontWeight.w800)),
+                      const SizedBox(height: 3),
+                      Text(user!.role, style: const TextStyle(color: muted, fontSize: 11)),
+                    ]),
                   ),
                 ),
               const SizedBox(height: 12),
               const Divider(height: 1),
               Expanded(
                 child: ListView.builder(
-                  itemCount: navItems.length,
+                  itemCount: drawer.length,
                   itemBuilder: (_, i) => ListTile(
-                    selected: i == selectedIndex,
-                    leading: Icon(navItems[i].icon),
-                    title: Text(navItems[i].label),
+                    selected: drawer[i].route == current?.route,
+                    leading: Icon(drawer[i].icon),
+                    title: Text(drawer[i].label),
                     onTap: () {
                       Navigator.pop(context);
-                      go(navItems[i].route);
+                      go(drawer[i].route);
                     },
                   ),
                 ),
@@ -238,11 +230,10 @@ class _AppShellFrameState extends State<AppShellFrame> {
       ),
       body: widget.child,
       bottomNavigationBar: NavigationBar(
-        selectedIndex: selectedIndex.clamp(0, navItems.length - 1),
-        onDestinationSelected: (index) => go(navItems[index].route),
+        selectedIndex: selectedIndex,
+        onDestinationSelected: (index) => go(primary[index].route),
         destinations: [
-          for (final item in navItems)
-            NavigationDestination(icon: Icon(item.icon), label: item.label),
+          for (final item in primary) NavigationDestination(icon: Icon(item.icon), label: item.label),
         ],
       ),
     );
