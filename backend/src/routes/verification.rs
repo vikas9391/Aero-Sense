@@ -1,9 +1,39 @@
-use crate::{config::Config, db::DbPool, errors::AppError, middleware::auth::{require_company_scope, require_role, AuthenticatedUser}, models::{BlockchainVerifyRequest, BlockchainVerifyResponse, NfcVerificationRequest, UserRole, VerificationLog, VerificationResponse}, services::{blockchain_service::BlockchainService, nfc_service::DeviceNfcService, verification_service::VerificationService}};
+use crate::{config::Config, db::DbPool, errors::AppError, middleware::auth::{require_company_scope, require_role, require_super_admin, AuthenticatedUser}, models::{BlockchainVerifyRequest, BlockchainVerifyResponse, NfcVerificationRequest, UserRole, VerificationLog, VerificationResponse}, services::{blockchain_service::BlockchainService, nfc_service::DeviceNfcService, verification_service::VerificationService}};
 use axum::{extract::{Path, State}, Extension, Json};
 use std::sync::Arc;
 
 pub async fn verify_nfc(State(pool): State<DbPool>, Extension(blockchain): Extension<Arc<BlockchainService>>, Extension(config): Extension<Arc<Config>>, user: AuthenticatedUser, Json(mut req): Json<NfcVerificationRequest>) -> Result<Json<VerificationResponse>, AppError> {
-    let company_id = require_company_scope(&user)?;
+    // Company users are always scoped by the company_id in their JWT. A platform
+    // Super Admin has no tenant in the JWT, so they must explicitly choose a
+    // company. This preserves tenant isolation while allowing platform oversight
+    // to perform a real verification against one selected tenant.
+    let company_id = match user.0.company_id {
+        Some(company_id) => {
+            // Never let a company user override their JWT tenant with a request field.
+            req.company_id = None;
+            company_id
+        }
+        None => {
+            require_super_admin(&user)?;
+            let selected_company_id = req.company_id.ok_or_else(|| {
+                AppError::ValidationError("A company must be selected for Super Admin verification".to_string())
+            })?;
+
+            let company: Option<(i64, String)> = sqlx::query_as(
+                "SELECT id, status FROM companies WHERE id = $1",
+            )
+            .bind(selected_company_id)
+            .fetch_optional(&pool)
+            .await?;
+
+            match company {
+                Some((_, status)) if status == "ACTIVE" => selected_company_id,
+                Some(_) => return Err(AppError::Forbidden("The selected company is suspended".to_string())),
+                None => return Err(AppError::NotFound("Company not found".to_string())),
+            }
+        }
+    };
+
     if req.simulate_scenario.is_some() {
         if !config.allow_verification_simulation { return Err(AppError::Forbidden("Verification simulation is disabled on this deployment".to_string())); }
         require_role(&user, &[UserRole::CompanyAdmin])?;
