@@ -79,7 +79,6 @@ class Api {
         'password': password
       }))
           .data as Map);
-
   Future<User> me() async => User.fromJson(
       Map<String, dynamic>.from((await dio.get('/auth/me')).data));
   Future<Analytics> analytics() async => Analytics.fromJson(
@@ -92,7 +91,7 @@ class Api {
           .toList();
   Future<Component> component(int id) async => Component.fromJson(
       Map<String, dynamic>.from((await dio.get('/components/$id')).data));
-  Future<List<MaintenanceRecord> > maintenance() async =>
+  Future<List<MaintenanceRecord>> maintenance() async =>
       _list((await dio.get('/maintenance')).data)
           .map(MaintenanceRecord.fromJson)
           .toList();
