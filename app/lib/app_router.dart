@@ -3,13 +3,15 @@ import 'package:go_router/go_router.dart';
 
 import 'core/api.dart';
 import 'dashboard_page.dart';
-import 'management_pages.dart';
-import 'nfc_pages.dart';
-import 'registration_pages.dart';
-import 'screens.dart';
+import 'management_pages.dart' hide api;
+import 'nfc_pages.dart' hide nfcApi;
+import 'registration_pages.dart' hide api;
+import 'screens.dart' hide api;
 import 'security_audit.dart';
-import 'super_admin.dart';
+import 'super_admin.dart' hide api;
 import 'theme.dart';
+
+final routerApi = Api();
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -38,21 +40,19 @@ final appRouter = GoRouter(
       path: '/passport',
       builder: (context, state) {
         final component = state.extra;
-        if (component is! Component) return const ComponentsScreen();
-        return PassportScreen(component: component);
+        return component is Component ? PassportScreen(component: component) : const ComponentsScreen();
       },
     ),
     GoRoute(
       path: '/company-detail',
       builder: (context, state) {
         final company = state.extra;
-        if (company is! CompanySummary) return const CompanyManagementScreen();
-        return CompanyDetailScreen(company: company);
+        return company is CompanySummary ? CompanyDetailScreen(company: company) : const CompanyManagementScreen();
       },
     ),
   ],
   redirect: (context, state) async {
-    final token = await api.storage.read(key: tokenKey);
+    final token = await routerApi.storage.read(key: tokenKey);
     final authenticated = token != null && token.isNotEmpty;
     final location = state.uri.path;
     if (!authenticated && location != '/login') return '/login';
@@ -63,21 +63,36 @@ final appRouter = GoRouter(
 
 class _RouteGate extends StatelessWidget {
   const _RouteGate();
-
   @override
-  Widget build(BuildContext context) => const SplashScreen();
+  Widget build(BuildContext context) => const _SplashScreen();
+}
+
+class _SplashScreen extends StatelessWidget {
+  const _SplashScreen();
+  @override
+  Widget build(BuildContext context) => const Scaffold(
+        body: Center(
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Icon(Icons.flight_takeoff_rounded, size: 48, color: accent),
+            SizedBox(height: 14),
+            Text('AERO-SENSE', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w900, letterSpacing: 2)),
+            SizedBox(height: 5),
+            Text('COMPONENT INTELLIGENCE', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: muted, letterSpacing: 1.6)),
+            SizedBox(height: 22),
+            SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: accent)),
+          ]),
+        ),
+      );
 }
 
 class _DashboardRoute extends StatelessWidget {
   const _DashboardRoute();
-
   @override
   Widget build(BuildContext context) => MobileDashboardScreen(role: AppShellFrame.currentRole(context));
 }
 
 class AppShellFrame extends StatefulWidget {
   final Widget child;
-
   const AppShellFrame({required this.child, super.key});
 
   static String currentRole(BuildContext context) {
@@ -102,7 +117,7 @@ class _AppShellFrameState extends State<AppShellFrame> {
   @override
   void initState() {
     super.initState();
-    api.me().then((value) {
+    routerApi.me().then((value) {
       if (mounted) setState(() => user = value);
     }).catchError((_) {
       if (mounted) context.go('/login');
@@ -146,8 +161,8 @@ class _AppShellFrameState extends State<AppShellFrame> {
   }
 
   void go(String route) {
-    if (drawerItems.any((item) => item.route == route) ||
-        const ['/register-component', '/register-tag', '/passport', '/company-detail', '/nfc-center'].contains(route)) {
+    const secondary = ['/register-component', '/register-tag', '/passport', '/company-detail', '/nfc-center'];
+    if (drawerItems.any((item) => item.route == route) || secondary.contains(route)) {
       context.go(route);
     } else {
       context.go('/dashboard');
@@ -155,7 +170,7 @@ class _AppShellFrameState extends State<AppShellFrame> {
   }
 
   Future<void> signOut() async {
-    await api.storage.delete(key: tokenKey);
+    await routerApi.storage.delete(key: tokenKey);
     if (mounted) context.go('/login');
   }
 
@@ -208,7 +223,7 @@ class _AppShellFrameState extends State<AppShellFrame> {
                 itemBuilder: (_, i) => ListTile(
                   selected: drawer[i].route == current?.route,
                   leading: Icon(drawer[i].icon),
-                  title: Text(drawer[i].label),
+                  title: Text(drawer[i].label, overflow: TextOverflow.ellipsis),
                   onTap: () {
                     Navigator.pop(context);
                     go(drawer[i].route);
@@ -225,7 +240,10 @@ class _AppShellFrameState extends State<AppShellFrame> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: selectedIndex,
         onDestinationSelected: (index) => go(primary[index].route),
-        destinations: [for (final item in primary) NavigationDestination(icon: Icon(item.icon), label: item.label)],
+        destinations: [
+          for (final item in primary)
+            NavigationDestination(icon: Icon(item.icon), label: item.label),
+        ],
       ),
     );
   }
@@ -235,6 +253,5 @@ class _RouteNavItem {
   final String label;
   final String route;
   final IconData icon;
-
   const _RouteNavItem(this.label, this.route, this.icon);
 }
