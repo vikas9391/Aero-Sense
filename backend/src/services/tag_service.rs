@@ -26,7 +26,7 @@ impl TagService {
 
         let identifier = req.identifier.trim().replace('-', ":").to_uppercase();
         if identifier.is_empty() {
-            return Err(AppError::BadRequest("NFC tag identifier cannot be empty".to_string()));
+            return Err(AppError::ValidationError("NFC tag identifier cannot be empty".to_string()));
         }
 
         let security_type = req.security_type.unwrap_or_else(|| "BASIC_UID".to_string());
