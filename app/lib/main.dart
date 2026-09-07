@@ -17,6 +17,7 @@ void main() {
 
 class AeroSenseApp extends StatelessWidget {
   const AeroSenseApp({super.key});
+
   @override
   Widget build(BuildContext context) => MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -35,7 +36,7 @@ class AeroSenseApp extends StatelessWidget {
           navigationBarTheme: NavigationBarThemeData(
             backgroundColor: panel,
             indicatorColor: const Color(0xFFE8E9F7),
-            labelTextStyle: WidgetStateProperty.all(const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+            labelTextStyle: WidgetStatePropertyAll(const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
           ),
         ),
         home: const SessionGate(),
@@ -44,45 +45,59 @@ class AeroSenseApp extends StatelessWidget {
 
 class SessionGate extends StatefulWidget {
   const SessionGate({super.key});
-  @override State<SessionGate> createState() => _SessionGateState();
-}
-class _SessionGateState extends State<SessionGate> {
-  bool loading = true;
+
   @override
-  void initState() { super.initState(); _check(); }
-  Future<void> _check() async {
-    final token = await api.storage.read(key: 'aero_sense_token');
-    if (!mounted) return;
-    setState(() => loading = false);
-    if (token == null) return;
-  }
-  @override
-  Widget build(BuildContext context) => loading ? const SplashScreen() : const AuthRouter();
+  State<SessionGate> createState() => _SessionGateState();
 }
 
-class AuthRouter extends StatefulWidget {
-  const AuthRouter({super.key});
-  @override State<AuthRouter> createState() => _AuthRouterState();
-}
-class _AuthRouterState extends State<AuthRouter> {
-  @override Widget build(BuildContext context) => FutureBuilder<String?>(
-        future: api.storage.read(key: 'aero_sense_token'),
-        builder: (_, snap) => snap.connectionState != ConnectionState.done ? const SplashScreen() : snap.data == null ? const LoginScreen() : const AppShell(),
-      );
+class _SessionGateState extends State<SessionGate> {
+  bool loading = true;
+  bool authenticated = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _check();
+  }
+
+  Future<void> _check() async {
+    final token = await api.storage.read(key: tokenKey);
+    if (token != null && token.isNotEmpty) {
+      try {
+        await api.me();
+        authenticated = true;
+      } catch (_) {
+        await api.storage.delete(key: tokenKey);
+      }
+    }
+    if (mounted) setState(() => loading = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading) return const SplashScreen();
+    return authenticated ? const AppShell() : const LoginScreen();
+  }
 }
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
+
   @override
   Widget build(BuildContext context) => const Scaffold(
-        body: Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Icon(Icons.flight_takeoff_rounded, size: 48, color: accent),
-          SizedBox(height: 14),
-          Text('AERO-SENSE', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w900, letterSpacing: 2)),
-          SizedBox(height: 5),
-          Text('COMPONENT INTELLIGENCE', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: muted, letterSpacing: 1.6)),
-          SizedBox(height: 22),
-          SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: accent)),
-        ])),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.flight_takeoff_rounded, size: 48, color: accent),
+              SizedBox(height: 14),
+              Text('AERO-SENSE', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              SizedBox(height: 5),
+              Text('COMPONENT INTELLIGENCE', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: muted, letterSpacing: 1.6)),
+              SizedBox(height: 22),
+              SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: accent)),
+            ],
+          ),
+        ),
       );
 }
