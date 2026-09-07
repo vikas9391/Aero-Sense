@@ -10,8 +10,6 @@ services:
     envVars:
       - key: HOST
         value: 0.0.0.0
-      - key: PORT
-        value: 10000
       - key: DATABASE_URL
         value: sqlite://aircraft_verification.db?mode=rwc
       - key: SUPER_ADMIN_EMAIL
@@ -23,6 +21,8 @@ services:
       - key: DEMO_SEED
         value: "true"
       - key: ALLOW_VERIFICATION_SIMULATION
-        value: "true"
+        value: "false"
+      # Set this to the exact deployed frontend origin after the website is deployed.
+      # Example: https://aero-sense-frontend.onrender.com
       - key: ALLOWED_ORIGINS
-        value: "*"
+        sync: false
