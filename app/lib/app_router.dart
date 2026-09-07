@@ -23,6 +23,7 @@ final appRouter = GoRouter(
       routes: [
         GoRoute(path: '/dashboard', builder: (context, state) => const _DashboardRoute()),
         GoRoute(path: '/verify', builder: (context, state) => const NfcVerificationScreen()),
+        GoRoute(path: '/nfc-center', builder: (context, state) => const NfcCenterScreen()),
         GoRoute(path: '/aircraft', builder: (context, state) => const AircraftScreen()),
         GoRoute(path: '/components', builder: (context, state) => const ComponentsScreen()),
         GoRoute(path: '/maintenance', builder: (context, state) => const MaintenanceScreen()),
@@ -33,7 +34,6 @@ final appRouter = GoRouter(
         GoRoute(path: '/companies', builder: (context, state) => const CompanyManagementScreen()),
       ],
     ),
-    GoRoute(path: '/nfc-center', builder: (context, state) => const NfcCenterScreen()),
     GoRoute(path: '/register-component', builder: (context, state) => const RegisterComponentScreen()),
     GoRoute(path: '/register-tag', builder: (context, state) => const RegisterTagScreen()),
     GoRoute(
@@ -141,6 +141,7 @@ class _AppShellFrameState extends State<AppShellFrame> {
   List<_RouteNavItem> get drawerItems {
     if (isSuperAdmin) return items;
     final result = <_RouteNavItem>[...items, const _RouteNavItem('Aircraft', '/aircraft', Icons.flight_outlined)];
+    if (canVerify) result.add(const _RouteNavItem('NFC Center', '/nfc-center', Icons.nfc_outlined));
     if (canMaintain) result.add(const _RouteNavItem('Maintenance', '/maintenance', Icons.build_outlined));
     if (isCompanyAdmin) {
       result.addAll(const [
@@ -161,7 +162,7 @@ class _AppShellFrameState extends State<AppShellFrame> {
   }
 
   void go(String route) {
-    const secondary = ['/register-component', '/register-tag', '/passport', '/company-detail', '/nfc-center'];
+    const secondary = ['/register-component', '/register-tag', '/passport', '/company-detail'];
     if (drawerItems.any((item) => item.route == route) || secondary.contains(route)) {
       context.go(route);
     } else {
@@ -209,9 +210,9 @@ class _AppShellFrameState extends State<AppShellFrame> {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(user!.name, style: const TextStyle(fontWeight: FontWeight.w800)),
+                    Text(user!.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800)),
                     const SizedBox(height: 3),
-                    Text(user!.role, style: const TextStyle(color: muted, fontSize: 11)),
+                    Text(user!.role, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: muted, fontSize: 11)),
                   ]),
                 ),
               ),
