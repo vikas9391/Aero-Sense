@@ -19,7 +19,9 @@ class _CompanyManagementState extends State<CompanyManagementScreen> {
   String? error;
 
   Future<void> load() async {
-    if (mounted) setState(() { loading = true; error = null; });
+    if (mounted) {
+      setState(() { loading = true; error = null; });
+    }
     try {
       companies = await api.companies();
     } catch (e) {
@@ -294,6 +296,8 @@ class _AdminDialogState extends State<_AdminDialog> {
   final password = TextEditingController();
   bool obscure = true;
 
+  bool get canSubmit => name.text.trim().isNotEmpty && email.text.trim().isNotEmpty && password.text.length >= 8;
+
   @override
   void dispose() {
     name.dispose();
@@ -302,21 +306,26 @@ class _AdminDialogState extends State<_AdminDialog> {
     super.dispose();
   }
 
+  void refresh() => setState(() {});
+
   @override
   Widget build(BuildContext context) => AlertDialog(
         title: Text('Add Admin — ${widget.company.name}'),
         content: SingleChildScrollView(
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            TextField(controller: name, decoration: const InputDecoration(labelText: 'Full Name')),
+            TextField(controller: name, onChanged: (_) => refresh(), decoration: const InputDecoration(labelText: 'Full Name')),
             const SizedBox(height: 12),
-            TextField(controller: email, keyboardType: TextInputType.emailAddress, decoration: const InputDecoration(labelText: 'Email')),
+            TextField(controller: email, onChanged: (_) => refresh(), keyboardType: TextInputType.emailAddress, decoration: const InputDecoration(labelText: 'Email')),
             const SizedBox(height: 12),
-            TextField(controller: password, obscureText: obscure, decoration: InputDecoration(labelText: 'Password', hintText: 'Minimum 8 characters', suffixIcon: IconButton(onPressed: () => setState(() => obscure = !obscure), icon: Icon(obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined)))),
+            TextField(controller: password, onChanged: (_) => refresh(), obscureText: obscure, decoration: InputDecoration(labelText: 'Password', hintText: 'Minimum 8 characters', suffixIcon: IconButton(onPressed: () => setState(() => obscure = !obscure), icon: Icon(obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined)))),
           ]),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          FilledButton(onPressed: () { if (name.text.trim().isEmpty || email.text.trim().isEmpty || password.text.length < 8) return; Navigator.pop(context, [name.text.trim(), email.text.trim(), password.text]); }, child: const Text('Create Admin')),
+          FilledButton(
+            onPressed: canSubmit ? () => Navigator.pop(context, [name.text.trim(), email.text.trim(), password.text]) : null,
+            child: const Text('Create Admin'),
+          ),
         ],
       );
 }
