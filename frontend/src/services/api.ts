@@ -14,7 +14,9 @@ import {
 } from '../types';
 import { emitToast } from '../context/ToastContext';
 
-const API_BASE = '/api';
+// Production uses the deployed Render backend. Vite's local proxy still
+// supports development when VITE_API_BASE_URL is set to /api.
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://aero-sense-backend-0y3l.onrender.com/api';
 
 const api = axios.create({
   baseURL: API_BASE,
