@@ -206,12 +206,19 @@ async fn seed_demo_data(pool: &DbPool, blockchain: &BlockchainService) -> Result
         component_ids.push(res.last_insert_rowid());
     }
 
-    // --- NFC tags: one intact tag per component, memorable identifiers for live demo typing ---
-    let tag_identifiers = ["DEMO-NFC-0001", "DEMO-NFC-0002", "DEMO-NFC-0003", "DEMO-NFC-0004"];
+    // --- NFC tags: demo-only registry records using valid UID-shaped values.
+    // These are seed data, not physical tags. Real deployments must register
+    // the UID read from the actual NFC tag by the Flutter client.
+    let tag_identifiers = [
+        "04:A3:91:00:00:01",
+        "04:A3:91:00:00:02",
+        "04:A3:91:00:00:03",
+        "04:A3:91:00:00:04",
+    ];
     for (component_id, identifier) in component_ids.iter().zip(tag_identifiers.iter()) {
         sqlx::query(
             "INSERT INTO component_tags (component_id, technology, identifier, security_type, tamper_status, company_id) \
-             VALUES (?, 'NFC', ?, 'MOCK', 'INTACT', ?)",
+             VALUES (?, 'NFC', ?, 'BASIC_UID', 'INTACT', ?)",
         )
         .bind(component_id)
         .bind(identifier)
@@ -257,7 +264,7 @@ async fn seed_demo_data(pool: &DbPool, blockchain: &BlockchainService) -> Result
         "Demo tenant seeded (company_id={}). Log in as Company Admin: admin@skyline-demo.test / {}",
         company_id, DEMO_PASSWORD
     );
-    info!("Demo NFC tags ready to scan on the Verify page: {:?}", tag_identifiers);
+    info!("Demo NFC registry identifiers: {:?} (seed data only; use a physical UID for real scans)", tag_identifiers);
 
     Ok(())
 }
