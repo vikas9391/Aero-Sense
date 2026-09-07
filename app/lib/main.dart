@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'core/api.dart';
 import 'screens.dart';
 import 'theme.dart';
@@ -15,11 +16,15 @@ class AeroSenseApp extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Aero-Sense',
-        builder: (context, child) => MediaQuery.withClampedTextScaling(
-          minScaleFactor: 1.0,
-          maxScaleFactor: 1.25,
-          child: child!,
-        ),
+        builder: (context, child) {
+          // The mobile UI is designed around a compact fixed type scale.
+          // Prevent Android display/font-size accessibility scaling from
+          // expanding headings into one-word-per-line layouts.
+          final media = MediaQuery.of(context).copyWith(
+            textScaler: const TextScaler.linear(1.0),
+          );
+          return MediaQuery(data: media, child: child!);
+        },
         theme: ThemeData(
           useMaterial3: true,
           scaffoldBackgroundColor: bg,
@@ -28,20 +33,24 @@ class AeroSenseApp extends StatelessWidget {
             filled: true,
             fillColor: soft,
             border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(17),
-                borderSide: const BorderSide(color: line)),
+              borderRadius: BorderRadius.circular(17),
+              borderSide: const BorderSide(color: line),
+            ),
             enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(17),
-                borderSide: const BorderSide(color: line)),
+              borderRadius: BorderRadius.circular(17),
+              borderSide: const BorderSide(color: line),
+            ),
             focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(17),
-                borderSide: const BorderSide(color: accent, width: 1.5)),
+              borderRadius: BorderRadius.circular(17),
+              borderSide: const BorderSide(color: accent, width: 1.5),
+            ),
           ),
           navigationBarTheme: NavigationBarThemeData(
             backgroundColor: panel,
             indicatorColor: const Color(0xFFE8E9F7),
             labelTextStyle: WidgetStatePropertyAll(
-                const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+              const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+            ),
           ),
         ),
         home: const SessionGate(),
@@ -96,24 +105,21 @@ class SplashScreen extends StatelessWidget {
             children: [
               Icon(Icons.flight_takeoff_rounded, size: 48, color: accent),
               SizedBox(height: 14),
-              Text('AERO-SENSE',
-                  style: TextStyle(
-                      fontSize: 21,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 2)),
+              Text(
+                'AERO-SENSE',
+                style: TextStyle(fontSize: 21, fontWeight: FontWeight.w900, letterSpacing: 2),
+              ),
               SizedBox(height: 5),
-              Text('COMPONENT INTELLIGENCE',
-                  style: TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w800,
-                      color: muted,
-                      letterSpacing: 1.6)),
+              Text(
+                'COMPONENT INTELLIGENCE',
+                style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: muted, letterSpacing: 1.6),
+              ),
               SizedBox(height: 22),
               SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2.5, color: accent)),
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(strokeWidth: 2.5, color: accent),
+              ),
             ],
           ),
         ),
