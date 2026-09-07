@@ -29,7 +29,7 @@ impl ComponentService {
             let owned: Option<(i64,)> = sqlx::query_as("SELECT id FROM aircraft WHERE id = $1 AND company_id = $2").bind(aircraft_id).bind(company_id).fetch_optional(pool).await?;
             if owned.is_none() { return Err(AppError::NotFound("Aircraft not found".to_string())); }
         }
-        let component_uuid = format!("ENG-{}", &uuid::Uuid::new_v4().to_string()[..8].to_uppercase());
+        let component_uuid = format!("ENG-{}", uuid::Uuid::new_v4().to_string()[..8].to_uppercase());
         let status = req.status.unwrap_or_else(|| "OPERATIONAL".to_string());
         let (id,): (i64,) = sqlx::query_as("INSERT INTO components (component_uuid, aircraft_id, serial_number, component_type, manufacturer, status, company_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id")
             .bind(&component_uuid).bind(req.aircraft_id).bind(&req.serial_number).bind(&req.component_type).bind(&req.manufacturer).bind(&status).bind(company_id)
