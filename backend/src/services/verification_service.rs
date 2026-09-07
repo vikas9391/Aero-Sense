@@ -144,11 +144,13 @@ impl VerificationService {
             }
         }
 
-        // Standard verification flow
+        // Standard verification flow. The identifier and payload originate from
+        // the physical NFC-capable client; the backend validates the scan data
+        // but does not pretend to have direct access to the device NFC radio.
         let scan_data = NfcTagScanData {
             identifier: req.tag_identifier.clone(),
             technology: "NFC".to_string(),
-            security_type: "MOCK".to_string(),
+            security_type: "BASIC_UID".to_string(),
             raw_payload: req.payload,
             dynamic_counter: None,
             cmac_signature: None,
