@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, User as UserIcon, Bell, Search, Radio, Download } from 'lucide-react';
+import { LogOut, User as UserIcon, Bell, Search, Download } from 'lucide-react';
 import { AeroLogo } from './Logo';
 
 export const Navbar: React.FC = () => {
@@ -11,11 +11,6 @@ export const Navbar: React.FC = () => {
       <div className="mx-auto flex max-w-[1680px] items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <AeroLogo size="md" />
-          <div className="hidden h-7 w-px bg-pebble sm:block" />
-          <div className="hidden items-center gap-2 rounded-full border border-good/20 bg-good/5 px-2.5 py-1.5 sm:flex">
-            <span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-good opacity-50" /><span className="relative inline-flex h-2 w-2 rounded-full bg-good" /></span>
-            <span className="aero-eyebrow !text-[9px] !tracking-[.12em] !text-good">Systems online</span>
-          </div>
         </div>
 
         <div className="hidden min-w-0 flex-1 justify-center px-4 lg:flex">
@@ -37,10 +32,6 @@ export const Navbar: React.FC = () => {
               <Download className="h-3.5 w-3.5" />
               <span>Get App</span>
             </a>
-            <div className="hidden items-center gap-2 rounded-xl border border-accent/15 bg-accent-soft px-3 py-2 text-accent sm:flex">
-              <Radio className="h-3.5 w-3.5" />
-              <span className="aero-eyebrow !text-[9px] !text-accent">Live</span>
-            </div>
             <button className="hidden h-10 w-10 items-center justify-center rounded-xl border border-pebble bg-white/80 text-ash shadow-sm transition hover:border-accent/25 hover:bg-white hover:text-accent sm:flex" title="Notifications">
               <Bell className="h-4 w-4" />
             </button>
