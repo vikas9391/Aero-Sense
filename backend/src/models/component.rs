@@ -30,6 +30,7 @@ pub struct UpdateComponentRequest {
     pub component_type: String,
     pub manufacturer: String,
     pub status: String,
+    pub update_note: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
@@ -49,6 +50,7 @@ pub struct ComponentUpdateHistory {
     pub previous_status: Option<String>,
     pub previous_aircraft_id: Option<i64>,
     pub user_name: Option<String>,
+    pub update_note: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
