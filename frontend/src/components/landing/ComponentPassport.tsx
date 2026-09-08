@@ -1,172 +1,87 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle2 } from 'lucide-react';
 
 const LIFECYCLE = ['Manufactured', 'Registered', 'Inspected', 'Maintained'] as const;
 const EASE = [0.16, 1, 0.3, 1] as const;
 
-// Card-level entrance — same fade-up-on-scroll treatment the card already
-// had, now also acting as the stagger parent for the fields inside it.
 const cardReveal = {
   hidden: { opacity: 0, y: 24 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      duration: 0.6,
-      ease: EASE,
-      staggerChildren: 0.12,
-      delayChildren: 0.15,
-    },
+    transition: { duration: 0.6, ease: EASE, staggerChildren: 0.12, delayChildren: 0.15 },
   },
 };
 
-// Per-field reveal — no new fields, no new data, just a staged fade-up
-// for each existing field group as the card comes into view.
 const fieldReveal = {
   hidden: { opacity: 0, y: 14 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: EASE },
-  },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } },
 };
 
 export const ComponentPassport: React.FC = () => {
-  // Verify Identity demo — a simulated tap/scan, not a real NFC read.
-  // idle -> verifying -> verified, all client-side and time-based.
-  const [verifyState, setVerifyState] = useState<'idle' | 'verifying' | 'verified'>('idle');
-  const timeoutRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
-    };
-  }, []);
-
-  const handleVerify = () => {
-    if (verifyState !== 'idle') return;
-    setVerifyState('verifying');
-    timeoutRef.current = window.setTimeout(() => setVerifyState('verified'), 1100);
-  };
-
   return (
-    // id="passport" moved to HowItWorks below — the nav's "How It Works"
-    // link (#passport) is meant to target that section, not this one.
-    // Both sections using id="passport" was a duplicate-ID bug (invalid
-    // HTML — an id must be unique per page, and getElementById /
-    // in-page anchors only ever resolve to the first match).
-    <section id="component-passport" className="bg-white px-6 py-28 md:px-10">
-      <div className="mx-auto grid max-w-[1400px] grid-cols-1 items-center gap-16 md:grid-cols-2">
-        <div>
-          <h2 className="font-display text-[2.75rem] font-semibold leading-[1.05] tracking-tight text-ink sm:text-[3.5rem]">
-            Every component
-            <br />
-            has a story.
+    <section id="component-passport" className="bg-white px-6 py-24 md:px-10 md:py-28">
+      <div className="mx-auto grid max-w-[1400px] grid-cols-1 items-center gap-14 md:grid-cols-2 md:gap-16">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.7, ease: EASE }}
+        >
+          <span className="inline-flex rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1.5 font-body text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-600">
+            Digital Component Passport
+          </span>
+          <h2 className="mt-5 font-display text-[2.75rem] font-semibold leading-[1.05] tracking-tight text-ink sm:text-[3.5rem]">
+            Every component has a story.
           </h2>
           <p className="mt-6 max-w-md font-body text-[1.05rem] leading-relaxed text-ash">
-            A digital component passport brings a part's identity, verification status, and
-            lifecycle together in one trusted record — a concept view of how AERO-SENSE
-            presents a component, not a live data feed.
+            A secure digital passport brings identity, verification and lifecycle history together in one place.
           </p>
-        </div>
+        </motion.div>
 
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-100px' }}
           variants={cardReveal}
-          className="border border-pebble bg-[var(--bg-app)] p-8 text-ink md:p-10"
+          className="relative overflow-hidden rounded-[26px] border border-indigo-100 bg-gradient-to-br from-white via-indigo-50/50 to-blue-50/60 p-7 text-ink shadow-[0_24px_70px_rgba(79,70,229,.10)] md:rounded-[30px] md:p-9"
         >
-          <motion.div
-            variants={fieldReveal}
-            className="flex items-center justify-between border-b border-pebble pb-6"
-          >
+          <div aria-hidden="true" className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-violet-200/25 blur-3xl" />
+
+          <motion.div variants={fieldReveal} className="relative flex items-center justify-between border-b border-indigo-100 pb-5">
             <div>
               <div className="font-display text-sm font-semibold tracking-tight">AERO-SENSE</div>
-              <div className="mt-1 font-body text-[11px] uppercase tracking-[0.15em] text-ash">
-                Digital Component Passport
-              </div>
+              <div className="mt-1 font-body text-[11px] uppercase tracking-[0.15em] text-ash">Digital identity record</div>
             </div>
-            <span className="font-body text-[11px] uppercase tracking-widest text-ash">
-              Concept
+            <span className="rounded-full bg-indigo-50 px-2.5 py-1 font-body text-[10px] font-semibold uppercase tracking-wider text-indigo-600">
+              Secure
             </span>
           </motion.div>
 
-          <motion.div variants={fieldReveal} className="mt-6">
-            <div className="font-body text-[11px] uppercase tracking-[0.15em] text-ash">
-              Component
-            </div>
-            <div className="mt-1 font-display text-xl font-semibold">Turbine Blade Assembly</div>
-          </motion.div>
-
-          <motion.div variants={fieldReveal} className="mt-6 grid grid-cols-2 gap-6">
-            <div>
-              <div className="font-body text-[11px] uppercase tracking-[0.15em] text-ash">
-                Component ID
-              </div>
-              <div className="mt-1 font-mono text-sm text-ink/80">AS-TRB-20491</div>
-            </div>
-            <div>
-              <div className="font-body text-[11px] uppercase tracking-[0.15em] text-ash">
-                Status
-              </div>
-              <div className="mt-1 flex items-center gap-1.5 text-sm text-emerald-600">
-                <CheckCircle2 className="h-4 w-4" />
-                Verified
+          <motion.div variants={fieldReveal} className="relative mt-7 rounded-2xl border border-white/80 bg-white/80 p-5 shadow-sm">
+            <div className="font-body text-[10px] uppercase tracking-[0.15em] text-ash">Component identity</div>
+            <div className="mt-3 flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 via-blue-600 to-violet-600 text-white shadow-sm">
+                <CheckCircle2 className="h-5 w-5" />
+              </span>
+              <div>
+                <div className="font-display text-lg font-semibold">Verified identity</div>
+                <div className="mt-0.5 font-body text-xs text-ash">Authenticated component record</div>
               </div>
             </div>
           </motion.div>
 
-          <motion.div variants={fieldReveal} className="mt-8 border-t border-pebble pt-6">
-            <div className="font-body text-[11px] uppercase tracking-[0.15em] text-ash">
-              Lifecycle
-            </div>
-            <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
-              {LIFECYCLE.map((stage) => (
-                <div key={stage} className="flex items-center gap-2 font-body text-sm text-ink/75">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-clay)]" />
-                  {stage}
+          <motion.div variants={fieldReveal} className="relative mt-6 border-t border-indigo-100 pt-6">
+            <div className="font-body text-[10px] uppercase tracking-[0.15em] text-ash">Lifecycle</div>
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {LIFECYCLE.map((stage, index) => (
+                <div key={stage} className="rounded-xl border border-indigo-100 bg-white/70 p-3">
+                  <div className="font-mono text-[9px] text-indigo-500">0{index + 1}</div>
+                  <div className="mt-2 font-body text-xs font-semibold text-ink/75">{stage}</div>
                 </div>
               ))}
             </div>
-          </motion.div>
-
-          {/* Verify Identity demo — explicitly labeled as a simulation.
-              No hardware access, no real NFC read; the copy says so at
-              every state so it can't be mistaken for a live scan. */}
-          <motion.div variants={fieldReveal} className="mt-8 border-t border-pebble pt-6">
-            <div className="font-body text-[11px] uppercase tracking-[0.15em] text-ash">
-              Verify Identity
-            </div>
-            <div className="mt-3 flex items-center gap-3">
-              <button
-                type="button"
-                onClick={handleVerify}
-                disabled={verifyState !== 'idle'}
-                className="inline-flex items-center gap-2 border border-pebble px-4 py-2 font-body text-sm text-ink/90 transition-colors duration-300 hover:border-ink/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-default"
-              >
-                {verifyState === 'idle' && 'Simulate Verification'}
-                {verifyState === 'verifying' && 'Verifying…'}
-                {verifyState === 'verified' && (
-                  <>
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                    Verified
-                  </>
-                )}
-              </button>
-              {verifyState === 'verified' && (
-                <span className="font-body text-xs text-ash">
-                  Simulated result — demo only, no physical NFC scan performed.
-                </span>
-              )}
-            </div>
-            {verifyState === 'idle' && (
-              <p className="mt-2 font-body text-xs text-ash">
-                Tap to simulate how identity verification would appear. This is a concept
-                demo, not a live NFC scan.
-              </p>
-            )}
           </motion.div>
         </motion.div>
       </div>
