@@ -55,6 +55,7 @@ final appRouter = GoRouter(
     final token = await routerApi.storage.read(key: tokenKey);
     final authenticated = token != null && token.isNotEmpty;
     final location = state.uri.path;
+
     if (!authenticated && location != '/login') return '/login';
     if (authenticated && (location == '/' || location == '/login')) return '/dashboard';
     return null;
@@ -63,36 +64,43 @@ final appRouter = GoRouter(
 
 class _RouteGate extends StatelessWidget {
   const _RouteGate();
+
   @override
   Widget build(BuildContext context) => const _SplashScreen();
 }
 
 class _SplashScreen extends StatelessWidget {
   const _SplashScreen();
+
   @override
   Widget build(BuildContext context) => const Scaffold(
         body: Center(
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Icon(Icons.flight_takeoff_rounded, size: 48, color: accent),
-            SizedBox(height: 14),
-            Text('AERO-SENSE', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w900, letterSpacing: 2)),
-            SizedBox(height: 5),
-            Text('COMPONENT INTELLIGENCE', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: muted, letterSpacing: 1.6)),
-            SizedBox(height: 22),
-            SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: accent)),
-          ]),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.flight_takeoff_rounded, size: 48, color: accent),
+              SizedBox(height: 14),
+              Text('AERO-SENSE', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              SizedBox(height: 5),
+              Text('COMPONENT INTELLIGENCE', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: muted, letterSpacing: 1.6)),
+              SizedBox(height: 22),
+              SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: accent)),
+            ],
+          ),
         ),
       );
 }
 
 class _DashboardRoute extends StatelessWidget {
   const _DashboardRoute();
+
   @override
   Widget build(BuildContext context) => MobileDashboardScreen(role: AppShellFrame.currentRole(context));
 }
 
 class AppShellFrame extends StatefulWidget {
   final Widget child;
+
   const AppShellFrame({required this.child, super.key});
 
   static String currentRole(BuildContext context) {
@@ -113,6 +121,7 @@ class _AppShellFrameState extends State<AppShellFrame> {
   bool get canVerify => isCompanyAdmin || role == 'MANUFACTURER' || role == 'MAINTENANCE_TECHNICIAN' || role == 'INSPECTOR';
   bool get canAudit => isCompanyAdmin || role == 'INSPECTOR';
   bool get canMaintain => isCompanyAdmin || role == 'MAINTENANCE_TECHNICIAN';
+  bool get canRegister => isCompanyAdmin || role == 'MANUFACTURER';
 
   @override
   void initState() {
@@ -159,8 +168,6 @@ class _AppShellFrameState extends State<AppShellFrame> {
     return result;
   }
 
-  bool get canRegister => isCompanyAdmin || role == 'MANUFACTURER';
-
   _RouteNavItem? get currentItem {
     final path = GoRouterState.of(context).uri.path;
     for (final item in drawerItems) {
@@ -175,7 +182,7 @@ class _AppShellFrameState extends State<AppShellFrame> {
     final allowed = drawerItems.any((item) => item.route == route) ||
         route == '/dashboard' ||
         route == '/passport' ||
-        route == '/company-detail';
+        (isSuperAdmin && route == '/company-detail');
     if (allowed) {
       context.go(route, extra: extra);
     } else {
@@ -208,46 +215,53 @@ class _AppShellFrameState extends State<AppShellFrame> {
       ),
       drawer: Drawer(
         child: SafeArea(
-          child: Column(children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 14),
-              child: Row(children: [
-                const Icon(Icons.flight_takeoff_rounded, color: accent, size: 30),
-                const SizedBox(width: 10),
-                const Expanded(child: Text('AERO-SENSE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.2))),
-              ]),
-            ),
-            if (user != null)
+          child: Column(
+            children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(user!.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800)),
-                    const SizedBox(height: 3),
-                    Text(user!.role, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: muted, fontSize: 11)),
-                  ]),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 14),
+                child: Row(
+                  children: [
+                    const Icon(Icons.flight_takeoff_rounded, color: accent, size: 30),
+                    const SizedBox(width: 10),
+                    const Expanded(child: Text('AERO-SENSE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.2))),
+                  ],
                 ),
               ),
-            const SizedBox(height: 12),
-            const Divider(height: 1),
-            Expanded(
-              child: ListView.builder(
-                itemCount: drawer.length,
-                itemBuilder: (_, i) => ListTile(
-                  selected: drawer[i].route == current?.route,
-                  leading: Icon(drawer[i].icon),
-                  title: Text(drawer[i].label, overflow: TextOverflow.ellipsis),
-                  onTap: () {
-                    Navigator.pop(context);
-                    go(drawer[i].route);
-                  },
+              if (user != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(user!.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800)),
+                        const SizedBox(height: 3),
+                        Text(user!.role, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: muted, fontSize: 11)),
+                      ],
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 12),
+              const Divider(height: 1),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: drawer.length,
+                  itemBuilder: (_, i) => ListTile(
+                    selected: drawer[i].route == current?.route,
+                    leading: Icon(drawer[i].icon),
+                    title: Text(drawer[i].label, overflow: TextOverflow.ellipsis),
+                    onTap: () {
+                      Navigator.pop(context);
+                      go(drawer[i].route);
+                    },
+                  ),
                 ),
               ),
-            ),
-            const Divider(height: 1),
-            ListTile(leading: const Icon(Icons.logout), title: const Text('Sign out'), onTap: signOut),
-          ]),
+              const Divider(height: 1),
+              ListTile(leading: const Icon(Icons.logout), title: const Text('Sign out'), onTap: signOut),
+            ],
+          ),
         ),
       ),
       body: widget.child,
@@ -255,8 +269,7 @@ class _AppShellFrameState extends State<AppShellFrame> {
         selectedIndex: selectedIndex,
         onDestinationSelected: (index) => go(primary[index].route),
         destinations: [
-          for (final item in primary)
-            NavigationDestination(icon: Icon(item.icon), label: item.label),
+          for (final item in primary) NavigationDestination(icon: Icon(item.icon), label: item.label),
         ],
       ),
     );
@@ -267,5 +280,6 @@ class _RouteNavItem {
   final String label;
   final String route;
   final IconData icon;
+
   const _RouteNavItem(this.label, this.route, this.icon);
 }
