@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, ScanLine, Plane, Cpu, Wrench, ShieldAlert, User, Users, BarChart3, Building2, Nfc, ChevronRight, Smartphone, LogOut } from 'lucide-react';
+import { LayoutDashboard, ScanLine, Plane, Cpu, Wrench, ShieldAlert, User, Users, BarChart3, Building2, ChevronRight, Smartphone, LogOut } from 'lucide-react';
 
 type NavItem = { to: string; label: string; icon: React.ComponentType<{ className?: string }>; highlight?: boolean };
 
