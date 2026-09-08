@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Cpu, Fingerprint, GitBranch, ShieldCheck } from 'lucide-react';
 
 interface Stage {
-  id: string;          // '01'
-  kicker: string;       // '01 / IDENTIFY'
-  label: string;        // 'Identify'
+  id: string;
+  kicker: string;
+  label: string;
   body: string;
-  imageKey: 'identifyImage' | 'verifyImage' | 'traceImage';
+  icon: React.ElementType;
 }
 
 const STAGES: Stage[] = [
@@ -16,68 +16,36 @@ const STAGES: Stage[] = [
     kicker: '01 / IDENTIFY',
     label: 'Identify',
     body: 'Create a persistent digital identity for every aviation component.',
-    imageKey: 'identifyImage',
+    icon: Fingerprint,
   },
   {
     id: '02',
     kicker: '02 / VERIFY',
     label: 'Verify',
-    body: "Verify the component using its secure digital identity.",
-    imageKey: 'verifyImage',
+    body: 'Verify the component using its secure digital identity.',
+    icon: ShieldCheck,
   },
   {
     id: '03',
     kicker: '03 / TRACE',
     label: 'Trace',
     body: "Follow the component's lifecycle, maintenance, and verification history.",
-    imageKey: 'traceImage',
+    icon: GitBranch,
   },
 ];
 
-// ~5s per step, per spec. (Was 2500ms — reverted to the original 5000ms.)
 const AUTOPLAY_MS = 2500;
 const EASE = [0.16, 1, 0.3, 1] as const;
 
-// Default imagery — real Unsplash photos, free to use under the Unsplash
-// License (no attribution required). Verified individually:
-//   Identify: "Black and white view of a spinning jet engine turbine" by
-//             ObjectType RAW — https://unsplash.com/photos/gaH-pX-cP20
-//   Verify:   "Woman holding Android smartphone" (tap-to-pay) by Jonas
-//             Leupe — https://unsplash.com/photos/0IVop5v4MMU
-//   Trace:    "White Private Jet Nose Close Up In Hangar" by Eric Prouzet
-//             — https://unsplash.com/photos/ggUYxdREMoM
-// These are placeholders standing in for real AERO-SENSE photography.
-// Pass identifyImage / verifyImage / traceImage as props to override any
-// or all of them — props always win over these defaults.
-const DEFAULT_IMAGES: Record<Stage['imageKey'], string> = {
-  identifyImage:
-    'https://images.unsplash.com/photo-1779680057959-11adee4dbc9e?auto=format&fit=crop&q=80&w=1400',
-  verifyImage:
-    'https://images.unsplash.com/photo-1509017174183-0b7e0278f1ec?auto=format&fit=crop&q=80&w=1400',
-  traceImage:
-    'https://images.unsplash.com/photo-1692128237627-e756e994b048?auto=format&fit=crop&q=80&w=1400',
-};
-
-// Vertical slide: forward (dir > 0) enters from below / exits upward.
-// Backward (dir < 0) is the exact reverse, per spec.
 const imageVariants = {
   enter: (dir: number) => ({ y: dir > 0 ? '100%' : '-100%', opacity: 0 }),
   center: { y: '0%', opacity: 1 },
   exit: (dir: number) => ({ y: dir > 0 ? '-100%' : '100%', opacity: 0 }),
 };
 
-export interface HowItWorksProps {
-  /** Override the default placeholder photography with real AERO-SENSE images. */
-  identifyImage?: string;
-  verifyImage?: string;
-  traceImage?: string;
-}
+export interface HowItWorksProps {}
 
-export const HowItWorks: React.FC<HowItWorksProps> = ({
-  identifyImage,
-  verifyImage,
-  traceImage,
-}) => {
+export const HowItWorks: React.FC<HowItWorksProps> = () => {
   const prefersReducedMotion = useReducedMotion();
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState(1);
@@ -85,16 +53,8 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
   const [isFocusWithin, setIsFocusWithin] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const stageButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
-
   const isPaused = isHovering || isFocusWithin;
-
   const active = STAGES[activeIndex];
-  const images: Record<Stage['imageKey'], string> = {
-    identifyImage: identifyImage ?? DEFAULT_IMAGES.identifyImage,
-    verifyImage: verifyImage ?? DEFAULT_IMAGES.verifyImage,
-    traceImage: traceImage ?? DEFAULT_IMAGES.traceImage,
-  };
-  const activeImage = images[active.imageKey];
 
   const goTo = (i: number) => {
     if (i === activeIndex) return;
@@ -110,9 +70,6 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
     setActiveIndex((p) => (p - 1 + STAGES.length) % STAGES.length);
   };
 
-  // Arrow-key navigation while focus is within the stage list — Up/Down
-  // (and Left/Right, since the mobile layout stacks horizontally-ish)
-  // move to the neighboring stage and move focus with it.
   const handleStageKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, i: number) => {
     if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
       e.preventDefault();
@@ -127,10 +84,6 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
     }
   };
 
-  // Autoplay: 01 -> 02 -> 03 -> 01, every ~5s. Re-arms on every activeIndex
-  // or pause-state change, so a manual click/keypress or a pause/resume
-  // always gets a fresh full interval rather than continuing a stale
-  // countdown.
   useEffect(() => {
     if (prefersReducedMotion || isPaused) return;
     const t = setInterval(handleNext, AUTOPLAY_MS);
@@ -139,29 +92,25 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
   }, [activeIndex, isPaused, prefersReducedMotion]);
 
   return (
-    // NOTE: id is "passport" (not "how-it-works") because the nav's
-    // "How It Works" link (#passport) targets this section. The other
-    // section, ComponentPassport, previously also used id="passport" —
-    // a duplicate-ID bug — and has been changed to id="component-passport".
-    <section id="passport" className="bg-white px-6 py-28 md:px-10">
+    <section id="passport" className="bg-[var(--bg-app)] px-6 py-28 md:px-10">
       <div
         ref={containerRef}
-        className="mx-auto grid max-w-[1400px] grid-cols-1 gap-16 md:grid-cols-2"
+        className="mx-auto grid max-w-[1400px] grid-cols-1 gap-12 rounded-[2rem] border border-indigo-100/80 bg-white/75 p-6 shadow-[0_24px_80px_rgba(79,70,229,0.08)] backdrop-blur-xl md:grid-cols-2 md:gap-16 md:p-10 lg:p-12"
         onFocus={() => setIsFocusWithin(true)}
         onBlur={(e) => {
-          if (!containerRef.current?.contains(e.relatedTarget as Node)) {
-            setIsFocusWithin(false);
-          }
+          if (!containerRef.current?.contains(e.relatedTarget as Node)) setIsFocusWithin(false);
         }}
       >
-        {/* Left: eyebrow, heading, and the stage list */}
-        <div>
-          <span className="font-body text-[11px] uppercase tracking-[0.15em] text-ash">
+        <div className="flex flex-col justify-center">
+          <span className="inline-flex w-fit rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1 font-body text-[11px] font-semibold uppercase tracking-[0.15em] text-indigo-600">
             How AERO-SENSE Works
           </span>
-          <h2 className="mt-4 font-display text-[2.75rem] font-semibold leading-[1.05] tracking-tight text-ink sm:text-[3.5rem]">
+          <h2 className="mt-5 font-display text-[2.75rem] font-semibold leading-[1.02] tracking-tight text-ink sm:text-[3.5rem]">
             Identify. Verify. Trace.
           </h2>
+          <p className="mt-5 max-w-lg font-body text-base leading-relaxed text-ash">
+            A simple physical-to-digital workflow keeps component identity and lifecycle context connected.
+          </p>
 
           <div className="mt-10 flex flex-col">
             {STAGES.map((stage, i) => {
@@ -169,55 +118,32 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
               return (
                 <button
                   key={stage.id}
-                  ref={(el) => {
-                    stageButtonRefs.current[i] = el;
-                  }}
+                  ref={(el) => { stageButtonRefs.current[i] = el; }}
                   type="button"
                   onClick={() => goTo(i)}
                   onKeyDown={(e) => handleStageKeyDown(e, i)}
                   aria-pressed={isActive}
-                  className="group relative flex items-start gap-4 border-t border-pebble py-6 pl-5 text-left first:border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-clay/40 focus-visible:ring-offset-2"
+                  className="group relative flex items-start gap-4 border-t border-pebble py-6 pl-5 text-left first:border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/40 focus-visible:ring-offset-2"
                 >
-                  {/* Vertical accent bar. Fills 0->100% over the autoplay
-                      window while active and not paused; static full bar
-                      when reduced motion (no timed animation to represent). */}
-                  <span
-                    className="absolute inset-y-0 left-0 w-[2px] overflow-hidden bg-pebble"
-                    aria-hidden="true"
-                  >
+                  <span className="absolute inset-y-0 left-0 w-[2px] overflow-hidden bg-pebble" aria-hidden="true">
                     {isActive && (
                       <motion.span
                         key={`progress-${activeIndex}-${isPaused}-${prefersReducedMotion}`}
-                        className="absolute left-0 top-0 w-full origin-top bg-clay"
+                        className="absolute left-0 top-0 w-full origin-top bg-gradient-to-b from-indigo-500 via-blue-500 to-violet-500"
                         initial={{ height: '0%' }}
-                        animate={{
-                          height: prefersReducedMotion || isPaused ? '0%' : '100%',
-                        }}
-                        transition={{
-                          duration: prefersReducedMotion ? 0 : AUTOPLAY_MS / 1000,
-                          ease: 'linear',
-                        }}
+                        animate={{ height: prefersReducedMotion || isPaused ? '0%' : '100%' }}
+                        transition={{ duration: prefersReducedMotion ? 0 : AUTOPLAY_MS / 1000, ease: 'linear' }}
                       />
                     )}
                     {isActive && (prefersReducedMotion || isPaused) && (
-                      <span className="absolute left-0 top-0 h-full w-full bg-clay" />
+                      <span className="absolute left-0 top-0 h-full w-full bg-indigo-500" />
                     )}
                   </span>
-
-                  <span
-                    className={`mt-1.5 font-mono text-[10px] tabular-nums transition-colors duration-300 ${
-                      isActive ? 'text-clay' : 'text-ash/60 group-hover:text-ash'
-                    }`}
-                  >
+                  <span className={`mt-1.5 font-mono text-[10px] tabular-nums transition-colors ${isActive ? 'text-indigo-600' : 'text-ash/60 group-hover:text-ash'}`}>
                     /{stage.id}
                   </span>
-
                   <div className="flex flex-1 flex-col gap-2">
-                    <span
-                      className={`font-display text-2xl font-semibold tracking-tight transition-colors duration-300 md:text-3xl ${
-                        isActive ? 'text-ink' : 'text-ink/40 group-hover:text-ink/70'
-                      }`}
-                    >
+                    <span className={`font-display text-2xl font-semibold tracking-tight transition-colors md:text-3xl ${isActive ? 'text-ink' : 'text-ink/40 group-hover:text-ink/70'}`}>
                       {stage.label}
                     </span>
                     <AnimatePresence initial={false}>
@@ -240,49 +166,74 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
           </div>
         </div>
 
-        {/* Right: image area. Falls back to DEFAULT_IMAGES until real
-            AERO-SENSE photography is passed in via props. */}
         <div
-          className="relative aspect-[4/3] w-full overflow-hidden border border-pebble bg-pebble/10"
+          className="relative min-h-[420px] overflow-hidden rounded-[1.5rem] border border-indigo-100 bg-[radial-gradient(circle_at_50%_30%,rgba(99,102,241,0.18),transparent_42%),linear-gradient(145deg,#f8faff,#eef2ff)] shadow-inner"
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
         >
+          <div className="absolute inset-0 opacity-50 [background-image:linear-gradient(rgba(79,70,229,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(79,70,229,0.06)_1px,transparent_1px)] [background-size:32px_32px]" />
           <AnimatePresence initial={false} custom={direction} mode="popLayout">
             <motion.div
-              key={activeImage}
+              key={active.id}
               custom={direction}
               variants={prefersReducedMotion ? undefined : imageVariants}
               initial={prefersReducedMotion ? false : 'enter'}
               animate="center"
               exit={prefersReducedMotion ? undefined : 'exit'}
               transition={{ duration: 0.5, ease: EASE }}
-              className="absolute inset-0"
+              className="absolute inset-0 flex items-center justify-center p-8"
             >
-              <img
-                src={activeImage}
-                alt={`${active.label} — AERO-SENSE`}
-                className="h-full w-full object-cover"
-              />
+              <div className="relative w-full max-w-md">
+                <motion.div
+                  animate={prefersReducedMotion ? undefined : { y: [0, -8, 0], rotate: [0, 0.5, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                  className="relative overflow-hidden rounded-3xl border border-white/90 bg-white/85 p-6 shadow-[0_24px_60px_rgba(49,46,129,0.14)] backdrop-blur-xl"
+                >
+                  <div className="flex items-center justify-between border-b border-indigo-100 pb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 via-blue-600 to-violet-600 text-white shadow-lg shadow-indigo-500/20">
+                        {React.createElement(active.icon, { className: 'h-5 w-5' })}
+                      </div>
+                      <div>
+                        <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-indigo-500">AERO-SENSE</div>
+                        <div className="mt-1 font-display text-lg font-semibold text-ink">Digital identity</div>
+                      </div>
+                    </div>
+                    <span className="rounded-full bg-emerald-50 px-2.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-wider text-emerald-600">Active</span>
+                  </div>
+
+                  <div className="mt-6 grid grid-cols-3 gap-2">
+                    {['Identity', 'NFC', 'History'].map((item, i) => (
+                      <motion.div
+                        key={item}
+                        animate={prefersReducedMotion ? undefined : { opacity: [0.55, 1, 0.55] }}
+                        transition={{ duration: 2.2, delay: i * 0.25, repeat: Infinity }}
+                        className="rounded-xl border border-indigo-100 bg-indigo-50/60 px-3 py-4 text-center"
+                      >
+                        <div className="font-mono text-[9px] uppercase tracking-wider text-indigo-500">{item}</div>
+                        <div className="mt-2 h-1.5 rounded-full bg-indigo-100"><span className="block h-full w-3/4 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500" /></div>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  <div className="mt-5 flex items-center gap-3 rounded-xl border border-indigo-100 bg-white/80 px-4 py-3">
+                    <Cpu className="h-4 w-4 text-indigo-500" />
+                    <div className="flex-1">
+                      <div className="font-mono text-[9px] uppercase tracking-wider text-ash">Current operation</div>
+                      <div className="mt-1 text-sm font-medium text-ink">{active.label} component record</div>
+                    </div>
+                    <motion.span animate={prefersReducedMotion ? undefined : { scale: [1, 1.25, 1] }} transition={{ duration: 1.8, repeat: Infinity }} className="h-2 w-2 rounded-full bg-indigo-500" />
+                  </div>
+                </motion.div>
+              </div>
             </motion.div>
           </AnimatePresence>
 
-          {/* Prev/Next — manual override, doesn't stop autoplay on its own
-              beyond the normal re-arm-on-activeIndex-change behavior above. */}
           <div className="absolute bottom-5 right-5 z-10 flex gap-2">
-            <button
-              type="button"
-              onClick={handlePrev}
-              aria-label="Previous stage"
-              className="flex h-10 w-10 items-center justify-center border border-ink/15 bg-white/80 text-ink backdrop-blur-sm transition-colors duration-300 hover:border-ink/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-clay/40"
-            >
+            <button type="button" onClick={handlePrev} aria-label="Previous stage" className="flex h-10 w-10 items-center justify-center rounded-xl border border-indigo-100 bg-white/85 text-ink shadow-sm backdrop-blur-sm transition hover:border-indigo-200 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/40">
               <ChevronLeft className="h-4 w-4" />
             </button>
-            <button
-              type="button"
-              onClick={handleNext}
-              aria-label="Next stage"
-              className="flex h-10 w-10 items-center justify-center border border-ink/15 bg-white/80 text-ink backdrop-blur-sm transition-colors duration-300 hover:border-ink/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-clay/40"
-            >
+            <button type="button" onClick={handleNext} aria-label="Next stage" className="flex h-10 w-10 items-center justify-center rounded-xl border border-indigo-100 bg-white/85 text-ink shadow-sm backdrop-blur-sm transition hover:border-indigo-200 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/40">
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
