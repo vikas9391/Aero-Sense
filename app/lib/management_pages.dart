@@ -71,7 +71,10 @@ class _AircraftState extends State<AircraftScreen> {
     if (loading) const Center(child: CircularProgressIndicator(color: accent))
     else if (items.isEmpty) const CardBox(child: Text('No aircraft registered yet.', style: TextStyle(color: muted)))
     else ...[for (final a in items) CardBox(margin: const EdgeInsets.only(bottom: 10), child: ListTile(contentPadding: EdgeInsets.zero, leading: const Icon(Icons.flight_outlined, color: accent, size: 30), title: Text(a.registration, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800)), subtitle: Text('${a.manufacturer} · ${a.model}', maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: muted)), trailing: StatusPill(a.status)))],
-    if (canCreate) ...[const SizedBox(height: 10), SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: create, icon: const Icon(Icons.add), label: const Text('Add Aircraft'))],
+    if (canCreate) ...[
+      const SizedBox(height: 10),
+      SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: create, icon: const Icon(Icons.add), label: const Text('Add Aircraft'))),
+    ],
   ]));
 }
 
@@ -101,7 +104,8 @@ class _MaintenanceState extends State<MaintenanceScreen> {
     if (loading) const Center(child: CircularProgressIndicator(color: accent))
     else if (items.isEmpty) const CardBox(child: Text('No maintenance records yet.', style: TextStyle(color: muted)))
     else ...[for (final x in items) CardBox(margin: const EdgeInsets.only(bottom: 10), child: ListTile(contentPadding: EdgeInsets.zero, leading: const Icon(Icons.build_outlined, color: accent), title: Text(x.type, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800)), subtitle: Text('${x.technician} · ${x.createdAt}\n${x.description}', maxLines: 3, overflow: TextOverflow.ellipsis, style: const TextStyle(color: muted)), trailing: StatusPill(x.result)))],
-    const SizedBox(height: 10), SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: create, icon: const Icon(Icons.add_task), label: const Text('Log Maintenance')),
+    const SizedBox(height: 10),
+    SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: create, icon: const Icon(Icons.add_task), label: const Text('Log Maintenance'))),
   ]));
 }
 
