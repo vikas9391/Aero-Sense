@@ -11,6 +11,7 @@ import 'security_audit.dart';
 import 'super_admin.dart' hide api;
 import 'tag_onboarding_page.dart' hide onboardingApi;
 import 'theme.dart';
+import 'widgets.dart';
 
 final routerApi = Api();
 
@@ -96,8 +97,8 @@ class _SplashScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.flight_takeoff_rounded, size: 48, color: accent),
-              SizedBox(height: 14),
+              AeroLogo(size: 76),
+              SizedBox(height: 18),
               Text('AERO-SENSE', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w900, letterSpacing: 2)),
               SizedBox(height: 5),
               Text('COMPONENT INTELLIGENCE', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: muted, letterSpacing: 1.6)),
@@ -225,7 +226,15 @@ class _AppShellFrameState extends State<AppShellFrame> {
       backgroundColor: bg,
       appBar: AppBar(
         backgroundColor: bg,
-        title: Text(current?.label ?? 'Aero-Sense', style: const TextStyle(fontWeight: FontWeight.w800)),
+        titleSpacing: 8,
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const AeroLogo(size: 34),
+            const SizedBox(width: 10),
+            Flexible(child: Text(current?.label ?? 'Aero-Sense', overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800))),
+          ],
+        ),
         actions: [
           if (canVerify) IconButton(onPressed: () => go('/verify'), icon: const Icon(Icons.nfc), tooltip: 'Verify NFC tag'),
           IconButton(onPressed: () => go('/profile'), icon: const Icon(Icons.account_circle_outlined), tooltip: 'Profile'),
@@ -239,7 +248,7 @@ class _AppShellFrameState extends State<AppShellFrame> {
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 14),
                 child: Row(
                   children: [
-                    const Icon(Icons.flight_takeoff_rounded, color: accent, size: 30),
+                    const AeroLogo(size: 40),
                     const SizedBox(width: 10),
                     const Expanded(child: Text('AERO-SENSE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.2))),
                   ],
