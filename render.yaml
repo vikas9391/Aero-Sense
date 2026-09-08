@@ -22,5 +22,7 @@ services:
         value: "false"
       - key: ALLOW_VERIFICATION_SIMULATION
         value: "false"
+      - key: ALLOW_DEMO_SUPER_ADMIN_LOGIN
+        value: "true"
       - key: ALLOWED_ORIGINS
         sync: false
