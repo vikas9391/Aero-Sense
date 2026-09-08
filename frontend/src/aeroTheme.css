@@ -1,0 +1,97 @@
+/* AeroSense application-wide visual language: white surfaces with precise
+   indigo, violet and blue aerospace accents. Scoped to authenticated pages so
+   existing page behavior and the public landing/login experience stay intact. */
+
+.aero-app-shell {
+  --aero-indigo: #4f46e5;
+  --aero-violet: #7c3aed;
+  --aero-blue: #2563eb;
+  --aero-ink: #11142b;
+  --aero-muted: #667085;
+  --aero-line: #e3e6f2;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(99,102,241,.10), transparent 28rem),
+    radial-gradient(circle at 95% 18%, rgba(37,99,235,.08), transparent 30rem),
+    linear-gradient(145deg, #f8f9ff 0%, #f3f5ff 52%, #eef4ff 100%);
+}
+
+.aero-app-shell main {
+  background: transparent;
+}
+
+/* Re-skin legacy Tailwind slate/white surfaces used throughout the pages. */
+.aero-app-shell [class~="bg-slate-50"] { background: #f5f7ff !important; }
+.aero-app-shell [class~="bg-slate-100"] { background: #eef1fb !important; }
+.aero-app-shell [class~="bg-white"] { background: rgba(255,255,255,.88) !important; }
+.aero-app-shell [class~="bg-white/90"] { background: rgba(255,255,255,.90) !important; }
+.aero-app-shell [class~="bg-white/95"] { background: rgba(255,255,255,.95) !important; }
+.aero-app-shell [class~="text-slate-950"],
+.aero-app-shell [class~="text-slate-900"],
+.aero-app-shell [class~="text-slate-800"] { color: var(--aero-ink) !important; }
+.aero-app-shell [class~="text-slate-700"],
+.aero-app-shell [class~="text-slate-600"] { color: #46516d !important; }
+.aero-app-shell [class~="text-slate-500"],
+.aero-app-shell [class~="text-slate-400"] { color: var(--aero-muted) !important; }
+.aero-app-shell [class~="border-slate-100"],
+.aero-app-shell [class~="border-slate-200"],
+.aero-app-shell [class~="border-slate-300"] { border-color: var(--aero-line) !important; }
+
+/* Keep blue/indigo actions visually consistent across legacy pages. */
+.aero-app-shell [class~="text-blue-600"],
+.aero-app-shell [class~="text-blue-700"],
+.aero-app-shell [class~="text-indigo-600"],
+.aero-app-shell [class~="text-indigo-700"] { color: var(--aero-indigo) !important; }
+.aero-app-shell [class~="bg-blue-50"],
+.aero-app-shell [class~="bg-indigo-50"] { background: #eef0ff !important; }
+.aero-app-shell [class~="border-blue-200"],
+.aero-app-shell [class~="border-indigo-200"] { border-color: #cfd3ff !important; }
+.aero-app-shell [class~="bg-blue-600"],
+.aero-app-shell [class~="bg-indigo-600"] {
+  background: linear-gradient(135deg, var(--aero-indigo), var(--aero-blue)) !important;
+}
+
+/* Premium panel language for tables, filters, forms and detail cards. */
+.aero-app-shell .aero-panel,
+.aero-app-shell .aero-panel-tight {
+  border-color: rgba(214,218,239,.95);
+  box-shadow: 0 16px 42px rgba(53,61,116,.055), 0 2px 8px rgba(53,61,116,.025);
+}
+
+.aero-app-shell .aero-panel:hover {
+  border-color: rgba(99,102,241,.22);
+  box-shadow: 0 22px 55px rgba(53,61,116,.085), 0 4px 14px rgba(53,61,116,.035);
+}
+
+/* Consistent focus treatment for every form control inside app pages. */
+.aero-app-shell input,
+.aero-app-shell select,
+.aero-app-shell textarea {
+  border-color: #dfe3f0;
+  background: rgba(255,255,255,.90);
+  color: var(--aero-ink);
+}
+.aero-app-shell input:focus,
+.aero-app-shell select:focus,
+.aero-app-shell textarea:focus {
+  border-color: rgba(79,70,229,.52) !important;
+  box-shadow: 0 0 0 4px rgba(79,70,229,.09), 0 5px 18px rgba(79,70,229,.06);
+}
+
+/* Subtle aerospace grid/depth behind authenticated content. */
+.aero-app-shell::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .30;
+  background-image:
+    linear-gradient(rgba(79,70,229,.026) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37,99,235,.026) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: linear-gradient(to bottom, black, transparent 78%);
+}
+
+@media (max-width: 1023px) {
+  .aero-app-shell main { padding-bottom: 2rem; }
+}
