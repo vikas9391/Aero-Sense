@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -75,13 +76,23 @@ class _NfcVerificationState extends State<NfcVerificationScreen> {
   static const _settings = MethodChannel('aero_sense/settings');
   bool scanning = false;
   bool _handlingTag = false;
+  Timer? _readerStopTimer;
   String? uid;
   String? error;
   VerificationResponse? result;
 
   Future<void> _openNfcSettings() async { try { await _settings.invokeMethod('openNfcSettings'); } catch (_) {} }
 
+  @override
+  void dispose() {
+    _readerStopTimer?.cancel();
+    unawaited(_stopReader());
+    super.dispose();
+  }
+
   Future<void> _stopReader() async {
+    _readerStopTimer?.cancel();
+    _readerStopTimer = null;
     try {
       if (Platform.isAndroid) {
         await NfcManagerAndroid.instance.disableReaderMode();
@@ -89,6 +100,15 @@ class _NfcVerificationState extends State<NfcVerificationScreen> {
         await NfcManager.instance.stopSession();
       }
     } catch (_) {}
+  }
+
+  void _holdReaderForTenSeconds() {
+    _readerStopTimer?.cancel();
+    _readerStopTimer = Timer(const Duration(seconds: 10), () {
+      unawaited(_stopReader().then((_) {
+        if (mounted) setState(() => scanning = false);
+      }));
+    });
   }
 
   Future<void> _handleTag(NfcTag tag) async {
@@ -101,8 +121,10 @@ class _NfcVerificationState extends State<NfcVerificationScreen> {
       _handlingTag = false;
       return;
     }
-    if (mounted) setState(() { uid = identifier; error = null; scanning = false; });
-    await _stopReader();
+    if (mounted) {
+      setState(() { uid = identifier; error = null; scanning = true; });
+      _holdReaderForTenSeconds();
+    }
     try {
       final verification = await nfcApi.verifyNfc(identifier);
       if (mounted) setState(() => result = verification);

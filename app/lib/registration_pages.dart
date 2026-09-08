@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -165,6 +167,8 @@ class _RegisterTagState extends State<RegisterTagScreen> {
   bool loading = true;
   bool scanning = false;
   bool saving = false;
+  bool _handlingTag = false;
+  Timer? _readerStopTimer;
   Component? boundComponent;
   String? boundIdentifier;
 
@@ -185,6 +189,8 @@ class _RegisterTagState extends State<RegisterTagScreen> {
 
   @override
   void dispose() {
+    _readerStopTimer?.cancel();
+    unawaited(_stopNfcReader());
     identifier.dispose();
     super.dispose();
   }
@@ -214,11 +220,21 @@ class _RegisterTagState extends State<RegisterTagScreen> {
   }
 
   Future<void> _stopNfcReader() async {
+    _readerStopTimer?.cancel();
+    _readerStopTimer = null;
     try {
       await NfcManagerAndroid.instance.disableReaderMode();
     } catch (_) {
       try { await NfcManager.instance.stopSession(); } catch (_) {}
     }
+    if (mounted) setState(() => scanning = false);
+  }
+
+  void _holdReaderForTenSeconds() {
+    _readerStopTimer?.cancel();
+    _readerStopTimer = Timer(const Duration(seconds: 10), () {
+      unawaited(_stopNfcReader());
+    });
   }
 
   Future<void> readNfc() async {
@@ -242,16 +258,21 @@ class _RegisterTagState extends State<RegisterTagScreen> {
           NfcReaderFlagAndroid.skipNdefCheck,
         },
         onTagDiscovered: (tag) async {
+          if (_handlingTag) return;
+          _handlingTag = true;
           try {
             final t = NfcTagAndroid.from(tag);
             if (t == null || t.id.isEmpty) throw Exception('Unable to read NFC tag identifier.');
             final value = t.id.map((b) => b.toRadixString(16).padLeft(2, '0')).join(':').toUpperCase();
-            if (mounted) setState(() => identifier.text = value);
+            if (mounted) {
+              setState(() => identifier.text = value);
+              _holdReaderForTenSeconds();
+            }
           } catch (e) {
             if (mounted) _msg(api.errorMessage(e), true);
-          } finally {
             await _stopNfcReader();
-            if (mounted) setState(() => scanning = false);
+          } finally {
+            _handlingTag = false;
           }
         },
       );
