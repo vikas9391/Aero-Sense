@@ -52,7 +52,7 @@ pub async fn update_user_status(
 ) -> Result<Json<UserResponse>, AppError> {
     let target = AuthService::get_user_by_id(&pool, id).await?;
     authorize_target(&actor, &target)?;
-    if actor.0.id == id {
+    if actor.0.sub == id {
         return Err(AppError::Forbidden("You cannot suspend or delete your own account.".to_string()));
     }
     if target.role == UserRole::SuperAdmin.as_str() {
@@ -70,7 +70,7 @@ pub async fn delete_user(
 ) -> Result<Json<UserResponse>, AppError> {
     let target = AuthService::get_user_by_id(&pool, id).await?;
     authorize_target(&actor, &target)?;
-    if actor.0.id == id {
+    if actor.0.sub == id {
         return Err(AppError::Forbidden("You cannot delete your own account.".to_string()));
     }
     if target.role == UserRole::SuperAdmin.as_str() {
