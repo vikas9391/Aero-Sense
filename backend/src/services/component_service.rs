@@ -61,15 +61,16 @@ impl ComponentService {
                 if let sqlx::Error::Database(db) = &e { if db.code().as_deref() == Some("23505") { return AppError::Conflict("Component with this serial number already exists".to_string()); } }
                 AppError::DatabaseError(e)
             })?;
-        sqlx::query("INSERT INTO component_update_history (component_id, user_id, serial_number, component_type, manufacturer, status, aircraft_id, updated_at, previous_serial_number, previous_component_type, previous_manufacturer, previous_status, previous_aircraft_id) VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP::text, $8, $9, $10, $11, $12)")
+        let update_note = req.update_note.as_deref().map(str::trim).filter(|v| !v.is_empty());
+        sqlx::query("INSERT INTO component_update_history (component_id, user_id, serial_number, component_type, manufacturer, status, aircraft_id, updated_at, previous_serial_number, previous_component_type, previous_manufacturer, previous_status, previous_aircraft_id, update_note) VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP::text, $8, $9, $10, $11, $12, $13)")
             .bind(id).bind(user_id).bind(&updated.serial_number).bind(&updated.component_type).bind(&updated.manufacturer).bind(&updated.status).bind(updated.aircraft_id)
-            .bind(&previous.serial_number).bind(&previous.component_type).bind(&previous.manufacturer).bind(&previous.status).bind(previous.aircraft_id)
+            .bind(&previous.serial_number).bind(&previous.component_type).bind(&previous.manufacturer).bind(&previous.status).bind(previous.aircraft_id).bind(update_note)
             .execute(pool).await?;
         Self::get_component_by_id(pool, company_id, id).await
     }
 
     pub async fn update_history(pool: &DbPool, company_id: i64, id: i64) -> Result<Vec<ComponentUpdateHistory>, AppError> {
-        let exists: Option<(i64,)> = sqlx::query_as("SELECT id FROM components WHERE id = $1 AND company_id = $2").bind(id).bind(company_id).fetch_optional(pool).await?;
+        let exists: Option<(i64,)> = sqlx::query_as("SELECT id FROM components WHERE id = $1 AND company_id = $2").bind(id).fetch_optional(pool).await?;
         if exists.is_none() { return Err(AppError::ComponentNotFound); }
         Ok(sqlx::query_as("SELECT h.*, u.name AS user_name FROM component_update_history h JOIN components c ON c.id = h.component_id LEFT JOIN users u ON u.id = h.user_id WHERE h.component_id = $1 AND c.company_id = $2 ORDER BY h.id DESC")
             .bind(id).bind(company_id).fetch_all(pool).await?)
