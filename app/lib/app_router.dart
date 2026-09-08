@@ -9,7 +9,9 @@ import 'registration_pages.dart' hide api;
 import 'screens.dart' hide api;
 import 'security_audit.dart';
 import 'super_admin.dart' hide api;
+import 'tag_onboarding_page.dart' hide onboardingApi;
 import 'theme.dart';
+import 'widgets.dart';
 
 final routerApi = Api();
 
@@ -32,7 +34,15 @@ final appRouter = GoRouter(
         GoRoute(path: '/security', builder: (context, state) => const SecurityAuditScreen()),
         GoRoute(path: '/profile', builder: (context, state) => const ProfileScreen()),
         GoRoute(path: '/companies', builder: (context, state) => const CompanyManagementScreen()),
-        GoRoute(path: '/register-component', builder: (context, state) => const RegisterComponentScreen()),
+        GoRoute(
+          path: '/register-component',
+          builder: (context, state) {
+            final uid = state.uri.queryParameters['uid'];
+            return uid != null && uid.trim().isNotEmpty
+                ? TagOnboardingScreen(uid: uid.trim().toUpperCase())
+                : const RegisterComponentScreen();
+          },
+        ),
         GoRoute(path: '/register-tag', builder: (context, state) => const RegisterTagScreen()),
         GoRoute(
           path: '/passport',
