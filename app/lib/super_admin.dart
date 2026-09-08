@@ -64,7 +64,7 @@ class _CompanyManagementState extends State<CompanyManagementScreen> {
 
   Future<String?> _textDialog() {
     final controller = TextEditingController();
-    return showDialog<String>(
+    final dialogFuture = showDialog<String>(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
@@ -79,7 +79,15 @@ class _CompanyManagementState extends State<CompanyManagementScreen> {
           FilledButton(onPressed: () { final value = controller.text.trim(); if (value.isNotEmpty) Navigator.of(dialogContext).pop(value); }, child: const Text('Create Company')),
         ],
       ),
-    ).whenComplete(controller.dispose);
+    );
+
+    // The dialog route may still rebuild its TextField during the pop animation.
+    // Dispose only after that transition has completed, not when showDialog's
+    // Future completes.
+    return dialogFuture.then((value) {
+      Future<void>.delayed(const Duration(seconds: 1), controller.dispose);
+      return value;
+    });
   }
 
   Future<void> addAdmin(CompanySummary company) async {
