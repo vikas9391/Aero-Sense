@@ -141,7 +141,19 @@ class VerificationLog {
 }
 
 class VerificationResponse {
-  final bool verified; final String status; final Map<String, bool> checks; final String? reason; final Map<String, dynamic>? component;
+  final bool verified;
+  final String status;
+  final Map<String, bool> checks;
+  final String? reason;
+  final Map<String, dynamic>? component;
+
   VerificationResponse({required this.verified, required this.status, required this.checks, this.reason, this.component});
-  factory VerificationResponse.fromJson(Map<String, dynamic> j) => VerificationResponse(verified: j['verified'] == true, status: j['status'] ?? 'INVALID', checks: Map<String, bool>.from((j['checks'] ?? {}).map((k, v) => MapEntry(k.toString(), v == true))), reason: j['failure_reason'], component: j['component'] is Map ? Map<String, dynamic>.from(j['component']) : null);
+
+  factory VerificationResponse.fromJson(Map<String, dynamic> j) => VerificationResponse(
+        verified: j['verified'] == true,
+        status: j['status'] ?? 'INVALID',
+        checks: Map<String, bool>.from((j['checks'] ?? {}).map((k, v) => MapEntry(k.toString(), v == true))),
+        reason: j['failure_reason'],
+        component: j['component'] is Map ? Map<String, dynamic>.from(j['component']) : null,
+      );
 }
