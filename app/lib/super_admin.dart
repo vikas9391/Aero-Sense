@@ -23,9 +23,6 @@ class _CompanyManagementState extends State<CompanyManagementScreen> {
   Future<void> load({bool showLoader = true}) async {
     if (showLoader && mounted && companies.isEmpty) setState(() { loading = true; error = null; });
     try {
-      // Company mutations are tenant-wide state changes. Clear the short-lived
-      // cache before reading the list so a successful create/admin/status update
-      // can never be overwritten by a stale cached response.
       await api.clearCache();
       final result = await api.companies();
       if (!mounted) return;
@@ -57,8 +54,6 @@ class _CompanyManagementState extends State<CompanyManagementScreen> {
     try {
       final created = await api.createCompany(name.trim());
       if (!mounted) return;
-      // Put the newly-created company on screen immediately. This prevents
-      // the page from going blank while the statistics refresh in the background.
       setState(() {
         companies = [
           CompanySummary(
@@ -80,8 +75,6 @@ class _CompanyManagementState extends State<CompanyManagementScreen> {
         loading = false;
       });
       _message('Company created successfully.');
-      // Re-read from the backend after clearing cache so the local optimistic
-      // row is replaced with authoritative statistics.
       await load(showLoader: false);
     } catch (e) {
       if (mounted) _message(api.errorMessage(e), error: true);
@@ -301,7 +294,7 @@ class _CompanyDetailState extends State<CompanyDetailScreen> {
     );
   }
 
-  Widget _metric(IconData icon, String text) => Row(mainAxisSize: MainAxisSize.min, children: [Icon(icon, size: 15, color: muted), const SizedBox(width: 5), Text(text, style: const TextStyle(color: muted, fontSize: 12)]);
+  Widget _metric(IconData icon, String text) => Row(mainAxisSize: MainAxisSize.min, children: [Icon(icon, size: 15, color: muted), const SizedBox(width: 5), Text(text, style: const TextStyle(color: muted, fontSize: 12))]);
 }
 
 class _AdminDialog extends StatefulWidget {
