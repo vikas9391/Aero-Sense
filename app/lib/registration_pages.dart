@@ -169,22 +169,35 @@ class _RegisterTagState extends State<RegisterTagScreen> {
   bool saving = false;
   bool _handlingTag = false;
   Timer? _readerStopTimer;
+  bool _routeInitialized = false;
   Component? boundComponent;
   String? boundIdentifier;
 
   @override
   void initState() {
     super.initState();
+    _loadComponents();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_routeInitialized) return;
+    _routeInitialized = true;
     final uri = GoRouterState.of(context).uri;
     final initialUid = uri.queryParameters['uid'];
     final initialComponent = uri.queryParameters['component'];
     if (initialUid != null && initialUid.trim().isNotEmpty) identifier.text = initialUid.trim().toUpperCase();
     if (initialComponent != null && int.tryParse(initialComponent) != null) componentId = initialComponent;
-    api.components().then((v) {
-      if (mounted) setState(() { components = v; loading = false; });
-    }).catchError((_) {
+  }
+
+  Future<void> _loadComponents() async {
+    try {
+      final value = await api.components();
+      if (mounted) setState(() { components = value; loading = false; });
+    } catch (_) {
       if (mounted) setState(() => loading = false);
-    });
+    }
   }
 
   @override

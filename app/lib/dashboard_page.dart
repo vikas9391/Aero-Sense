@@ -142,13 +142,19 @@ class _MobileDashboardScreenState extends State<MobileDashboardScreen> {
 
   Widget _stat(double width, String label, int value, IconData icon) => SizedBox(
         width: width,
-        height: 122,
+        height: 128,
         child: CardBox(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Icon(icon, color: accent),
           const Spacer(),
           Text('$value', style: const TextStyle(fontSize: 27, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 2),
-          Flexible(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: muted))),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            maxLines: 2,
+            softWrap: true,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: muted, fontSize: 12, height: 1.15),
+          ),
         ])),
       );
 }
