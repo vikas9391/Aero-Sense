@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Aero-Sense</title>
+  <desc id="desc">Aero-Sense aircraft and NFC verification mark</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.72" stop-color="#eef2ff"/>
+      <stop offset="1" stop-color="#cfd9ff"/>
+    </linearGradient>
+    <linearGradient id="plane" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#1d4ed8"/>
+      <stop offset="1" stop-color="#172554"/>
+    </linearGradient>
+    <linearGradient id="wave" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#9bb4ff"/>
+      <stop offset="1" stop-color="#3157cf"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#172554" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+  <rect x="18" y="18" width="476" height="476" rx="112" fill="url(#bg)" filter="url(#shadow)"/>
+  <path d="M120 265 A142 142 0 0 1 395 204" fill="none" stroke="#2448a8" stroke-width="24" stroke-linecap="round"/>
+  <path d="M397 204 A142 142 0 0 1 386 276" fill="none" stroke="#8eabff" stroke-width="24" stroke-linecap="round"/>
+  <path d="M125 349 L196 319 L258 251 L318 183 L343 169 L367 170 L354 193 L314 221 L275 263 L228 317 L178 355 Z" fill="url(#plane)"/>
+  <path d="M244 266 L171 233 L160 242 L218 288 Z" fill="#2448a8"/>
+  <path d="M286 235 L354 238 L366 249 L300 254 Z" fill="#3157cf"/>
+  <path d="M174 329 L126 349 L151 319 Z" fill="#3157cf"/>
+  <path d="M273 327 A74 74 0 0 1 381 327" fill="none" stroke="url(#wave)" stroke-width="18" stroke-linecap="round"/>
+  <path d="M292 357 A49 49 0 0 1 363 357" fill="none" stroke="#9bb4ff" stroke-width="15" stroke-linecap="round"/>
+  <path d="M309 384 A25 25 0 0 1 345 384" fill="none" stroke="#3157cf" stroke-width="13" stroke-linecap="round"/>
+</svg>
