@@ -129,7 +129,6 @@ class Api {
         }
       }
     } catch (_) {}
-
     try {
       final response = await request();
       await storage.write(key: cacheKey, value: jsonEncode({'timestamp': DateTime.now().millisecondsSinceEpoch, 'data': response.data}));
@@ -144,17 +143,13 @@ class Api {
   }
 
   Future<void> _deleteCache(String key) async {
-    try {
-      await storage.delete(key: 'cache_$key');
-    } catch (_) {}
+    try { await storage.delete(key: 'cache_$key'); } catch (_) {}
   }
 
   Future<void> clearCache() async {
     try {
       final values = await storage.readAll();
-      for (final key in values.keys.where((key) => key.startsWith('cache_'))) {
-        await storage.delete(key: key);
-      }
+      for (final key in values.keys.where((key) => key.startsWith('cache_'))) await storage.delete(key: key);
     } catch (_) {}
   }
 
@@ -179,6 +174,71 @@ class Api {
 
   List<Map<String, dynamic>> _list(dynamic data) {
     if (data is List) return data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    if (data is Map && data['data'] is List) return (data['data'] as List).map((e) => Map<String, dynamic>.from(e as Map)).toList();
     return [];
   }
+}
+
+class User {
+  final int id; final String uuid, name, email, role; final int? companyId;
+  User({required this.id, required this.uuid, required this.name, required this.email, required this.role, this.companyId});
+  factory User.fromJson(Map<String, dynamic> j) => User(id: j['id'] ?? 0, uuid: j['uuid'] ?? '', name: j['name'] ?? '', email: j['email'] ?? '', role: j['role'] ?? 'VIEWER', companyId: j['company_id']);
+}
+
+class Company {
+  final int id; final String uuid, name, slug, status, createdAt, updatedAt;
+  Company({required this.id, required this.uuid, required this.name, required this.slug, required this.status, required this.createdAt, required this.updatedAt});
+  factory Company.fromJson(Map<String, dynamic> j) => Company(id: j['id'] ?? 0, uuid: j['uuid'] ?? '', name: j['name'] ?? '', slug: j['slug'] ?? '', status: j['status'] ?? 'ACTIVE', createdAt: j['created_at'] ?? '', updatedAt: j['updated_at'] ?? '');
+}
+
+class CompanySummary extends Company {
+  final int userCount, aircraftCount, componentCount, maintenanceCount, verificationCount;
+  CompanySummary({required super.id, required super.uuid, required super.name, required super.slug, required super.status, required super.createdAt, required super.updatedAt, required this.userCount, required this.aircraftCount, required this.componentCount, required this.maintenanceCount, required this.verificationCount});
+  factory CompanySummary.fromJson(Map<String, dynamic> j) => CompanySummary(id: j['id'] ?? 0, uuid: j['uuid'] ?? '', name: j['name'] ?? '', slug: j['slug'] ?? '', status: j['status'] ?? 'ACTIVE', createdAt: j['created_at'] ?? '', updatedAt: j['updated_at'] ?? '', userCount: j['user_count'] ?? 0, aircraftCount: j['aircraft_count'] ?? 0, componentCount: j['component_count'] ?? 0, maintenanceCount: j['maintenance_count'] ?? 0, verificationCount: j['verification_count'] ?? 0);
+}
+
+class Analytics {
+  final int users, aircraft, components, maintenance, verifications, passed, failed;
+  Analytics({required this.users, required this.aircraft, required this.components, required this.maintenance, required this.verifications, required this.passed, required this.failed});
+  factory Analytics.fromJson(Map<String, dynamic> j) => Analytics(users: j['total_users'] ?? 0, aircraft: j['total_aircraft'] ?? 0, components: j['total_components'] ?? 0, maintenance: j['total_maintenance_records'] ?? 0, verifications: j['total_verifications'] ?? 0, passed: j['verifications_passed'] ?? 0, failed: j['verifications_failed'] ?? 0);
+}
+
+class Aircraft {
+  final int id; final String registration, model, manufacturer, status;
+  Aircraft({required this.id, required this.registration, required this.model, required this.manufacturer, required this.status});
+  factory Aircraft.fromJson(Map<String, dynamic> j) => Aircraft(id: j['id'] ?? 0, registration: j['registration_number'] ?? '', model: j['model'] ?? '', manufacturer: j['manufacturer'] ?? '', status: j['status'] ?? '');
+}
+
+class Component {
+  final int id; final String uuid, serial, type, manufacturer, status, updatedAt, createdAt; final int? aircraftId; final String? aircraftRegistration;
+  Component({required this.id, required this.uuid, required this.serial, required this.type, required this.manufacturer, required this.status, required this.updatedAt, required this.createdAt, this.aircraftId, this.aircraftRegistration});
+  factory Component.fromJson(Map<String, dynamic> j) => Component(id: j['id'] ?? 0, uuid: j['component_uuid'] ?? '', serial: j['serial_number'] ?? '', type: j['component_type'] ?? '', manufacturer: j['manufacturer'] ?? '', status: j['status'] ?? '', updatedAt: j['updated_at'] ?? '', createdAt: j['created_at'] ?? '', aircraftId: j['aircraft_id'], aircraftRegistration: j['aircraft_registration']);
+}
+
+class ComponentUpdateHistory {
+  final int id, componentId, userId;
+  final String serial, type, manufacturer, status, updatedAt;
+  final int? aircraftId;
+  final String? previousSerial, previousType, previousManufacturer, previousStatus, userName, updateNote;
+  final int? previousAircraftId;
+  ComponentUpdateHistory({required this.id, required this.componentId, required this.userId, required this.serial, required this.type, required this.manufacturer, required this.status, required this.updatedAt, this.aircraftId, this.previousSerial, this.previousType, this.previousManufacturer, this.previousStatus, this.previousAircraftId, this.userName, this.updateNote});
+  factory ComponentUpdateHistory.fromJson(Map<String, dynamic> j) => ComponentUpdateHistory(id: j['id'] ?? 0, componentId: j['component_id'] ?? 0, userId: j['user_id'] ?? 0, serial: j['serial_number'] ?? '', type: j['component_type'] ?? '', manufacturer: j['manufacturer'] ?? '', status: j['status'] ?? '', updatedAt: j['updated_at'] ?? '', aircraftId: j['aircraft_id'], previousSerial: j['previous_serial_number'], previousType: j['previous_component_type'], previousManufacturer: j['previous_manufacturer'], previousStatus: j['previous_status'], previousAircraftId: j['previous_aircraft_id'], userName: j['user_name'], updateNote: j['update_note']);
+}
+
+class MaintenanceRecord {
+  final int id, componentId; final String technician, type, description, result, hash, createdAt; final String? parts;
+  MaintenanceRecord({required this.id, required this.componentId, required this.technician, required this.type, required this.description, required this.result, required this.hash, required this.createdAt, this.parts});
+  factory MaintenanceRecord.fromJson(Map<String, dynamic> j) => MaintenanceRecord(id: j['id'] ?? 0, componentId: j['component_id'] ?? 0, technician: j['technician_name'] ?? '', type: j['maintenance_type'] ?? '', description: j['description'] ?? '', result: j['inspection_result'] ?? '', hash: j['record_hash'] ?? '', createdAt: j['created_at'] ?? '', parts: j['parts_replaced']);
+}
+
+class VerificationLog {
+  final int id; final String status, createdAt, reason;
+  VerificationLog({required this.id, required this.status, required this.createdAt, required this.reason});
+  factory VerificationLog.fromJson(Map<String, dynamic> j) => VerificationLog(id: j['id'] ?? 0, status: j['status'] ?? j['final_result'] ?? '', createdAt: j['created_at'] ?? '', reason: j['failure_reason'] ?? '');
+}
+
+class VerificationResponse {
+  final bool verified; final String status; final Map<String, bool> checks; final String? reason; final Map<String, dynamic>? component;
+  VerificationResponse({required this.verified, required this.status, required this.checks, this.reason, this.component});
+  factory VerificationResponse.fromJson(Map<String, dynamic> j) => VerificationResponse(verified: j['verified'] == true, status: j['status'] ?? 'INVALID', checks: Map<String, bool>.from((j['checks'] ?? {}).map((k, v) => MapEntry(k.toString(), v == true))), reason: j['failure_reason'], component: j['component'] is Map ? Map<String, dynamic>.from(j['component']) : null);
 }
