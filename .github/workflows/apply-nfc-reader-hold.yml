@@ -1,0 +1,65 @@
+name: Apply NFC reader hold
+
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-nfc-reader-hold.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: ${{ !startsWith(github.event.head_commit.message, 'Apply NFC reader hold') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Patch NFC reader lifecycle
+        shell: python
+        run: |
+          from pathlib import Path
+
+          registration = Path('app/lib/registration_pages.dart')
+          text = registration.read_text()
+          text = text.replace("import 'package:flutter/material.dart';", "import 'dart:async';\n\nimport 'package:flutter/material.dart';", 1)
+          text = text.replace("  bool scanning = false;\n  bool saving = false;", "  bool scanning = false;\n  bool saving = false;\n  bool _handlingTag = false;\n  Timer? _readerStopTimer;", 1)
+          text = text.replace("  void dispose() {\n    identifier.dispose();\n    super.dispose();\n  }", "  void dispose() {\n    _readerStopTimer?.cancel();\n    unawaited(_stopNfcReader());\n    identifier.dispose();\n    super.dispose();\n  }", 1)
+          old = '''  Future<void> _stopNfcReader() async {\n    try {\n      await NfcManagerAndroid.instance.disableReaderMode();\n    } catch (_) {\n      try { await NfcManager.instance.stopSession(); } catch (_) {}\n    }\n  }\n'''
+          new = '''  Future<void> _stopNfcReader() async {\n    _readerStopTimer?.cancel();\n    _readerStopTimer = null;\n    try {\n      await NfcManagerAndroid.instance.disableReaderMode();\n    } catch (_) {\n      try { await NfcManager.instance.stopSession(); } catch (_) {}\n    }\n    if (mounted) setState(() => scanning = false);\n  }\n\n  void _holdReaderForTenSeconds() {\n    _readerStopTimer?.cancel();\n    _readerStopTimer = Timer(const Duration(seconds: 10), () {\n      unawaited(_stopNfcReader());\n    });\n  }\n'''
+          if old not in text:
+              raise SystemExit('registration: reader stop block not found')
+          text = text.replace(old, new, 1)
+          old_callback = '''        onTagDiscovered: (tag) async {\n          try {\n            final t = NfcTagAndroid.from(tag);\n            if (t == null || t.id.isEmpty) throw Exception('Unable to read NFC tag identifier.');\n            final value = t.id.map((b) => b.toRadixString(16).padLeft(2, '0')).join(':').toUpperCase();\n            if (mounted) setState(() => identifier.text = value);\n          } catch (e) {\n            if (mounted) _msg(api.errorMessage(e), true);\n          } finally {\n            await _stopNfcReader();\n            if (mounted) setState(() => scanning = false);\n          }\n        },'''
+          new_callback = '''        onTagDiscovered: (tag) async {\n          if (_handlingTag) return;\n          _handlingTag = true;\n          try {\n            final t = NfcTagAndroid.from(tag);\n            if (t == null || t.id.isEmpty) throw Exception('Unable to read NFC tag identifier.');\n            final value = t.id.map((b) => b.toRadixString(16).padLeft(2, '0')).join(':').toUpperCase();\n            if (mounted) {\n              setState(() => identifier.text = value);\n              _holdReaderForTenSeconds();\n            }\n          } catch (e) {\n            if (mounted) _msg(api.errorMessage(e), true);\n            await _stopNfcReader();\n          } finally {\n            _handlingTag = false;\n          }\n        },'''
+          if old_callback not in text:
+              raise SystemExit('registration: callback not found')
+          text = text.replace(old_callback, new_callback, 1)
+          registration.write_text(text)
+
+          nfc = Path('app/lib/nfc_pages.dart')
+          text = nfc.read_text()
+          text = text.replace("import 'dart:io';", "import 'dart:async';\nimport 'dart:io';", 1)
+          text = text.replace("  bool _handlingTag = false;\n  String? uid;", "  bool _handlingTag = false;\n  Timer? _readerStopTimer;\n  String? uid;", 1)
+          text = text.replace("  Future<void> _stopReader() async {\n    try {", "  @override\n  void dispose() {\n    _readerStopTimer?.cancel();\n    unawaited(_stopReader());\n    super.dispose();\n  }\n\n  Future<void> _stopReader() async {\n    _readerStopTimer?.cancel();\n    _readerStopTimer = null;\n    try {", 1)
+          marker = """  Future<void> _handleTag(NfcTag tag) async {\n"""
+          helper = """  void _holdReaderForTenSeconds() {\n    _readerStopTimer?.cancel();\n    _readerStopTimer = Timer(const Duration(seconds: 10), () {\n      unawaited(_stopReader().then((_) {\n        if (mounted) setState(() => scanning = false);\n      }));\n    });\n  }\n\n"""
+          if helper not in text:
+              text = text.replace(marker, helper + marker, 1)
+          old_handle = """    if (mounted) setState(() { uid = identifier; error = null; scanning = false; });\n    await _stopReader();\n    try {\n"""
+          new_handle = """    if (mounted) {\n      setState(() { uid = identifier; error = null; scanning = true; });\n      _holdReaderForTenSeconds();\n    }\n    try {\n"""
+          if old_handle not in text:
+              raise SystemExit('verification: handle block not found')
+          text = text.replace(old_handle, new_handle, 1)
+          old_invalid = """    if (identifier == null) {\n      await _stopReader();\n      if (mounted) setState(() { scanning = false; error = 'The NFC tag did not expose a readable identifier.'; });\n"""
+          new_invalid = """    if (identifier == null) {\n      await _stopReader();\n      if (mounted) setState(() { scanning = false; error = 'The NFC tag did not expose a readable identifier.'; });\n"""
+          text = text.replace(old_invalid, new_invalid, 1)
+          nfc.write_text(text)
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/lib/registration_pages.dart app/lib/nfc_pages.dart .github/workflows/apply-nfc-reader-hold.yml
+          git commit -m "Apply NFC reader hold for tag display"
+          git push
