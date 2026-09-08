@@ -11,7 +11,6 @@ import 'security_audit.dart';
 import 'super_admin.dart' hide api;
 import 'tag_onboarding_page.dart' hide onboardingApi;
 import 'theme.dart';
-import 'widgets.dart';
 
 final routerApi = Api();
 
@@ -43,7 +42,16 @@ final appRouter = GoRouter(
                 : const RegisterComponentScreen();
           },
         ),
-        GoRoute(path: '/register-tag', builder: (context, state) => const RegisterTagScreen()),
+        GoRoute(
+          path: '/register-tag',
+          builder: (context, state) {
+            final uid = state.uri.queryParameters['uid'];
+            final existingMode = state.uri.queryParameters['mode'] == 'existing';
+            return uid != null && uid.trim().isNotEmpty && !existingMode
+                ? TagOnboardingScreen(uid: uid.trim().toUpperCase())
+                : const RegisterTagScreen();
+          },
+        ),
         GoRoute(
           path: '/passport',
           builder: (context, state) {
