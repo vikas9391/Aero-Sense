@@ -44,7 +44,7 @@ class Api {
   Future<User> createUser(String name, String email, String password, String role) async => User.fromJson(Map<String, dynamic>.from((await dio.post('/users', data: {'name': name, 'email': email, 'password': password, 'role': role})).data));
   Future<List<Aircraft>> aircraft() async => _list((await dio.get('/aircraft')).data).map(Aircraft.fromJson).toList();
   Future<Aircraft> createAircraft(Map<String, dynamic> data) async => Aircraft.fromJson(Map<String, dynamic>.from((await dio.post('/aircraft', data: data)).data));
-  Future<List<Component>> components() async => _list((await dio.get('/components')).data).map(Component.fromJson).toList();
+  Future<List<Component>> components() async => _list((await dio.get('/components')).data.map((e) => Map<String, dynamic>.from(e as Map)).toList()).map(Component.fromJson).toList();
   Future<Component> component(int id) async => Component.fromJson(Map<String, dynamic>.from((await dio.get('/components/$id')).data));
   Future<Component> createComponent(Map<String, dynamic> data) async => Component.fromJson(Map<String, dynamic>.from((await dio.post('/components', data: data)).data));
   Future<Component> updateComponent(int id, Map<String, dynamic> data) async => Component.fromJson(Map<String, dynamic>.from((await dio.put('/components/$id', data: data)).data));
@@ -114,9 +114,9 @@ class Aircraft {
   factory Aircraft.fromJson(Map<String, dynamic> j) => Aircraft(id: j['id'] ?? 0, registration: j['registration_number'] ?? '', model: j['model'] ?? '', manufacturer: j['manufacturer'] ?? '', status: j['status'] ?? '');
 }
 class Component {
-  final int id; final String uuid, serial, type, manufacturer, status; final int? aircraftId; final String? aircraftRegistration;
-  Component({required this.id, required this.uuid, required this.serial, required this.type, required this.manufacturer, required this.status, this.aircraftId, this.aircraftRegistration});
-  factory Component.fromJson(Map<String, dynamic> j) => Component(id: j['id'] ?? 0, uuid: j['component_uuid'] ?? '', serial: j['serial_number'] ?? '', type: j['component_type'] ?? '', manufacturer: j['manufacturer'] ?? '', status: j['status'] ?? '', aircraftId: j['aircraft_id'], aircraftRegistration: j['aircraft_registration']);
+  final int id; final String uuid, serial, type, manufacturer, status, updatedAt, createdAt; final int? aircraftId; final String? aircraftRegistration;
+  Component({required this.id, required this.uuid, required this.serial, required this.type, required this.manufacturer, required this.status, required this.updatedAt, required this.createdAt, this.aircraftId, this.aircraftRegistration});
+  factory Component.fromJson(Map<String, dynamic> j) => Component(id: j['id'] ?? 0, uuid: j['component_uuid'] ?? '', serial: j['serial_number'] ?? '', type: j['component_type'] ?? '', manufacturer: j['manufacturer'] ?? '', status: j['status'] ?? '', updatedAt: j['updated_at'] ?? '', createdAt: j['created_at'] ?? '', aircraftId: j['aircraft_id'], aircraftRegistration: j['aircraft_registration']);
 }
 class ComponentUpdateHistory {
   final int id, componentId, userId; final String serial, type, manufacturer, status, updatedAt; final int? aircraftId; final String? previousSerial, previousType, previousManufacturer, previousStatus, userName; final int? previousAircraftId;
