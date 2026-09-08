@@ -33,7 +33,7 @@ class _UsersState extends State<UsersScreen> {
     CardBox(child: Column(children: [
       if (loading) const Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator(color: accent))
       else if (users.isEmpty) const Text('No users yet.', style: TextStyle(color: muted))
-      else ...users.map((u) => ListTile(contentPadding: EdgeInsets.zero, leading: CircleAvatar(backgroundColor: soft, child: const Icon(Icons.person_outline, color: accent)), title: Text(u.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)), subtitle: Text(u.email, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: muted)), trailing: StatusPill(u.role))),
+      else ...[for (final u in users) ListTile(contentPadding: EdgeInsets.zero, leading: CircleAvatar(backgroundColor: soft, child: const Icon(Icons.person_outline, color: accent)), title: Text(u.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)), subtitle: Text(u.email, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: muted)), trailing: StatusPill(u.role))],
     ])),
     const SizedBox(height: 14),
     SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: create, icon: const Icon(Icons.person_add), label: const Text('Add New User'))),
@@ -68,7 +68,9 @@ class _AircraftState extends State<AircraftScreen> {
     const SizedBox(height: 2),
     const Text('CORE OPERATIONS', style: TextStyle(color: muted, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.3)),
     const SizedBox(height: 8),
-    if (loading) const Center(child: CircularProgressIndicator(color: accent)) else if (items.isEmpty) const CardBox(child: Text('No aircraft registered yet.', style: TextStyle(color: muted))) else ...items.map((a) => CardBox(margin: const EdgeInsets.only(bottom: 10), child: ListTile(contentPadding: EdgeInsets.zero, leading: const Icon(Icons.flight_outlined, color: accent, size: 30), title: Text(a.registration, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800)), subtitle: Text('${a.manufacturer} · ${a.model}', maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: muted)), trailing: StatusPill(a.status)))),
+    if (loading) const Center(child: CircularProgressIndicator(color: accent))
+    else if (items.isEmpty) const CardBox(child: Text('No aircraft registered yet.', style: TextStyle(color: muted)))
+    else ...[for (final a in items) CardBox(margin: const EdgeInsets.only(bottom: 10), child: ListTile(contentPadding: EdgeInsets.zero, leading: const Icon(Icons.flight_outlined, color: accent, size: 30), title: Text(a.registration, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800)), subtitle: Text('${a.manufacturer} · ${a.model}', maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: muted)), trailing: StatusPill(a.status)))],
     if (canCreate) ...[const SizedBox(height: 10), SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: create, icon: const Icon(Icons.add), label: const Text('Add Aircraft'))],
   ]));
 }
@@ -96,7 +98,9 @@ class _MaintenanceState extends State<MaintenanceScreen> {
     const SizedBox(height: 2),
     const Text('MANAGEMENT & AUDIT', style: TextStyle(color: muted, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.3)),
     const SizedBox(height: 8),
-    if (loading) const Center(child: CircularProgressIndicator(color: accent)) else if (items.isEmpty) const CardBox(child: Text('No maintenance records yet.', style: TextStyle(color: muted))) else ...items.map((x) => CardBox(margin: const EdgeInsets.only(bottom: 10), child: ListTile(contentPadding: EdgeInsets.zero, leading: const Icon(Icons.build_outlined, color: accent), title: Text(x.type, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800)), subtitle: Text('${x.technician} · ${x.createdAt}\n${x.description}', maxLines: 3, overflow: TextOverflow.ellipsis, style: const TextStyle(color: muted)), trailing: StatusPill(x.result)))),
+    if (loading) const Center(child: CircularProgressIndicator(color: accent))
+    else if (items.isEmpty) const CardBox(child: Text('No maintenance records yet.', style: TextStyle(color: muted)))
+    else ...[for (final x in items) CardBox(margin: const EdgeInsets.only(bottom: 10), child: ListTile(contentPadding: EdgeInsets.zero, leading: const Icon(Icons.build_outlined, color: accent), title: Text(x.type, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800)), subtitle: Text('${x.technician} · ${x.createdAt}\n${x.description}', maxLines: 3, overflow: TextOverflow.ellipsis, style: const TextStyle(color: muted)), trailing: StatusPill(x.result)))],
     const SizedBox(height: 10), SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: create, icon: const Icon(Icons.add_task), label: const Text('Log Maintenance')),
   ]));
 }
