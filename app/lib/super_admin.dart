@@ -16,6 +16,7 @@ class _CompanyManagementState extends State<CompanyManagementScreen> {
   List<CompanySummary> companies = [];
   bool loading = true;
   bool creatingCompany = false;
+  int? updatingCompanyId;
   String? error;
 
   Future<void> load({bool showLoader = true}) async {
@@ -98,15 +99,51 @@ class _CompanyManagementState extends State<CompanyManagementScreen> {
   }
 
   Future<void> toggleStatus(CompanySummary company) async {
+    if (updatingCompanyId != null) return;
     final next = company.status == 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
-    final confirmed = await showDialog<bool>(context: context, builder: (_) => AlertDialog(
-      title: Text(next == 'ACTIVE' ? 'Reactivate company?' : 'Suspend company?'),
-      content: Text(next == 'ACTIVE' ? 'Users of ${company.name} will be able to sign in again.' : 'Users of ${company.name} will be blocked from signing in. Company data will remain untouched.'),
-      actions: [TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')), FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(next == 'ACTIVE' ? 'Reactivate' : 'Suspend'))],
-    ));
+    final confirmed = await showDialog<bool>(
+      context: context,
+      useRootNavigator: true,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(next == 'ACTIVE' ? 'Reactivate company?' : 'Suspend company?'),
+        content: Text(next == 'ACTIVE' ? 'Users of ${company.name} will be able to sign in again.' : 'Users of ${company.name} will be blocked from signing in. Company data will remain untouched.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(dialogContext, rootNavigator: true).pop(false), child: const Text('Cancel')),
+          FilledButton(onPressed: () => Navigator.of(dialogContext, rootNavigator: true).pop(true), child: Text(next == 'ACTIVE' ? 'Reactivate' : 'Suspend')),
+        ],
+      ),
+    );
     if (!mounted || confirmed != true) return;
-    try { await api.updateCompanyStatus(company.id, next); await load(showLoader: false); }
-    catch (e) { if (mounted) _message(api.errorMessage(e), error: true); }
+
+    setState(() { updatingCompanyId = company.id; error = null; });
+    try {
+      await api.updateCompanyStatus(company.id, next);
+      if (!mounted) return;
+      final updated = CompanySummary(
+        id: company.id,
+        uuid: company.uuid,
+        name: company.name,
+        slug: company.slug,
+        status: next,
+        createdAt: company.createdAt,
+        updatedAt: company.updatedAt,
+        userCount: company.userCount,
+        aircraftCount: company.aircraftCount,
+        componentCount: company.componentCount,
+        maintenanceCount: company.maintenanceCount,
+        verificationCount: company.verificationCount,
+      );
+      setState(() {
+        companies = companies.map((c) => c.id == company.id ? updated : c).toList();
+        updatingCompanyId = null;
+      });
+      await api.clearCache();
+      if (mounted) _message(next == 'ACTIVE' ? 'Company reactivated successfully.' : 'Company suspended successfully.');
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => updatingCompanyId = null);
+      _message(api.errorMessage(e), error: true);
+    }
   }
 
   void _message(String text, {bool error = false}) {
@@ -141,6 +178,7 @@ class _CompanyManagementState extends State<CompanyManagementScreen> {
 
   Widget _companyCard(CompanySummary c) {
     final active = c.status == 'ACTIVE';
+    final updating = updatingCompanyId == c.id;
     return CardBox(margin: const EdgeInsets.only(bottom: 12), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(children: [
         Container(width: 46, height: 46, decoration: BoxDecoration(color: soft, borderRadius: BorderRadius.circular(14)), child: const Icon(Icons.business_outlined, color: accent)),
@@ -157,12 +195,12 @@ class _CompanyManagementState extends State<CompanyManagementScreen> {
       const Divider(height: 24),
       LayoutBuilder(builder: (context, constraints) {
         final compact = constraints.maxWidth < 430;
-        final view = OutlinedButton.icon(onPressed: () => context.go('/company-detail', extra: c), icon: const Icon(Icons.visibility_outlined), label: const Text('View Company'));
-        final admin = FilledButton.icon(onPressed: () => addAdmin(c), icon: const Icon(Icons.person_add_alt_1), label: const Text('Add Admin'));
+        final view = OutlinedButton.icon(onPressed: updating ? null : () => context.go('/company-detail', extra: c), icon: const Icon(Icons.visibility_outlined), label: const Text('View Company'));
+        final admin = FilledButton.icon(onPressed: updating ? null : () => addAdmin(c), icon: const Icon(Icons.person_add_alt_1), label: const Text('Add Admin'));
         return compact ? Column(children: [SizedBox(width: double.infinity, child: view), const SizedBox(height: 8), SizedBox(width: double.infinity, child: admin)]) : Row(children: [Expanded(child: view), const SizedBox(width: 8), Expanded(child: admin)]);
       }),
       const SizedBox(height: 8),
-      SizedBox(width: double.infinity, child: TextButton.icon(onPressed: () => toggleStatus(c), icon: Icon(active ? Icons.block_outlined : Icons.play_arrow_outlined), label: Text(active ? 'Suspend Company' : 'Reactivate Company'))),
+      SizedBox(width: double.infinity, child: TextButton.icon(onPressed: updating ? null : () => toggleStatus(c), icon: updating ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)) : Icon(active ? Icons.block_outlined : Icons.play_arrow_outlined), label: Text(updating ? (active ? 'Suspending…' : 'Reactivating…') : (active ? 'Suspend Company' : 'Reactivate Company')))),
     ]));
   }
 
@@ -179,6 +217,7 @@ class _CompanyDetailState extends State<CompanyDetailScreen> {
   late CompanySummary company;
   List<User> users = [];
   bool loading = true;
+  bool updatingStatus = false;
   String? error;
   @override void initState() { super.initState(); company = widget.company; load(); }
   Future<void> load() async {
@@ -190,6 +229,50 @@ class _CompanyDetailState extends State<CompanyDetailScreen> {
     } catch (e) { if (mounted) setState(() => error = api.errorMessage(e)); }
     finally { if (mounted) setState(() => loading = false); }
   }
+  Future<void> toggleStatus() async {
+    if (updatingStatus) return;
+    final active = company.status == 'ACTIVE';
+    final next = active ? 'SUSPENDED' : 'ACTIVE';
+    final confirmed = await showDialog<bool>(
+      context: context,
+      useRootNavigator: true,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(active ? 'Suspend company?' : 'Reactivate company?'),
+        content: Text(active ? 'Users of ${company.name} will be blocked from signing in. Company data will remain untouched.' : 'Users of ${company.name} will be able to sign in again.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(dialogContext, rootNavigator: true).pop(false), child: const Text('Cancel')),
+          FilledButton(onPressed: () => Navigator.of(dialogContext, rootNavigator: true).pop(true), child: Text(active ? 'Suspend' : 'Reactivate')),
+        ],
+      ),
+    );
+    if (!mounted || confirmed != true) return;
+    setState(() { updatingStatus = true; error = null; });
+    try {
+      await api.updateCompanyStatus(company.id, next);
+      if (!mounted) return;
+      setState(() {
+        company = CompanySummary(
+          id: company.id,
+          uuid: company.uuid,
+          name: company.name,
+          slug: company.slug,
+          status: next,
+          createdAt: company.createdAt,
+          updatedAt: company.updatedAt,
+          userCount: company.userCount,
+          aircraftCount: company.aircraftCount,
+          componentCount: company.componentCount,
+          maintenanceCount: company.maintenanceCount,
+          verificationCount: company.verificationCount,
+        );
+        updatingStatus = false;
+      });
+      await api.clearCache();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() { updatingStatus = false; error = api.errorMessage(e); });
+    }
+  }
   @override Widget build(BuildContext context) {
     final active = company.status == 'ACTIVE';
     return ListView(padding: const EdgeInsets.fromLTRB(20, 18, 20, 110), children: [
@@ -199,7 +282,7 @@ class _CompanyDetailState extends State<CompanyDetailScreen> {
         const SizedBox(height: 18),
         Wrap(spacing: 14, runSpacing: 10, children: [_metric(Icons.people_outline, '${company.userCount} users'), _metric(Icons.flight_outlined, '${company.aircraftCount} aircraft'), _metric(Icons.memory_outlined, '${company.componentCount} components'), _metric(Icons.build_outlined, '${company.maintenanceCount} records'), _metric(Icons.nfc_outlined, '${company.verificationCount} scans')]),
         const SizedBox(height: 18),
-        SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: () async { try { await api.updateCompanyStatus(company.id, active ? 'SUSPENDED' : 'ACTIVE'); await load(); } catch (e) { if (mounted) setState(() => error = api.errorMessage(e)); } }, icon: Icon(active ? Icons.block_outlined : Icons.play_arrow_outlined), label: Text(active ? 'Suspend Company' : 'Reactivate Company'))),
+        SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: updatingStatus ? null : toggleStatus, icon: updatingStatus ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)) : Icon(active ? Icons.block_outlined : Icons.play_arrow_outlined), label: Text(updatingStatus ? (active ? 'Suspending…' : 'Reactivating…') : (active ? 'Suspend Company' : 'Reactivate Company')))),
       ])),
       const SizedBox(height: 14),
       CardBox(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
