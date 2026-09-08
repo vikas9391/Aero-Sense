@@ -28,56 +28,58 @@ export const LandingNav: React.FC = () => {
   };
 
   return (
-    <header className="relative z-50 mx-auto flex w-full max-w-[1680px] items-center justify-between px-5 pt-5 md:px-8 lg:px-10 lg:pt-6">
-      <motion.button
-        type="button"
-        initial={prefersReducedMotion ? undefined : { opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, ease: EASE }}
-        onClick={() => window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' })}
-        aria-label="AERO-SENSE home"
-        className="group flex shrink-0 items-center gap-2.5 rounded-full border border-white/90 bg-white/90 px-2.5 py-2 pr-4 shadow-[0_12px_30px_rgba(79,70,229,.08)] backdrop-blur-xl"
-      >
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 via-blue-600 to-violet-600 text-white shadow-sm transition-transform duration-300 group-hover:scale-105">
-          <ShieldCheck className="h-4 w-4" />
-        </span>
-        <span className="whitespace-nowrap font-display text-lg font-bold tracking-[-.04em] text-ink sm:text-xl md:text-2xl">
-          AERO-SENSE
-        </span>
-      </motion.button>
-
-      <div className="flex min-w-0 items-center gap-2.5 md:gap-3">
-        <nav className="hidden items-center gap-0.5 rounded-full border border-white/90 bg-white/85 p-1 shadow-[0_12px_30px_rgba(79,70,229,.08)] backdrop-blur-xl lg:flex">
-          {LINKS.map((link) => (
-            <button
-              key={link.href}
-              type="button"
-              onClick={() => go(link.href)}
-              className="whitespace-nowrap rounded-full px-3.5 py-2 text-[12px] font-semibold text-ink/65 transition-all duration-200 hover:bg-accent-soft hover:text-accent xl:px-4 xl:text-[13px]"
-            >
-              {link.label}
-            </button>
-          ))}
-        </nav>
-
-        <button
+    <header className="absolute inset-x-0 top-0 z-50 px-4 pt-4 sm:px-5 sm:pt-5 md:px-8 md:pt-6 lg:px-10">
+      <div className="mx-auto flex w-full max-w-[1680px] items-center justify-between gap-4">
+        <motion.button
           type="button"
-          onClick={() => navigate('/login')}
-          className="hidden shrink-0 items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 via-blue-600 to-violet-600 px-4 py-2.5 text-[12px] font-bold text-white shadow-[0_12px_24px_rgba(79,70,229,.2)] transition duration-200 hover:-translate-y-0.5 sm:px-4.5 md:text-[13px] lg:flex"
+          initial={prefersReducedMotion ? undefined : { opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: EASE }}
+          onClick={() => window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' })}
+          aria-label="AERO-SENSE home"
+          className="group flex shrink-0 items-center gap-2.5 rounded-full border border-white/90 bg-white/90 px-2.5 py-2 pr-4 shadow-[0_12px_30px_rgba(79,70,229,.10)] backdrop-blur-xl"
         >
-          Access platform
-          <ArrowUpRight className="h-3.5 w-3.5" />
-        </button>
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 via-blue-600 to-violet-600 text-white shadow-sm transition-transform duration-300 group-hover:scale-105">
+            <ShieldCheck className="h-4 w-4" />
+          </span>
+          <span className="whitespace-nowrap font-display text-lg font-bold tracking-[-.04em] text-ink sm:text-xl md:text-2xl">
+            AERO-SENSE
+          </span>
+        </motion.button>
 
-        <button
-          type="button"
-          onClick={() => setMobileOpen((v) => !v)}
-          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-          aria-expanded={mobileOpen}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-pebble bg-white/90 text-ink shadow-sm backdrop-blur md:hidden"
-        >
-          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        <div className="flex min-w-0 items-center gap-2.5 md:gap-3">
+          <nav className="hidden items-center gap-0.5 rounded-full border border-white/90 bg-white/88 p-1 shadow-[0_12px_30px_rgba(79,70,229,.10)] backdrop-blur-xl lg:flex">
+            {LINKS.map((link) => (
+              <button
+                key={link.href}
+                type="button"
+                onClick={() => go(link.href)}
+                className="whitespace-nowrap rounded-full px-3.5 py-2 text-[12px] font-semibold text-ink/65 transition-all duration-200 hover:bg-accent-soft hover:text-accent xl:px-4 xl:text-[13px]"
+              >
+                {link.label}
+              </button>
+            ))}
+          </nav>
+
+          <button
+            type="button"
+            onClick={() => navigate('/login')}
+            className="hidden shrink-0 items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 via-blue-600 to-violet-600 px-4 py-2.5 text-[12px] font-bold text-white shadow-[0_12px_24px_rgba(79,70,229,.22)] transition duration-200 hover:-translate-y-0.5 lg:flex"
+          >
+            Access platform
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setMobileOpen((v) => !v)}
+            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileOpen}
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/90 bg-white/90 text-ink shadow-sm backdrop-blur md:hidden"
+          >
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       <AnimatePresence>
@@ -87,7 +89,7 @@ export const LandingNav: React.FC = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ duration: 0.2, ease: EASE }}
-            className="absolute left-5 right-5 top-full mt-3 flex flex-col gap-1 rounded-2xl border border-pebble bg-white/95 p-2 shadow-[0_24px_60px_rgba(17,20,43,.14)] backdrop-blur-xl md:hidden"
+            className="absolute left-4 right-4 top-full mt-3 flex flex-col gap-1 rounded-2xl border border-pebble bg-white/95 p-2 shadow-[0_24px_60px_rgba(17,20,43,.14)] backdrop-blur-xl sm:left-5 sm:right-5 md:hidden"
           >
             {LINKS.map((link) => (
               <button
