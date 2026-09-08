@@ -8,7 +8,7 @@
         android:required="false" />
 
     <application
-        android:label="aero_sense_mobile"
+        android:label="Aero-Sense"
         android:name="${applicationName}"
         android:icon="@drawable/aero_sense_launcher">
         <activity
