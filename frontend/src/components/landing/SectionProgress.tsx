@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 
-const EASE = [0.16, 1, 1, 1] as const;
+const EASE = [0.16, 1, 0.3, 1] as const;
 
 const SECTIONS = [
   { id: 'solution', label: 'Solution' },
@@ -80,7 +80,7 @@ export const SectionProgress: React.FC = () => {
                     aria-current={isActive ? 'true' : undefined}
                     className="group relative flex h-6 w-6 items-center justify-center focus-visible:outline-none"
                   >
-                    <span className={`h-2 w-2 rounded-full border transition-all duration-300 ${isActive ? 'border-accent bg-accent scale-125 shadow-[0_0_0_4px_rgba(79,70,229,.10)]' : 'border-ink/20 bg-white group-hover:border-accent/50'}`} />
+                    <span className={`h-2 w-2 rounded-full border transition-all duration-300 ${isActive ? 'scale-125 border-accent bg-accent shadow-[0_0_0_4px_rgba(79,70,229,.10)]' : 'border-ink/20 bg-white group-hover:border-accent/50'}`} />
                   </button>
                 </li>
               );
