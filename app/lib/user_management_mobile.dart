@@ -43,6 +43,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   String? error;
 
   @override void initState() { super.initState(); load(); }
+
   Future<void> load() async {
     if (mounted) setState(() { loading = true; error = null; });
     try {
@@ -167,36 +168,162 @@ class _CompanyUsersManagementState extends State<CompanyUsersManagementScreen> {
   String? error;
 
   @override void initState() { super.initState(); load(); }
-  Future<void> load() async { if (mounted) setState(() { loading = true; error = null; }); try { final data = (await api.dio.get('/companies/${widget.company.id}/users')).data; users = data is List ? data.map((e) => MobileManagedUser.fromJson(Map<String, dynamic>.from(e))).toList() : []; } catch (e) { error = api.errorMessage(e); } if (mounted) setState(() => loading = false); }
+
+  Future<void> load() async {
+    if (mounted) setState(() { loading = true; error = null; });
+    try {
+      final data = (await api.dio.get('/companies/${widget.company.id}/users')).data;
+      users = data is List ? data.map((e) => MobileManagedUser.fromJson(Map<String, dynamic>.from(e))).toList() : [];
+    } catch (e) { error = api.errorMessage(e); }
+    if (mounted) setState(() => loading = false);
+  }
 
   Future<void> action(MobileManagedUser user, String action) async {
     try {
       if (action == 'profile') {
         final p = MobileUserProfile.fromJson(Map<String, dynamic>.from((await api.dio.get('/users/${user.id}')).data));
-        if (mounted) showDialog(context: context, builder: (dialogContext) => AlertDialog(title: Text(p.user.name), content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [_line('Email', p.user.email), _line('Role', _roleLabel(p.user.role)), _line('Status', p.user.status), _line('Company', p.companyName ?? widget.company.name), _line('Maintenance', '${p.maintenanceCount}'), _line('Component updates', '${p.componentUpdateCount}')]), actions: [TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('Close'))]));
+        if (!mounted) return;
+        showDialog(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: Text(p.user.name),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _line('Email', p.user.email),
+                  _line('Role', _roleLabel(p.user.role)),
+                  _line('Status', p.user.status),
+                  _line('Company', p.companyName ?? widget.company.name),
+                  _line('Maintenance', '${p.maintenanceCount}'),
+                  _line('Component updates', '${p.componentUpdateCount}'),
+                ],
+              ),
+            ),
+            actions: [TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('Close'))],
+          ),
+        );
         return;
       }
       if (action == 'role') { await _changeRole(user); return; }
       final status = action == 'suspend' ? 'SUSPENDED' : action == 'reactivate' ? 'ACTIVE' : 'DELETED';
-      if (!await _confirm(status == 'DELETED' ? 'Delete ${user.name}?' : status == 'SUSPENDED' ? 'Suspend ${user.name}?' : 'Reactivate ${user.name}?')) return;
+      final label = status == 'DELETED' ? 'Delete' : status == 'SUSPENDED' ? 'Suspend' : 'Reactivate';
+      final body = status == 'DELETED' ? 'The account will be soft-deleted. Work history and audit records are preserved.' : status == 'SUSPENDED' ? 'The account will no longer be able to sign in.' : 'The account will be allowed to sign in again.';
+      if (!await _confirm('$label ${user.name}?', body)) return;
       await api.dio.put('/users/${user.id}/status', data: {'status': status});
       await load();
     } catch (e) { if (mounted) _message(api.errorMessage(e), error: true); }
   }
 
   Widget _line(String a, String b) => Padding(padding: const EdgeInsets.only(bottom: 9), child: Row(children: [SizedBox(width: 115, child: Text(a, style: const TextStyle(color: muted))), Expanded(child: Text(b, style: const TextStyle(fontWeight: FontWeight.w700)))]));
-  Future<bool> _confirm(String title) async => await showDialog<bool>(context: context, builder: (dialogContext) => AlertDialog(title: Text(title), content: const Text('This change will take effect immediately.'), actions: [TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Cancel')), FilledButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: const Text('Confirm'))])) ?? false;
+
+  Future<bool> _confirm(String title, String body) async => await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(title),
+      content: Text(body),
+      actions: [
+        TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Cancel')),
+        FilledButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: const Text('Confirm')),
+      ],
+    ),
+  ) ?? false;
 
   Future<void> _changeRole(MobileManagedUser u) async {
     var role = u.role;
-    final result = await showDialog<String>(context: context, builder: (dialogContext) => StatefulBuilder(builder: (dialogContext, set) => AlertDialog(title: const Text('Change Role'), content: DropdownButtonFormField<String>(value: role, isExpanded: true, items: mobileManageableRoles.map((r) => DropdownMenuItem(value: r, child: Text(_roleLabel(r)))).toList(), onChanged: (v) { if (v != null) set(() => role = v); }), actions: [TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('Cancel')), FilledButton(onPressed: () => Navigator.of(dialogContext).pop(role), child: const Text('Save'))])));
+    final result = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialog) => AlertDialog(
+          title: const Text('Change Role'),
+          content: DropdownButtonFormField<String>(
+            value: role,
+            isExpanded: true,
+            items: mobileManageableRoles.map((r) => DropdownMenuItem(value: r, child: Text(_roleLabel(r)))).toList(),
+            onChanged: (v) { if (v != null) setDialog(() => role = v); },
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('Cancel')),
+            FilledButton(onPressed: () => Navigator.of(dialogContext).pop(role), child: const Text('Save')),
+          ],
+        ),
+      ),
+    );
     if (result == null || result == u.role) return;
-    if (!await _confirm('Change ${u.name}\'s role to ${_roleLabel(result)}?')) return;
+    if (!await _confirm('Change ${u.name}\'s role to ${_roleLabel(result)}?', 'This account will immediately use the new role permissions on its next authenticated request.')) return;
     await api.dio.put('/users/${u.id}/role', data: {'role': result});
     await load();
   }
 
   void _message(String t, {bool error = false}) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t), backgroundColor: error ? Colors.red : null));
 
-  @override Widget build(BuildContext context) => RefreshIndicator(onRefresh: load, child: ListView(padding: const EdgeInsets.fromLTRB(20, 18, 20, 110), children: [CardBox(child: Row(children: [Container(width: 48, height: 48, decoration: BoxDecoration(color: soft, borderRadius: BorderRadius.circular(14)), child: const Icon(Icons.business_outlined, color: accent)), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(widget.company.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)), Text(widget.company.slug, style: const TextStyle(color: muted, fontSize: 11))])), StatusPill(widget.company.status)])), const SizedBox(height: 14), const Text('Users & Roles', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800)), const SizedBox(height: 5), Text('Super Admin controls for ${widget.company.name}', style: const TextStyle(color: muted)), const SizedBox(height: 14), if (error != null) CardBox(child: Text(error!, style: const TextStyle(color: Colors.red))), if (loading) const Center(child: Padding(padding: EdgeInsets.all(30), child: CircularProgressIndicator(color: accent))) else if (users.isEmpty) const CardBox(child: Text('No users in this company.', style: TextStyle(color: muted))) else ...users.map((u) => CardBox(margin: const EdgeInsets.only(bottom: 12), child: Row(children: [CircleAvatar(backgroundColor: soft, child: const Icon(Icons.person_outline, color: accent)), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(u.name, style: const TextStyle(fontWeight: FontWeight.w800)), Text(u.email, style: const TextStyle(color: muted, fontSize: 12)), const SizedBox(height: 6), Wrap(spacing: 6, children: [StatusPill(u.role), StatusPill(u.status)])])), if (u.role != 'SUPER_ADMIN') PopupMenuButton<String>(icon: const Icon(Icons.more_horiz), onSelected: (a) => action(u, a), itemBuilder: (_) => [const PopupMenuItem(value: 'profile', child: Text('View profile & work')), const PopupMenuItem(value: 'role', child: Text('Change role')), if (u.status == 'ACTIVE') const PopupMenuItem(value: 'suspend', child: Text('Suspend account')), if (u.status == 'SUSPENDED') const PopupMenuItem(value: 'reactivate', child: Text('Reactivate account')), if (u.status != 'DELETED') const PopupMenuItem(value: 'delete', child: Text('Delete account'))])]))]));
+  @override
+  Widget build(BuildContext context) {
+    return RefreshIndicator(
+      onRefresh: load,
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 110),
+        children: [
+          CardBox(
+            child: Row(
+              children: [
+                Container(width: 48, height: 48, decoration: BoxDecoration(color: soft, borderRadius: BorderRadius.circular(14)), child: const Icon(Icons.business_outlined, color: accent)),
+                const SizedBox(width: 12),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(widget.company.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)), Text(widget.company.slug, style: const TextStyle(color: muted, fontSize: 11))])),
+                StatusPill(widget.company.status),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          const Text('Users & Roles', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 5),
+          Text('Super Admin controls for ${widget.company.name}', style: const TextStyle(color: muted)),
+          const SizedBox(height: 14),
+          if (error != null) CardBox(child: Text(error!, style: const TextStyle(color: Colors.red))),
+          if (loading)
+            const Center(child: Padding(padding: EdgeInsets.all(30), child: CircularProgressIndicator(color: accent)))
+          else if (users.isEmpty)
+            const CardBox(child: Text('No users in this company.', style: TextStyle(color: muted)))
+          else
+            ...users.map((u) => _companyUserCard(u)),
+        ],
+      ),
+    );
+  }
+
+  Widget _companyUserCard(MobileManagedUser u) {
+    return CardBox(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          CircleAvatar(backgroundColor: soft, child: const Icon(Icons.person_outline, color: accent)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(u.name, style: const TextStyle(fontWeight: FontWeight.w800)),
+                Text(u.email, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: muted, fontSize: 12)),
+                const SizedBox(height: 6),
+                Wrap(spacing: 6, children: [StatusPill(u.role), StatusPill(u.status)]),
+              ],
+            ),
+          ),
+          if (u.role != 'SUPER_ADMIN')
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_horiz),
+              onSelected: (a) => action(u, a),
+              itemBuilder: (_) => [
+                const PopupMenuItem<String>(value: 'profile', child: Text('View profile & work')),
+                const PopupMenuItem<String>(value: 'role', child: Text('Change role')),
+                if (u.status == 'ACTIVE') const PopupMenuItem<String>(value: 'suspend', child: Text('Suspend account')),
+                if (u.status == 'SUSPENDED') const PopupMenuItem<String>(value: 'reactivate', child: Text('Reactivate account')),
+                if (u.status != 'DELETED') const PopupMenuItem<String>(value: 'delete', child: Text('Delete account')),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
 }
