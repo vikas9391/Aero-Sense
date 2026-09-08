@@ -36,7 +36,7 @@ export const DashboardPage: React.FC = () => {
         }
       } catch (err) {
         console.error('Failed to load dashboard metrics:', err);
-        showToast('Couldn\'t load dashboard data. Please refresh the page.', 'error');
+        showToast("Couldn't load dashboard data. Please refresh the page.", 'error');
       } finally {
         setLoading(false);
       }
@@ -50,7 +50,7 @@ export const DashboardPage: React.FC = () => {
   const tamperedComponents = componentsList.filter((c) => c.status === 'TAMPERED').length;
 
   return (
-    <div className="space-y-8">
+    <div className="min-w-0 space-y-8">
       <PageHeader
         eyebrow="Operations"
         title="Security & Maintenance Dashboard"
@@ -64,42 +64,42 @@ export const DashboardPage: React.FC = () => {
         <StatCard label="Security Alerts" icon={AlertTriangle} tone="critical" value={loading ? '—' : tamperedComponents} helper="Tamper events — requires inspection" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-w-0">
+        <div className="lg:col-span-2 min-w-0 space-y-6">
+          <Card className="p-4 sm:p-6 min-w-0">
             <CardHeader
               title="Registered Aircraft Fleet"
               icon={Plane}
-              action={<Link to="/aircraft" className="flex items-center gap-1 text-xs font-medium text-ink hover:text-ash"><span>View All Fleet</span><ArrowUpRight className="h-3.5 w-3.5" /></Link>}
+              action={<Link to="/aircraft" className="flex shrink-0 items-center gap-1 text-xs font-medium text-ink hover:text-ash"><span>View All Fleet</span><ArrowUpRight className="h-3.5 w-3.5" /></Link>}
             />
             <div className="divide-y divide-pebble">
-              {aircraftList.map((ac) => (
-                <div key={ac.id} className="py-3.5 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-pebble bg-white aero-mono text-[11px] font-semibold text-ink">AC</div>
-                    <div><div className="font-semibold text-ink text-sm aero-mono">{ac.registration_number}</div><div className="text-xs text-ash">{ac.model} • {ac.manufacturer}</div></div>
+              {aircraftList.length === 0 && !loading ? <div className="py-10 text-center text-xs text-ash">No aircraft registered yet.</div> : aircraftList.map((ac) => (
+                <div key={ac.id} className="py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 min-w-0">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-pebble bg-white aero-mono text-[11px] font-semibold text-ink">AC</div>
+                    <div className="min-w-0"><div className="font-semibold text-ink text-sm aero-mono truncate" title={ac.registration_number}>{ac.registration_number}</div><div className="text-xs text-ash truncate" title={`${ac.model} • ${ac.manufacturer}`}>{ac.model} • {ac.manufacturer}</div></div>
                   </div>
-                  <div className="flex items-center gap-3"><Badge tone="verified">{ac.status}</Badge><Link to={`/aircraft/${ac.id}`} className="rounded-lg border border-pebble px-3 py-1.5 text-xs text-ink hover:bg-[#f7f7f5] transition">View Details</Link></div>
+                  <div className="flex shrink-0 items-center gap-3"><Badge tone="verified">{ac.status}</Badge><Link to={`/aircraft/${ac.id}`} className="rounded-lg border border-pebble px-3 py-1.5 text-xs text-ink hover:bg-[#f7f7f5] transition whitespace-nowrap">View Details</Link></div>
                 </div>
               ))}
             </div>
           </Card>
 
           {canVerify && (
-            <Card className="p-6">
+            <Card className="p-4 sm:p-6 min-w-0">
               <CardHeader
                 title="Recent NFC Verification Logs"
                 icon={Activity}
-                action={canAudit ? <Link to="/security" className="flex items-center gap-1 text-xs font-medium text-ink hover:text-ash"><span>Security Audit Trail</span><ArrowUpRight className="h-3.5 w-3.5" /></Link> : undefined}
+                action={canAudit ? <Link to="/security" className="flex shrink-0 items-center gap-1 text-xs font-medium text-ink hover:text-ash"><span>Security Audit Trail</span><ArrowUpRight className="h-3.5 w-3.5" /></Link> : undefined}
               />
               {verifications.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-pebble p-8 text-center text-xs text-ash"><ScanLine className="h-8 w-8 text-ash mx-auto mb-2" />No verification scans executed yet today. Tap "Verify Component" to initiate an NFC scan.</div>
+                <div className="rounded-xl border border-dashed border-pebble p-6 sm:p-8 text-center text-xs text-ash"><ScanLine className="h-8 w-8 text-ash mx-auto mb-2" />No verification scans executed yet today. Tap "Verify Component" to initiate an NFC scan.</div>
               ) : (
                 <div className="space-y-3">
                   {verifications.map((v) => (
-                    <div key={v.id} className="flex items-center justify-between p-3 rounded-xl border border-pebble bg-white text-xs">
-                      <div className="flex items-center gap-3"><div className={`h-2.5 w-2.5 rounded-full ${v.final_result === 'AUTHENTIC' ? 'bg-[#0a7a4c]' : 'bg-[#b13a2f]'}`} /><div><div className="font-semibold text-ink">Result: {v.final_result}</div><div className="aero-mono text-[11px] text-ash">{v.created_at}</div></div></div>
-                      <span className="text-[11px] text-ash">{v.failure_reason || 'All 4 verification checks passed'}</span>
+                    <div key={v.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 rounded-xl border border-pebble bg-white text-xs min-w-0">
+                      <div className="flex min-w-0 items-center gap-3"><div className={`h-2.5 w-2.5 shrink-0 rounded-full ${v.final_result === 'AUTHENTIC' ? 'bg-[#0a7a4c]' : 'bg-[#b13a2f]'}`} /><div className="min-w-0"><div className="font-semibold text-ink truncate">Result: {v.final_result}</div><div className="aero-mono text-[11px] text-ash truncate" title={v.created_at}>{v.created_at}</div></div></div>
+                      <span className="max-w-full sm:max-w-[55%] text-[11px] text-ash break-words sm:text-right">{v.failure_reason || 'All 4 verification checks passed'}</span>
                     </div>
                   ))}
                 </div>
@@ -108,22 +108,22 @@ export const DashboardPage: React.FC = () => {
           )}
         </div>
 
-        <div className="space-y-6">
-          <Card className="p-6">
+        <div className="min-w-0 space-y-6">
+          <Card className="p-4 sm:p-6 min-w-0">
             <CardHeader title="Bound Components" icon={Cpu} action={<Link to="/components" className="text-xs font-medium text-ink hover:text-ash">Catalog</Link>} />
             <div className="space-y-3">
-              {componentsList.map((c) => (
-                <div key={c.id} className="p-3.5 rounded-xl border border-pebble bg-white space-y-2">
-                  <div className="flex items-center justify-between"><span className="font-semibold text-sm text-ink aero-mono">{c.component_uuid}</span><span className="rounded border border-pebble bg-[#f7f7f5] px-2 py-0.5 text-[10px] font-semibold text-ink aero-mono">SN: {c.serial_number}</span></div>
-                  <div className="text-xs text-ash">{c.component_type}</div>
-                  <div className="flex items-center justify-between text-[11px] pt-1"><span className="text-ash">{c.manufacturer}</span><span className="text-[#0a7a4c] font-medium flex items-center gap-1"><ShieldCheck className="h-3 w-3" /><span>{c.status}</span></span></div>
+              {componentsList.length === 0 && !loading ? <div className="py-8 text-center text-xs text-ash">No components bound yet.</div> : componentsList.map((c) => (
+                <div key={c.id} className="p-3.5 rounded-xl border border-pebble bg-white space-y-2 min-w-0">
+                  <div className="flex min-w-0 items-start justify-between gap-2"><span className="min-w-0 truncate font-semibold text-sm text-ink aero-mono" title={c.component_uuid}>{c.component_uuid}</span><span className="shrink-0 max-w-[48%] truncate rounded border border-pebble bg-[#f7f7f5] px-2 py-0.5 text-[10px] font-semibold text-ink aero-mono" title={`SN: ${c.serial_number}`}>SN: {c.serial_number}</span></div>
+                  <div className="text-xs text-ash truncate" title={c.component_type}>{c.component_type}</div>
+                  <div className="flex min-w-0 items-center justify-between gap-2 text-[11px] pt-1"><span className="min-w-0 truncate text-ash" title={c.manufacturer}>{c.manufacturer}</span><span className="shrink-0 text-[#0a7a4c] font-medium flex items-center gap-1"><ShieldCheck className="h-3 w-3" /><span>{c.status}</span></span></div>
                 </div>
               ))}
             </div>
           </Card>
 
-          <Card className="p-6">
-            <h3 className="flex items-center gap-2 mb-2 text-sm font-semibold text-ink"><Lock className="h-4 w-4 text-ash" /><span>Identity & Security Architecture</span></h3>
+          <Card className="p-4 sm:p-6">
+            <h3 className="flex items-center gap-2 mb-2 text-sm font-semibold text-ink"><Lock className="h-4 w-4 shrink-0 text-ash" /><span>Identity & Security Architecture</span></h3>
             <ul className="text-xs text-ash space-y-2 list-disc list-inside leading-relaxed"><li>Hardware UID mapped to Component UUID</li><li>AES-128 SUN dynamic CMAC verification</li><li>TagTamper physical seal integrity check</li><li>SHA-256 on-chain maintenance record proof</li></ul>
           </Card>
         </div>
