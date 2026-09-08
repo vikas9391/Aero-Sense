@@ -1,19 +1,21 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #071218;
-  --color-ash: #687780;
-  --color-pebble: #dbe4e8;
+  --color-ink: #11142b;
+  --color-ash: #667085;
+  --color-pebble: #e4e7f2;
   --color-slate-elevated: #ffffff;
-  --color-clay: #1f6feb;
-  --color-sky: #edf4f7;
-  --color-cream: #f5f9fb;
-  --color-accent: #1769ff;
-  --color-accent-soft: #eaf1ff;
+  --color-clay: #6366f1;
+  --color-sky: #f3f6ff;
+  --color-cream: #fafbff;
+  --color-accent: #4f46e5;
+  --color-accent-soft: #eef0ff;
   --color-good: #0b9b83;
   --color-warning: #c77a13;
   --color-critical: #d34b4b;
   --color-info: #2877c7;
+  --color-purple: #7c3aed;
+  --color-blue: #2563eb;
   --font-display: 'Clash Display', 'General Sans', system-ui, sans-serif;
   --font-body: 'General Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
@@ -23,11 +25,11 @@
 
 @layer base {
   :root {
-    --bg-app: #edf4f7;
-    --card-bg: rgba(255,255,255,.86);
-    --border-color: #dbe4e8;
-    --accent: #1769ff;
-    --accent-soft: #eaf1ff;
+    --bg-app: #f5f7ff;
+    --card-bg: rgba(255,255,255,.9);
+    --border-color: #e2e5f0;
+    --accent: #4f46e5;
+    --accent-soft: #eef0ff;
     --status-verified: #0b9b83;
     --status-verified-soft: #e5f7f3;
     --status-warning: #c77a13;
@@ -41,8 +43,9 @@
   html { background: var(--bg-app); scroll-behavior: smooth; }
   body {
     background:
-      radial-gradient(circle at 12% 0%, rgba(23,105,255,.08), transparent 28rem),
-      radial-gradient(circle at 90% 15%, rgba(11,155,131,.055), transparent 24rem),
+      radial-gradient(circle at 8% 0%, rgba(99,102,241,.13), transparent 30rem),
+      radial-gradient(circle at 92% 8%, rgba(37,99,235,.10), transparent 27rem),
+      radial-gradient(circle at 55% 100%, rgba(124,58,237,.055), transparent 30rem),
       var(--bg-app);
     color: var(--color-ink);
     font-family: var(--font-body);
@@ -52,7 +55,7 @@
     -webkit-font-smoothing: antialiased;
   }
   button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
-  ::selection { background: #dce8ff; color: var(--color-ink); }
+  ::selection { background: #dddfff; color: var(--color-ink); }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 }
 
@@ -64,29 +67,29 @@
   white-space: nowrap;
 }
 .pill-btn:hover { transform: translateY(-2px); }
-.pill-btn-primary { background: linear-gradient(135deg, #1769ff, #3d83ff); color: #fff; box-shadow: 0 12px 28px rgba(23,105,255,.22); }
-.pill-btn-primary:hover { background: linear-gradient(135deg, #0e5be5, #3277ef); box-shadow: 0 15px 34px rgba(23,105,255,.28); }
-.pill-btn-ghost { background: rgba(255,255,255,.7); color: var(--color-ink); border: 1px solid var(--color-pebble); }
-.pill-btn-ghost:hover { border-color: rgba(23,105,255,.4); color: var(--color-accent); background: var(--accent-soft); }
+.pill-btn-primary { background: linear-gradient(135deg, #4f46e5, #2563eb); color: #fff; box-shadow: 0 12px 28px rgba(79,70,229,.22); }
+.pill-btn-primary:hover { background: linear-gradient(135deg, #4338ca, #1d4ed8); box-shadow: 0 15px 34px rgba(79,70,229,.28); }
+.pill-btn-ghost { background: rgba(255,255,255,.78); color: var(--color-ink); border: 1px solid var(--color-pebble); }
+.pill-btn-ghost:hover { border-color: rgba(79,70,229,.4); color: var(--color-accent); background: var(--accent-soft); }
 .pill-btn-on-dark { background: #fff; color: var(--color-accent); }
-.pill-btn-on-dark:hover { background: #edf4ff; }
+.pill-btn-on-dark:hover { background: #f1f2ff; }
 .pill-btn-ghost-on-dark { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.22); }
 .pill-btn-ghost-on-dark:hover { border-color: #fff; background: rgba(255,255,255,.06); }
 
 .hairline { border: 1px solid var(--color-pebble); }
 .hairline-on-dark { border: 1px solid rgba(255,255,255,.12); }
-.aero-hero-sky { background: linear-gradient(180deg, #e8f1f5 0%, #f2f7f9 52%, #fff 100%); }
+.aero-hero-sky { background: linear-gradient(180deg, #eef1ff 0%, #f5f7ff 52%, #fff 100%); }
 
 .aero-panel {
   background: var(--card-bg);
-  border: 1px solid rgba(207,220,226,.9);
+  border: 1px solid rgba(220,224,239,.95);
   border-radius: 20px;
-  box-shadow: 0 18px 50px rgba(7,18,24,.055), 0 2px 8px rgba(7,18,24,.025);
+  box-shadow: 0 18px 50px rgba(38,43,82,.055), 0 2px 8px rgba(38,43,82,.025);
   backdrop-filter: blur(18px);
   transition: box-shadow .2s ease, transform .2s ease, border-color .2s ease;
 }
-.aero-panel:hover { box-shadow: 0 22px 60px rgba(7,18,24,.08), 0 3px 12px rgba(7,18,24,.03); }
-.aero-panel-tight { background: rgba(255,255,255,.78); border: 1px solid var(--border-color); border-radius: 16px; }
+.aero-panel:hover { box-shadow: 0 22px 60px rgba(38,43,82,.09), 0 3px 12px rgba(38,43,82,.03); }
+.aero-panel-tight { background: rgba(255,255,255,.82); border: 1px solid var(--border-color); border-radius: 16px; }
 .aero-mono { font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: -.01em; }
 .aero-eyebrow { font-family: var(--font-body); font-size: .66rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; color: var(--color-ash); }
 .aero-accent { color: var(--accent); }
@@ -103,24 +106,22 @@
 input, select, textarea {
   border-radius: 14px;
   border-color: var(--border-color);
-  background: rgba(255,255,255,.82);
+  background: rgba(255,255,255,.86);
+  color: var(--color-ink);
   transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
 }
 input:focus, select:focus, textarea:focus {
-  border-color: rgba(23,105,255,.55) !important;
-  box-shadow: 0 0 0 4px rgba(23,105,255,.08);
+  border-color: rgba(79,70,229,.55) !important;
+  box-shadow: 0 0 0 4px rgba(79,70,229,.09);
   background: #fff;
 }
 
-* { scrollbar-width: thin; scrollbar-color: #b8c7ce transparent; }
+* { scrollbar-width: thin; scrollbar-color: #c3c7da transparent; }
 
-/* Shared application-shell makeover. Existing page components keep their
-   behavior and routes while inheriting the new aerospace command-center
-   surfaces, spacing and depth. */
 .aero-app-shell { position: relative; isolation: isolate; }
 .aero-app-shell::before {
   content: ""; position: fixed; inset: 0; pointer-events: none; z-index: -1; opacity: .42;
-  background-image: linear-gradient(rgba(7,18,24,.028) 1px, transparent 1px), linear-gradient(90deg, rgba(7,18,24,.028) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(79,70,229,.028) 1px, transparent 1px), linear-gradient(90deg, rgba(37,99,235,.028) 1px, transparent 1px);
   background-size: 42px 42px;
   mask-image: linear-gradient(to bottom, black, transparent 75%);
 }
