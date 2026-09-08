@@ -1,186 +1,82 @@
 @import "tailwindcss";
 
-/*
-  AERO-SENSE public design system (landing page only).
-  Kept separate from the dashboard's theme below — the authenticated
-  app is untouched and keeps its own tokens.
-*/
+/* Shared AERO-SENSE design system. Mirrors the current Flutter mobile app. */
 @theme {
-  --color-ink: #000d10;
-  --color-ash: #8e8e95;
-  --color-pebble: #d5d3d4;
-  --color-slate-elevated: #151623;
-  /* Accent used by the "How It Works" stage stepper (active-state
-     underline, progress bar, focus ring) — the one warm accent color in
-     an otherwise ink/ash/pebble palette. */
-  --color-clay: #bc7155;
-
-  /* Atmospheric-only tokens for the hero's pale-sky background. Not brand
-     accents — never used on text, buttons, or UI elements. */
-  --color-sky: #e6edf1;
-  --color-cream: #faf9f7;
-
+  --color-ink: #242321;
+  --color-ash: #77746f;
+  --color-pebble: #e4e0d9;
+  --color-slate-elevated: #ffffff;
+  --color-clay: #34439b;
+  --color-sky: #f4f1ec;
+  --color-cream: #f8f6f2;
+  --color-accent: #34439b;
+  --color-accent-soft: #eeeffa;
+  --color-good: #16856d;
+  --color-warning: #b5790f;
+  --color-critical: #b13a2f;
+  --color-info: #2a5d8f;
   --font-display: 'Clash Display', 'General Sans', system-ui, sans-serif;
   --font-body: 'General Sans', system-ui, -apple-system, sans-serif;
 }
 
-/* ---- AERO-SENSE landing-page utilities ---- */
+.font-display { font-family: var(--font-display); }
+.font-body { font-family: var(--font-body); }
 
-.font-display {
-  font-family: var(--font-display);
-}
-
-.font-body {
-  font-family: var(--font-body);
-}
-
-/* 1000px-radius pill button, per the reference. No shadow/elevation states. */
 .pill-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  border-radius: 1000px;
-  padding: 0.85rem 1.75rem;
-  font-family: var(--font-body);
-  font-weight: 500;
-  font-size: 0.9rem;
-  letter-spacing: -0.01em;
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  border-radius: 1000px; padding: .85rem 1.75rem; font-family: var(--font-body);
+  font-weight: 600; font-size: .9rem; letter-spacing: -.01em;
+  transition: background-color .2s ease, color .2s ease, border-color .2s ease;
   white-space: nowrap;
 }
+.pill-btn-primary { background: var(--color-accent); color: #fff; }
+.pill-btn-primary:hover { background: #29357f; }
+.pill-btn-ghost { background: transparent; color: var(--color-ink); border: 1px solid var(--color-pebble); }
+.pill-btn-ghost:hover { border-color: var(--color-accent); color: var(--color-accent); }
+.pill-btn-on-dark { background: #fff; color: var(--color-accent); }
+.pill-btn-on-dark:hover { background: var(--color-cream); }
+.pill-btn-ghost-on-dark { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.25); }
+.pill-btn-ghost-on-dark:hover { border-color: #fff; }
 
-.pill-btn-primary {
-  background: var(--color-ink);
-  color: #ffffff;
-}
-.pill-btn-primary:hover {
-  background: #001a20;
-}
+.hairline { border: 1px solid var(--color-pebble); }
+.hairline-on-dark { border: 1px solid rgba(255,255,255,.12); }
 
-.pill-btn-ghost {
-  background: transparent;
-  color: var(--color-ink);
-  border: 1px solid var(--color-pebble);
-}
-.pill-btn-ghost:hover {
-  border-color: var(--color-ink);
-}
-
-.pill-btn-on-dark {
-  background: #ffffff;
-  color: var(--color-ink);
-}
-.pill-btn-on-dark:hover {
-  background: var(--color-pebble);
-}
-
-.pill-btn-ghost-on-dark {
-  background: transparent;
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-}
-.pill-btn-ghost-on-dark:hover {
-  border-color: #ffffff;
-}
-
-/* Hard-edged hairline cards — explicitly no shadow, no radius beyond a hairline. */
-.hairline {
-  border: 1px solid var(--color-pebble);
-}
-.hairline-on-dark {
-  border: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-/* Hero atmosphere: pale blue sky settling into white/cream — background only,
-   the "sky" and "cream" tokens above never appear anywhere else. */
 .aero-hero-sky {
-  background: linear-gradient(
-    180deg,
-    #abc0d5 0%,
-    #bfd1e0 15%,
-    #cedce6 30%,
-    #e2e9ec 50%,
-    var(--color-cream) 72%,
-    #ffffff 100%
-  );
+  background: linear-gradient(180deg, #eeeae3 0%, #f4f1ec 45%, #f8f6f2 75%, #fff 100%);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-/*
-  AERO-SENSE 2.0 application design system.
-  Same ink/ash/pebble/clay family the landing page already uses (see
-  @theme above), extended with semantic status colors and surface
-  utilities for the authenticated app (dashboard, fleet, components,
-  verification, maintenance, etc). Replaces the old indigo/glass-panel
-  theme — nothing below is used by the landing page.
-*/
 @layer base {
   :root {
-    --bg-app: #f7f7f5;
-    --card-bg: #ffffff;
-    --border-color: var(--color-pebble);
-
-    /* Single accent, reused from the landing page's clay tone rather
-       than introducing a second brand color for the app shell. */
-    --accent: var(--color-ink);
-    --accent-soft: #eef0ee;
-
-    /* Semantic status — the only saturated color in the app. */
-    --status-verified: #0a7a4c;
-    --status-verified-soft: #e9f6ef;
-    --status-warning: #b5790f;
-    --status-warning-soft: #fbf1de;
-    --status-critical: #b13a2f;
-    --status-critical-soft: #fbeceb;
-    --status-info: #2a5d8f;
-    --status-info-soft: #eaf1f8;
+    --bg-app: #f4f1ec; --card-bg: #fff; --border-color: #e4e0d9;
+    --accent: #34439b; --accent-soft: #eeeffa;
+    --status-verified: #16856d; --status-verified-soft: #e8f5f0;
+    --status-warning: #b5790f; --status-warning-soft: #fbf1de;
+    --status-critical: #b13a2f; --status-critical-soft: #fbeceb;
+    --status-info: #2a5d8f; --status-info-soft: #eaf1f8;
   }
-
+  html { background: var(--bg-app); }
   body {
-    background-color: var(--bg-app);
-    color: var(--color-ink);
-    font-family: var(--font-body);
-    min-height: 100vh;
-    margin: 0;
+    background-color: var(--bg-app); color: var(--color-ink); font-family: var(--font-body);
+    min-height: 100vh; margin: 0;
   }
+  button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
 }
 
-/* ---- Application surfaces (dashboard/fleet/components/etc.) ---- */
+.aero-panel { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; }
+.aero-panel-tight { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; }
+.aero-mono { font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: -.01em; }
+.aero-eyebrow { font-family: var(--font-body); font-size: .6875rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--color-ash); }
+.aero-accent { color: var(--accent); }
+.aero-accent-bg { background: var(--accent-soft); }
+.aero-good { color: var(--status-verified); }
+.aero-good-bg { background: var(--status-verified-soft); }
+.aero-warning { color: var(--status-warning); }
+.aero-warning-bg { background: var(--status-warning-soft); }
+.aero-critical { color: var(--status-critical); }
+.aero-critical-bg { background: var(--status-critical-soft); }
+.aero-info { color: var(--status-info); }
+.aero-info-bg { background: var(--status-info-soft); }
 
-/* Flat hairline card — no shadow, no gradient, matches the landing
-   page's .hairline treatment instead of the old glass/shadow cards. */
-.aero-panel {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 14px;
-}
-
-.aero-panel-tight {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-}
-
-/* Technical metadata: component IDs, serials, hashes, timestamps. */
-.aero-mono {
-  font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-  letter-spacing: -0.01em;
-}
-
-.aero-eyebrow {
-  font-family: var(--font-body);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-ash);
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
