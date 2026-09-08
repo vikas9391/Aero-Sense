@@ -7,6 +7,7 @@ interface AuthContextType {
   token: string | null;
   loading: boolean;
   login: (companyName: string, email: string, pass: string) => Promise<User>;
+  loginAsDemoSuperAdmin: () => Promise<User>;
   logout: () => void;
 }
 
@@ -43,6 +44,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return res.user;
   };
 
+  const loginAsDemoSuperAdmin = async () => {
+    const res = await authApi.demoSuperAdminLogin();
+    localStorage.setItem('aircraft_auth_token', res.token);
+    setToken(res.token);
+    setUser(res.user);
+    return res.user;
+  };
+
   const logout = () => {
     localStorage.removeItem('aircraft_auth_token');
     setToken(null);
@@ -50,7 +59,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, loginAsDemoSuperAdmin, logout }}>
       {children}
     </AuthContext.Provider>
   );
