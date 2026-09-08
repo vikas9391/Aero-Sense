@@ -39,20 +39,18 @@ class _MobileDashboardScreenState extends State<MobileDashboardScreen> {
       if (role.isEmpty) {
         try {
           final user = await api.me();
-          role = (user.role).toUpperCase();
+          role = user.role.toUpperCase();
         } catch (_) {}
       }
-      aircraft = await api.aircraft();
-      components = await api.components();
-      if (canVerify) {
-        try {
-          verifications = await api.verificationLogs();
-        } catch (_) {
-          verifications = [];
-        }
-      } else {
-        verifications = [];
-      }
+
+      final results = await Future.wait<dynamic>([
+        api.aircraft(),
+        api.components(),
+        if (canVerify) api.verificationLogs() else Future.value(<VerificationLog>[]),
+      ]);
+      aircraft = results[0] as List<Aircraft>;
+      components = results[1] as List<Component>;
+      verifications = results[2] as List<VerificationLog>;
     } catch (e) {
       error = api.errorMessage(e);
     }
@@ -144,13 +142,13 @@ class _MobileDashboardScreenState extends State<MobileDashboardScreen> {
 
   Widget _stat(double width, String label, int value, IconData icon) => SizedBox(
         width: width,
-        height: 116,
+        height: 122,
         child: CardBox(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Icon(icon, color: accent),
           const Spacer(),
           Text('$value', style: const TextStyle(fontSize: 27, fontWeight: FontWeight.w800)),
           const SizedBox(height: 2),
-          Text(label, style: const TextStyle(color: muted)),
+          Flexible(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: muted))),
         ])),
       );
 }
