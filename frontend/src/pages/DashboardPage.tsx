@@ -9,7 +9,7 @@ import { StatCard } from '../components/ui/StatCard';
 import { Card, CardHeader } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
-import { Plane, Cpu, CheckCircle2, AlertTriangle, ShieldCheck, ScanLine, ArrowUpRight, Activity, Lock } from 'lucide-react';
+import { Plane, Cpu, CheckCircle2, AlertTriangle, ShieldCheck, ScanLine, ArrowUpRight, Activity } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
   const [aircraftList, setAircraftList] = useState<Aircraft[]>([]);
@@ -120,11 +120,6 @@ export const DashboardPage: React.FC = () => {
                 </div>
               ))}
             </div>
-          </Card>
-
-          <Card className="p-4 sm:p-6">
-            <h3 className="flex items-center gap-2 mb-2 text-sm font-semibold text-ink"><Lock className="h-4 w-4 shrink-0 text-ash" /><span>Identity & Security Architecture</span></h3>
-            <ul className="text-xs text-ash space-y-2 list-disc list-inside leading-relaxed"><li>Hardware UID mapped to Component UUID</li><li>AES-128 SUN dynamic CMAC verification</li><li>TagTamper physical seal integrity check</li><li>SHA-256 on-chain maintenance record proof</li></ul>
           </Card>
         </div>
       </div>
