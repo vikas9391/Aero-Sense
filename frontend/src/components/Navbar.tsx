@@ -1,10 +1,10 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, User as UserIcon, Bell, Search, Download } from 'lucide-react';
+import { User as UserIcon, Bell, Search, Download } from 'lucide-react';
 import { AeroLogo } from './Logo';
 
 export const Navbar: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/70 bg-[#f8fbfc]/90 px-4 py-3 backdrop-blur-2xl sm:px-6">
@@ -35,13 +35,10 @@ export const Navbar: React.FC = () => {
             <button className="hidden h-10 w-10 items-center justify-center rounded-xl border border-pebble bg-white/80 text-ash shadow-sm transition hover:border-accent/25 hover:bg-white hover:text-accent sm:flex" title="Notifications">
               <Bell className="h-4 w-4" />
             </button>
-            <div className="hidden items-center gap-3 border-l border-pebble pl-3 sm:flex">
+            <div className="hidden items-center gap-3 border-l border-pebble pl-3 sm:flex" title={user.name}>
               <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-accent/15 bg-accent-soft text-accent"><UserIcon className="h-4 w-4" /></div>
-              <div className="max-w-40"><div className="truncate text-sm font-bold text-ink">{user.name}</div><div className="aero-eyebrow text-[9px]">{user.role.replace(/_/g, ' ')}</div></div>
+              <div className="max-w-40"><div className="truncate text-sm font-bold text-ink">{user.name}</div></div>
             </div>
-            <button onClick={logout} title="Sign Out" className="flex h-10 items-center gap-1.5 rounded-xl border border-pebble bg-white/80 px-3 text-xs font-bold text-ash shadow-sm transition hover:border-critical/30 hover:bg-critical/5 hover:text-critical">
-              <LogOut className="h-3.5 w-3.5" /><span className="hidden sm:inline">Logout</span>
-            </button>
           </div>
         )}
       </div>
