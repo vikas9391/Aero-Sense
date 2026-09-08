@@ -1,6 +1,35 @@
 import 'package:flutter/material.dart';
 import 'theme.dart';
 
+/// The single Aero-Sense brand mark used throughout the mobile application.
+/// It intentionally matches the aircraft icon shown on the login screen.
+class AeroLogo extends StatelessWidget {
+  final double size;
+  final bool boxed;
+
+  const AeroLogo({this.size = 42, this.boxed = true, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final iconSize = size * .5;
+    if (!boxed) return Icon(Icons.flight_takeoff_rounded, size: iconSize, color: accent);
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: panel,
+        borderRadius: BorderRadius.circular(size * .30),
+        border: Border.all(color: line),
+        boxShadow: const [
+          BoxShadow(color: Color(0x12000000), blurRadius: 14, offset: Offset(0, 5)),
+        ],
+      ),
+      child: Icon(Icons.flight_takeoff_rounded, size: iconSize, color: accent),
+    );
+  }
+}
+
 class CardBox extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry margin;
