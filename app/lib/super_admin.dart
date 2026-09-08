@@ -23,6 +23,10 @@ class _CompanyManagementState extends State<CompanyManagementScreen> {
   Future<void> load({bool showLoader = true}) async {
     if (showLoader && mounted && companies.isEmpty) setState(() { loading = true; error = null; });
     try {
+      // Company mutations are tenant-wide state changes. Clear the short-lived
+      // cache before reading the list so a successful create/admin/status update
+      // can never be overwritten by a stale cached response.
+      await api.clearCache();
       final result = await api.companies();
       if (!mounted) return;
       setState(() {
@@ -76,7 +80,8 @@ class _CompanyManagementState extends State<CompanyManagementScreen> {
         loading = false;
       });
       _message('Company created successfully.');
-      // Refresh counts without replacing the existing page with a loader.
+      // Re-read from the backend after clearing cache so the local optimistic
+      // row is replaced with authoritative statistics.
       await load(showLoader: false);
     } catch (e) {
       if (mounted) _message(api.errorMessage(e), error: true);
@@ -230,13 +235,19 @@ class _CompanyDetailState extends State<CompanyDetailScreen> {
 
   Future<void> load() async {
     try {
+      await api.clearCache();
       final values = await Future.wait([api.company(widget.company.id), api.companyUsers(widget.company.id)]);
-      company = values[0] as CompanySummary;
-      users = values[1] as List<User>;
+      if (!mounted) return;
+      setState(() {
+        company = values[0] as CompanySummary;
+        users = values[1] as List<User>;
+        error = null;
+      });
     } catch (e) {
-      error = api.errorMessage(e);
+      if (mounted) setState(() => error = api.errorMessage(e));
+    } finally {
+      if (mounted) setState(() => loading = false);
     }
-    if (mounted) setState(() => loading = false);
   }
 
   @override
@@ -262,7 +273,7 @@ class _CompanyDetailState extends State<CompanyDetailScreen> {
             _metric(Icons.nfc_outlined, '${company.verificationCount} scans'),
           ]),
           const SizedBox(height: 18),
-          SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: () async { await api.updateCompanyStatus(company.id, active ? 'SUSPENDED' : 'ACTIVE'); await load(); }, icon: Icon(active ? Icons.block_outlined : Icons.play_arrow_outlined), label: Text(active ? 'Suspend Company' : 'Reactivate Company'))),
+          SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: () async { try { await api.updateCompanyStatus(company.id, active ? 'SUSPENDED' : 'ACTIVE'); await load(); } catch (e) { if (mounted) setState(() => error = api.errorMessage(e)); } }, icon: Icon(active ? Icons.block_outlined : Icons.play_arrow_outlined), label: Text(active ? 'Suspend Company' : 'Reactivate Company'))),
         ])),
         const SizedBox(height: 14),
         CardBox(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -290,7 +301,7 @@ class _CompanyDetailState extends State<CompanyDetailScreen> {
     );
   }
 
-  Widget _metric(IconData icon, String text) => Row(mainAxisSize: MainAxisSize.min, children: [Icon(icon, size: 15, color: muted), const SizedBox(width: 5), Text(text, style: const TextStyle(color: muted, fontSize: 12))]);
+  Widget _metric(IconData icon, String text) => Row(mainAxisSize: MainAxisSize.min, children: [Icon(icon, size: 15, color: muted), const SizedBox(width: 5), Text(text, style: const TextStyle(color: muted, fontSize: 12)]);
 }
 
 class _AdminDialog extends StatefulWidget {
