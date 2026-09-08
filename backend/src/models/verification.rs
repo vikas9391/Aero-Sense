@@ -3,9 +3,9 @@ use sqlx::FromRow;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NfcTagScanData {
-    pub identifier: String,       // Hardware UID (e.g., "04:A3:91:XX")
-    pub technology: String,       // NFC
-    pub security_type: String,    // BASIC_UID or SECURE_NFC_PAYLOAD
+    pub identifier: String,
+    pub technology: String,
+    pub security_type: String,
     pub raw_payload: Option<String>,
     pub dynamic_counter: Option<u32>,
     pub cmac_signature: Option<String>,
@@ -53,8 +53,6 @@ pub struct VerificationLogWithComponent {
 pub struct NfcVerificationRequest {
     pub tag_identifier: String,
     pub payload: Option<String>,
-    /// Required only for a platform Super Admin, who has no tenant in their JWT.
-    /// Company users must leave this unset; their JWT company scope is authoritative.
     pub company_id: Option<i64>,
     pub simulate_scenario: Option<String>,
 }
@@ -67,11 +65,23 @@ pub struct VerificationChecks {
     pub blockchain_integrity: bool,
 }
 
+/// Component and physical-tag data returned with every successful binding lookup.
+/// The extra fields let mobile clients render the component passport immediately
+/// after an NFC scan instead of only showing the three legacy identity fields.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct VerificationComponentInfo {
+    pub database_id: i64,
     pub id: String,
     pub aircraft: String,
     pub serial_number: String,
+    pub component_type: String,
+    pub manufacturer: String,
+    pub status: String,
+    pub tag_identifier: String,
+    pub tag_technology: String,
+    pub tag_security_type: String,
+    pub tag_tamper_status: String,
+    pub tag_registered_at: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
