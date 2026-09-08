@@ -133,7 +133,7 @@ class _NfcVerificationState extends State<NfcVerificationScreen> {
         );
       } else {
         await NfcManager.instance.startSession(
-          pollingOptions: {NfcPollingOption.iso14443, NfcPollingOption.iso15693, NfcPollingOption.iso18092},
+          pollingOptions: {NfcPollingOption.iso14443, NfcPollingOption.iso15693},
           onDiscovered: _handleTag,
         );
       }
@@ -148,10 +148,20 @@ class _NfcVerificationState extends State<NfcVerificationScreen> {
   }
 
   String? _identifier(NfcTag tag) {
-    final android = NfcTagAndroid.from(tag);
-    final bytes = android?.id;
-    if (bytes == null || bytes.isEmpty) return null;
-    return bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join(':').toUpperCase();
+    if (Platform.isAndroid) {
+      final android = NfcTagAndroid.from(tag);
+      final bytes = android?.id;
+      if (bytes == null || bytes.isEmpty) return null;
+      return bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join(':').toUpperCase();
+    }
+    final iosTag = NfcTagIos.from(tag);
+    if (iosTag != null) {
+      final identifier = iosTag.identifier;
+      if (identifier.isNotEmpty) {
+        return identifier.map((b) => b.toRadixString(16).padLeft(2, '0')).join(':').toUpperCase();
+      }
+    }
+    return null;
   }
 
   void _bindScannedTag() {
@@ -326,7 +336,7 @@ class _VerificationResultCardState extends State<VerificationResultCard> {
       _detail('Serial Number', data['serial_number']), _detail('Component Type', data['component_type']), _detail('Manufacturer', data['manufacturer']), _detail('Status', data['status']), _detail('Aircraft', data['aircraft']), _detail('Component ID', data['id']), _detail('Last Updated', data['updated_at']),
     ]),
     const SizedBox(height: 12),
-    _section('NFC TAG DETAILS', [
+    _section('TAG DETAILS', [
       _detail('Identifier', data['tag_identifier']), _detail('Technology', data['tag_technology']), _detail('Security', data['tag_security_type']), _detail('Tamper status', data['tag_tamper_status']), _detail('Registered', data['tag_registered_at']),
     ]),
     const SizedBox(height: 12),
@@ -344,7 +354,7 @@ class _VerificationResultCardState extends State<VerificationResultCard> {
     const SizedBox(height: 12),
     const Text('This NFC tag is not bound to a component yet. The scanned UID is preserved for binding.', style: TextStyle(color: muted, height: 1.45)),
     const SizedBox(height: 12),
-    SizedBox(width: double.infinity, child: OutlinedButton.icon(onPressed: () => _bind(context), icon: const Icon(Icons.link), label: const Text('Bind this scanned NFC tag')),
+    SizedBox(width: double.infinity, child: OutlinedButton.icon(onPressed: () => _bind(context), icon: const Icon(Icons.link), label: const Text('Bind this scanned NFC tag'))),
   ];
 
   Widget _checkRow(MapEntry<String, bool> entry) => Padding(
@@ -353,109 +363,66 @@ class _VerificationResultCardState extends State<VerificationResultCard> {
       Icon(entry.value ? Icons.check_circle_outline : Icons.cancel_outlined, color: entry.value ? good : Colors.red, size: 18),
       const SizedBox(width: 8),
       Expanded(child: Text(_label(entry.key), style: const TextStyle(fontWeight: FontWeight.w600))),
-      Text(entry.value ? 'PASS' : 'FAIL', style: TextStyle(fontWeight: FontWeight.w900, color: entry.value ? good : Colors.red)),
     ]),
   );
 
-  Widget _editPanel() => Container(
-    width: double.infinity,
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(color: soft, borderRadius: BorderRadius.circular(16)),
-    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      const Text('UPDATE COMPONENT', style: TextStyle(color: accent, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.1)),
-      const SizedBox(height: 10),
-      TextField(controller: serial, textCapitalization: TextCapitalization.characters, decoration: const InputDecoration(labelText: 'Serial Number', prefixIcon: Icon(Icons.confirmation_number_outlined))),
-      const SizedBox(height: 10),
-      TextField(controller: type, decoration: const InputDecoration(labelText: 'Component Type', prefixIcon: Icon(Icons.category_outlined))),
-      const SizedBox(height: 10),
-      TextField(controller: manufacturer, decoration: const InputDecoration(labelText: 'Manufacturer', prefixIcon: Icon(Icons.factory_outlined))),
-      const SizedBox(height: 10),
-      DropdownButtonFormField<String>(
-        isExpanded: true,
-        initialValue: aircraft.any((a) => '${a.id}' == selectedAircraft) ? selectedAircraft : null,
-        decoration: const InputDecoration(labelText: 'Aircraft', prefixIcon: Icon(Icons.flight_outlined)),
-        hint: const Text('Unassigned'),
-        items: aircraft.map((a) => DropdownMenuItem(value: '${a.id}', child: Text('${a.registration} · ${a.model}', overflow: TextOverflow.ellipsis))).toList(),
-        onChanged: (v) => setState(() => selectedAircraft = v),
-      ),
-      const SizedBox(height: 10),
-      DropdownButtonFormField<String>(
-        isExpanded: true,
-        initialValue: status,
-        decoration: const InputDecoration(labelText: 'Status', prefixIcon: Icon(Icons.health_and_safety_outlined)),
-        items: const [
-          DropdownMenuItem(value: 'OPERATIONAL', child: Text('Operational')),
-          DropdownMenuItem(value: 'MAINTENANCE', child: Text('Maintenance')),
-          DropdownMenuItem(value: 'RETIRED', child: Text('Retired')),
-        ],
-        onChanged: (v) => setState(() => status = v ?? status),
-      ),
-      const SizedBox(height: 12),
-      const Text('Every save records the previous and new values, server timestamp, and authenticated user.', style: TextStyle(color: muted, fontSize: 12, height: 1.35)),
-      const SizedBox(height: 12),
-      Row(children: [
-        Expanded(child: TextButton(onPressed: saving ? null : () => setState(() => editing = false), child: const Text('Cancel'))),
-        const SizedBox(width: 8),
-        Expanded(child: FilledButton.icon(onPressed: saving ? null : _saveEdit, icon: const Icon(Icons.save_outlined), label: Text(saving ? 'Saving…' : 'Save update'))),
-      ]),
+  String _label(String value) => value.replaceAll('_', ' ').replaceAll(RegExp(r'\s+'), ' ').trim().toUpperCase();
+
+  Widget _section(String title, List<Widget> children) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+    Text(title, style: const TextStyle(color: muted, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.1)),
+    const SizedBox(height: 8),
+    ...children,
+  ]);
+
+  Widget _detail(String label, Object? value) => Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Expanded(child: Text(label, style: const TextStyle(color: muted, fontSize: 12))),
+      const SizedBox(width: 12),
+      Expanded(child: Text(value?.toString() ?? '—', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12), textAlign: TextAlign.right)),
     ]),
   );
+
+  Widget _editPanel() => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+    const Text('UPDATE COMPONENT', style: TextStyle(color: muted, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.1)),
+    const SizedBox(height: 10),
+    TextField(controller: serial, decoration: const InputDecoration(labelText: 'Serial number')),
+    const SizedBox(height: 10),
+    TextField(controller: type, decoration: const InputDecoration(labelText: 'Component type')),
+    const SizedBox(height: 10),
+    TextField(controller: manufacturer, decoration: const InputDecoration(labelText: 'Manufacturer')),
+    const SizedBox(height: 10),
+    DropdownButtonFormField<String>(value: status, decoration: const InputDecoration(labelText: 'Status'), items: const [
+      DropdownMenuItem(value: 'OPERATIONAL', child: Text('Operational')),
+      DropdownMenuItem(value: 'MAINTENANCE', child: Text('Maintenance')),
+      DropdownMenuItem(value: 'RETIRED', child: Text('Retired')),
+      DropdownMenuItem(value: 'SUSPENDED', child: Text('Suspended')),
+    ], onChanged: saving ? null : (value) { if (value != null) setState(() => status = value); }),
+    const SizedBox(height: 10),
+    DropdownButtonFormField<String?>(value: selectedAircraft, decoration: const InputDecoration(labelText: 'Aircraft'), items: [
+      const DropdownMenuItem<String?>(value: null, child: Text('Unassigned')),
+      ...aircraft.map((item) => DropdownMenuItem<String?>(value: item.id.toString(), child: Text(item.registration))),
+    ], onChanged: saving ? null : (value) => setState(() => selectedAircraft = value)),
+    const SizedBox(height: 12),
+    Row(children: [
+      Expanded(child: OutlinedButton(onPressed: saving ? null : () => setState(() => editing = false), child: const Text('Cancel'))),
+      const SizedBox(width: 10),
+      Expanded(child: FilledButton(onPressed: saving ? null : _saveEdit, child: Text(saving ? 'Saving…' : 'Save update'))),
+    ]),
+  ]);
 
   Widget _historySection(Object? rawId) {
     final id = rawId is num ? rawId.toInt() : null;
-    return Container(
-      decoration: BoxDecoration(border: Border.all(color: Theme.of(context).dividerColor), borderRadius: BorderRadius.circular(16)),
-      child: ExpansionTile(
-        leading: const Icon(Icons.history),
-        title: const Text('Update history', style: TextStyle(fontWeight: FontWeight.w800)),
-        subtitle: Text(history.isEmpty ? 'View before-and-after changes' : '${history.length} recorded update${history.length == 1 ? '' : 's'}'),
-        onExpansionChanged: (open) { if (open && id != null && history.isEmpty) _loadHistory(id); },
-        children: [
-          if (loadingHistory) const Padding(padding: EdgeInsets.all(20), child: Center(child: CircularProgressIndicator())),
-          if (!loadingHistory && history.isEmpty) const Padding(padding: EdgeInsets.fromLTRB(16, 0, 16, 16), child: Align(alignment: Alignment.centerLeft, child: Text('No component updates have been recorded yet.', style: TextStyle(color: muted)))),
-          for (final item in history) _historyItem(item),
-        ],
-      ),
+    if (id == null) return const SizedBox.shrink();
+    return ExpansionTile(
+      tilePadding: EdgeInsets.zero,
+      title: const Text('Update history', style: TextStyle(fontWeight: FontWeight.w800)),
+      onExpansionChanged: (open) { if (open && history.isEmpty) _loadHistory(id); },
+      children: [
+        if (loadingHistory) const Padding(padding: EdgeInsets.all(12), child: CircularProgressIndicator(color: accent)),
+        if (!loadingHistory && history.isEmpty) const Padding(padding: EdgeInsets.all(12), child: Align(alignment: Alignment.centerLeft, child: Text('No updates recorded.', style: TextStyle(color: muted)))),
+        ...history.map((item) => ListTile(contentPadding: EdgeInsets.zero, title: Text(item.action, style: const TextStyle(fontWeight: FontWeight.w700)), subtitle: Text('${item.actorName ?? 'System'} · ${item.createdAt}', style: const TextStyle(color: muted, fontSize: 11)))),
+      ],
     );
   }
-
-  Widget _historyItem(ComponentUpdateHistory item) {
-    final changes = <String>[];
-    void addChange(String label, Object? oldValue, Object? newValue) {
-      final oldText = oldValue?.toString() ?? 'Unassigned';
-      final newText = newValue?.toString() ?? 'Unassigned';
-      if (oldText != newText) changes.add('$label: $oldText → $newText');
-    }
-    addChange('Serial', item.previousSerial, item.serial);
-    addChange('Type', item.previousType, item.type);
-    addChange('Manufacturer', item.previousManufacturer, item.manufacturer);
-    addChange('Status', item.previousStatus, item.status);
-    addChange('Aircraft ID', item.previousAircraftId, item.aircraftId);
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: soft, borderRadius: BorderRadius.circular(14)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          const Icon(Icons.history_toggle_off, size: 19, color: accent),
-          const SizedBox(width: 8),
-          Expanded(child: Text('${item.serial} · ${item.type}', style: const TextStyle(fontWeight: FontWeight.w800))),
-          Flexible(child: Text(item.updatedAt, style: const TextStyle(color: muted, fontSize: 11), textAlign: TextAlign.right)),
-        ]),
-        const SizedBox(height: 6),
-        Text(item.userName?.trim().isNotEmpty == true ? 'Updated by ${item.userName}' : 'Updated by user #${item.userId}', style: const TextStyle(color: muted, fontSize: 12)),
-        const SizedBox(height: 10),
-        if (changes.isEmpty) const Text('No field-level differences detected.', style: TextStyle(color: muted, fontSize: 12)) else ...[
-          const Text('CHANGES', style: TextStyle(color: accent, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
-          const SizedBox(height: 6),
-          for (final change in changes) Padding(padding: const EdgeInsets.only(bottom: 5), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text('• ', style: TextStyle(color: accent, fontWeight: FontWeight.w900)), Expanded(child: Text(change, style: const TextStyle(fontSize: 12, height: 1.35)))])),
-        ],
-      ]),
-    );
-  }
-
-  Widget _section(String title, List<Widget> rows) => Container(width: double.infinity, padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: soft, borderRadius: BorderRadius.circular(16)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(color: accent, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.1)), const SizedBox(height: 10), ...rows]));
-  Widget _detail(String label, Object? value) => Padding(padding: const EdgeInsets.only(bottom: 8), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [SizedBox(width: 112, child: Text(label, style: const TextStyle(color: muted, fontSize: 12))), const SizedBox(width: 8), Expanded(child: Text('${value ?? '—'}', style: const TextStyle(fontWeight: FontWeight.w700, height: 1.3)))]));
-  String _label(String value) { final text = value.replaceAll('_', ' '); return text.isEmpty ? text : text[0].toUpperCase() + text.substring(1); }
 }
