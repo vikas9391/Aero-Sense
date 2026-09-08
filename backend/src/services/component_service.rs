@@ -1,6 +1,14 @@
-use crate::{db::DbPool, errors::AppError, models::{Aircraft, AircraftWithComponents, Component, ComponentResponse, CreateAircraftRequest, CreateComponentRequest}};
+use crate::{
+    db::DbPool,
+    errors::AppError,
+    models::{
+        Aircraft, AircraftWithComponents, Component, ComponentResponse, ComponentUpdateHistory,
+        CreateAircraftRequest, CreateComponentRequest, UpdateComponentRequest,
+    },
+};
 
 pub struct ComponentService;
+
 impl ComponentService {
     pub async fn create_aircraft(pool: &DbPool, company_id: i64, req: CreateAircraftRequest) -> Result<Aircraft, AppError> {
         let aircraft_uuid = uuid::Uuid::new_v4().to_string();
@@ -38,6 +46,32 @@ impl ComponentService {
                 AppError::DatabaseError(e)
             })?;
         Self::get_component_by_id(pool, company_id, id).await
+    }
+
+    pub async fn update_component(pool: &DbPool, company_id: i64, user_id: i64, id: i64, req: UpdateComponentRequest) -> Result<ComponentResponse, AppError> {
+        if let Some(aircraft_id) = req.aircraft_id {
+            let owned: Option<(i64,)> = sqlx::query_as("SELECT id FROM aircraft WHERE id = $1 AND company_id = $2").bind(aircraft_id).bind(company_id).fetch_optional(pool).await?;
+            if owned.is_none() { return Err(AppError::NotFound("Aircraft not found".to_string())); }
+        }
+        let updated = sqlx::query_as::<_, Component>("UPDATE components SET aircraft_id = $1, serial_number = $2, component_type = $3, manufacturer = $4, status = $5, updated_at = CURRENT_TIMESTAMP::text WHERE id = $6 AND company_id = $7 RETURNING *")
+            .bind(req.aircraft_id).bind(&req.serial_number).bind(&req.component_type).bind(&req.manufacturer).bind(&req.status).bind(id).bind(company_id)
+            .fetch_optional(pool).await.map_err(|e| {
+                if let sqlx::Error::Database(db) = &e { if db.code().as_deref() == Some("23505") { return AppError::Conflict("Component with this serial number already exists".to_string()); } }
+                AppError::DatabaseError(e)
+            })?.ok_or(AppError::ComponentNotFound)?;
+
+        sqlx::query("INSERT INTO component_update_history (component_id, user_id, serial_number, component_type, manufacturer, status, aircraft_id, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP::text)")
+            .bind(id).bind(user_id).bind(&updated.serial_number).bind(&updated.component_type).bind(&updated.manufacturer).bind(&updated.status).bind(updated.aircraft_id)
+            .execute(pool).await?;
+
+        Self::get_component_by_id(pool, company_id, id).await
+    }
+
+    pub async fn update_history(pool: &DbPool, company_id: i64, id: i64) -> Result<Vec<ComponentUpdateHistory>, AppError> {
+        let exists: Option<(i64,)> = sqlx::query_as("SELECT id FROM components WHERE id = $1 AND company_id = $2").bind(id).bind(company_id).fetch_optional(pool).await?;
+        if exists.is_none() { return Err(AppError::ComponentNotFound); }
+        Ok(sqlx::query_as("SELECT h.* FROM component_update_history h JOIN components c ON c.id = h.component_id WHERE h.component_id = $1 AND c.company_id = $2 ORDER BY h.id DESC")
+            .bind(id).bind(company_id).fetch_all(pool).await?)
     }
 
     pub async fn list_components(pool: &DbPool, company_id: i64) -> Result<Vec<ComponentResponse>, AppError> {
