@@ -11,7 +11,7 @@ pub mod verification;
 
 use crate::{config::Config, db::DbPool, middleware::LoginRateLimiter, services::blockchain_service::BlockchainService};
 use axum::http::{HeaderValue, Method};
-use axum::{routing::{get, post, put}, Extension, Router};
+use axum::{routing::{delete, get, post, put}, Extension, Router};
 use std::sync::Arc;
 use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
@@ -39,6 +39,8 @@ pub fn create_router(pool: DbPool, config: Config, blockchain: BlockchainService
         .route("/api/analytics/overview", get(analytics::get_overview))
         .route("/api/users", post(users::create_user))
         .route("/api/users", get(users::list_users))
+        .route("/api/users/:id", get(users::get_user_profile).delete(users::delete_user))
+        .route("/api/users/:id/status", put(users::update_user_status))
         .route("/api/aircraft", post(aircraft::create_aircraft))
         .route("/api/aircraft", get(aircraft::list_aircraft))
         .route("/api/aircraft/:id", get(aircraft::get_aircraft))
