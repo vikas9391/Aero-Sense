@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, ScanLine, Plane, Cpu, Wrench, ShieldAlert, User, Users, BarChart3, Building2, Nfc, ChevronRight, Smartphone } from 'lucide-react';
+import { LayoutDashboard, ScanLine, Plane, Cpu, Wrench, ShieldAlert, User, Users, BarChart3, Building2, Nfc, ChevronRight, Smartphone, LogOut } from 'lucide-react';
 
 type NavItem = { to: string; label: string; icon: React.ComponentType<{ className?: string }>; highlight?: boolean };
 
@@ -20,7 +20,7 @@ const NavGroup: React.FC<{ title: string; items: NavItem[] }> = ({ title, items 
 );
 
 export const Sidebar: React.FC = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const role = user?.role;
   const isSuperAdmin = role === 'SUPER_ADMIN';
   const isCompanyAdmin = role === 'COMPANY_ADMIN';
@@ -29,7 +29,29 @@ export const Sidebar: React.FC = () => {
   const canAudit = isCompanyAdmin || role === 'INSPECTOR';
   const shell = 'w-[17rem] shrink-0 bg-[#f7fafb]/90 border-r border-white p-4 flex flex-col justify-between sticky top-[65px] h-[calc(100vh-65px)] overflow-y-auto backdrop-blur-xl';
 
-  if (isSuperAdmin) return <aside className={shell}><div className="space-y-7"><NavGroup title="Platform Administration" items={[{ to: '/companies', label: 'Companies', icon: Building2 }, { to: '/profile', label: 'My Profile', icon: User }]} /></div><AppDownloadCard /></aside>;
+  if (isSuperAdmin) return <aside className={shell}>
+    <div className="flex min-h-full flex-col">
+      <div className="space-y-7">
+        <NavGroup title="Platform Administration" items={[{ to: '/companies', label: 'Companies', icon: Building2 }, { to: '/profile', label: 'My Profile', icon: User }]} />
+      </div>
+      <div className="mt-auto space-y-3 pt-6">
+        <AppDownloadCard />
+        <div className="rounded-2xl border border-indigo-100 bg-white/90 p-3 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 via-blue-600 to-violet-600 text-sm font-extrabold text-white shadow-md shadow-indigo-200">SA</div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-bold text-ink">Super Admin</div>
+              <div className="mt-0.5 text-[9px] font-extrabold uppercase tracking-[.14em] text-accent">SUPER ADMIN</div>
+            </div>
+          </div>
+          <button type="button" onClick={logout} className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-blue-50 to-violet-50 px-3 py-2.5 text-xs font-bold text-accent transition-all hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-md hover:shadow-indigo-100">
+            <LogOut className="h-4 w-4" />
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </aside>;
 
   const coreItems: NavItem[] = [
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
