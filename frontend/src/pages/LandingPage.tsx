@@ -17,7 +17,6 @@ import { SecuritySection } from '../components/landing/SecuritySection';
 import { FinalCTA } from '../components/landing/FinalCTA';
 import { Footer } from '../components/landing/Footer';
 import { SectionProgress } from '../components/landing/SectionProgress';
-import { AircraftCursor } from '../components/ui/aircraft-cursor';
 
 export const LandingPage: React.FC = () => {
   useLayoutEffect(() => {
@@ -28,7 +27,6 @@ export const LandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f7fafb] font-body text-ink">
-      <AircraftCursor />
       <LandingNav />
       <Hero />
       <SectionProgress />
