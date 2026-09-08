@@ -66,7 +66,7 @@ pub async fn demo_super_admin_login(
     limiter.check(&rate_limit_key)?;
 
     let req = LoginRequest {
-        company_name: AuthService::SUPER_ADMIN_COMPANY_NAME.to_string(),
+        company_name: crate::services::auth_service::SUPER_ADMIN_COMPANY_NAME.to_string(),
         email: config.super_admin_email.clone(),
         password: config.super_admin_password.clone(),
     };
