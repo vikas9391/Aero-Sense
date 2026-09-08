@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'theme.dart';
 
-/// The single Aero-Sense brand mark used throughout the mobile application.
-/// It intentionally matches the aircraft icon shown on the login screen.
+/// Shared Aero-Sense brand mark. The aircraft, tracking arc and NFC waves
+/// mirror the approved app/website identity and scale cleanly from navigation
+/// size to splash/login size.
 class AeroLogo extends StatelessWidget {
   final double size;
   final bool boxed;
@@ -11,23 +12,76 @@ class AeroLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconSize = size * .5;
-    if (!boxed) return Icon(Icons.flight_takeoff_rounded, size: iconSize, color: accent);
+    if (!boxed) {
+      return SizedBox(
+        width: size,
+        height: size,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            CustomPaint(size: Size.square(size), painter: _AeroRadarPainter()),
+            Icon(Icons.flight_takeoff_rounded, size: size * .58, color: const Color(0xFF1E3A8A)),
+          ],
+        ),
+      );
+    }
 
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: panel,
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFFFFFFF), Color(0xFFF1F4FF), Color(0xFFDCE5FF)],
+        ),
         borderRadius: BorderRadius.circular(size * .30),
-        border: Border.all(color: line),
+        border: Border.all(color: const Color(0xFFD9DEF2)),
         boxShadow: const [
-          BoxShadow(color: Color(0x12000000), blurRadius: 14, offset: Offset(0, 5)),
+          BoxShadow(color: Color(0x18000000), blurRadius: 16, offset: Offset(0, 6)),
         ],
       ),
-      child: Icon(Icons.flight_takeoff_rounded, size: iconSize, color: accent),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          CustomPaint(size: Size.square(size), painter: _AeroRadarPainter()),
+          Icon(Icons.flight_takeoff_rounded, size: size * .52, color: const Color(0xFF1E3A8A)),
+        ],
+      ),
     );
   }
+}
+
+class _AeroRadarPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = size.shortestSide;
+    final center = Offset(s * .53, s * .54);
+
+    final arcPaint = Paint()
+      ..color = const Color(0xFF3157CF)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = s * .055
+      ..strokeCap = StrokeCap.round;
+    canvas.drawArc(
+      Rect.fromCircle(center: Offset(s * .49, s * .48), radius: s * .32),
+      -2.72,
+      2.25,
+      false,
+      arcPaint,
+    );
+
+    final wavePaint = Paint()
+      ..color = const Color(0xFF8FA9F8)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = s * .045
+      ..strokeCap = StrokeCap.round;
+    canvas.drawArc(Rect.fromCircle(center: Offset(center.dx, s * .69), radius: s * .20), .25, 2.65, false, wavePaint);
+    canvas.drawArc(Rect.fromCircle(center: Offset(center.dx, s * .70), radius: s * .13), .25, 2.65, false, wavePaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class CardBox extends StatelessWidget {
