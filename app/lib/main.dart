@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app_router.dart';
 import 'theme.dart';
+import 'widgets.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,19 +44,7 @@ class SplashScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  width: 76,
-                  height: 76,
-                  decoration: BoxDecoration(
-                    color: panel,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: line),
-                    boxShadow: const [
-                      BoxShadow(color: Color(0x16000000), blurRadius: 24, offset: Offset(0, 10)),
-                    ],
-                  ),
-                  child: const Icon(Icons.flight_takeoff_rounded, size: 38, color: accent),
-                ),
+                const AeroLogo(size: 76),
                 const SizedBox(height: 20),
                 const Text('AERO-SENSE', style: TextStyle(fontSize: 21, fontWeight: FontWeight.w900, letterSpacing: 2)),
                 const SizedBox(height: 6),
