@@ -17,16 +17,26 @@ class CompanyManagementScreen extends StatefulWidget {
 class _CompanyManagementState extends State<CompanyManagementScreen> {
   List<CompanySummary> companies = [];
   bool loading = true;
+  bool creatingCompany = false;
   String? error;
 
-  Future<void> load() async {
-    if (mounted) setState(() { loading = true; error = null; });
+  Future<void> load({bool showLoader = true}) async {
+    if (showLoader && mounted && companies.isEmpty) setState(() { loading = true; error = null; });
     try {
-      companies = await api.companies();
+      final result = await api.companies();
+      if (!mounted) return;
+      setState(() {
+        companies = result;
+        loading = false;
+        error = null;
+      });
     } catch (e) {
-      error = api.errorMessage(e);
+      if (!mounted) return;
+      setState(() {
+        loading = false;
+        error = api.errorMessage(e);
+      });
     }
-    if (mounted) setState(() => loading = false);
   }
 
   @override
@@ -36,14 +46,42 @@ class _CompanyManagementState extends State<CompanyManagementScreen> {
   }
 
   Future<void> createCompany() async {
+    if (creatingCompany) return;
     final name = await _textDialog(title: 'Onboard New Company', label: 'Company Name', hint: 'e.g. Falcon Airlines');
-    if (name == null || name.trim().isEmpty) return;
+    if (!mounted || name == null || name.trim().isEmpty) return;
+    setState(() { creatingCompany = true; error = null; });
     try {
-      await api.createCompany(name.trim());
-      await load();
-      if (mounted) _message('Company created successfully.');
+      final created = await api.createCompany(name.trim());
+      if (!mounted) return;
+      // Put the newly-created company on screen immediately. This prevents
+      // the page from going blank while the statistics refresh in the background.
+      setState(() {
+        companies = [
+          CompanySummary(
+            id: created.id,
+            uuid: created.uuid,
+            name: created.name,
+            slug: created.slug,
+            status: created.status,
+            createdAt: created.createdAt,
+            updatedAt: created.updatedAt,
+            userCount: 0,
+            aircraftCount: 0,
+            componentCount: 0,
+            maintenanceCount: 0,
+            verificationCount: 0,
+          ),
+          ...companies.where((c) => c.id != created.id),
+        ];
+        loading = false;
+      });
+      _message('Company created successfully.');
+      // Refresh counts without replacing the existing page with a loader.
+      await load(showLoader: false);
     } catch (e) {
       if (mounted) _message(api.errorMessage(e), error: true);
+    } finally {
+      if (mounted) setState(() => creatingCompany = false);
     }
   }
 
@@ -52,7 +90,7 @@ class _CompanyManagementState extends State<CompanyManagementScreen> {
     if (values == null) return;
     try {
       await api.createCompanyAdmin(company.id, values[0], values[1], values[2]);
-      await load();
+      await load(showLoader: false);
       if (mounted) _message('Company admin created successfully.');
     } catch (e) {
       if (mounted) _message(api.errorMessage(e), error: true);
@@ -75,7 +113,7 @@ class _CompanyManagementState extends State<CompanyManagementScreen> {
     if (confirmed != true) return;
     try {
       await api.updateCompanyStatus(company.id, next);
-      await load();
+      await load(showLoader: false);
     } catch (e) {
       if (mounted) _message(api.errorMessage(e), error: true);
     }
@@ -100,7 +138,7 @@ class _CompanyManagementState extends State<CompanyManagementScreen> {
 
   @override
   Widget build(BuildContext context) => RefreshIndicator(
-        onRefresh: load,
+        onRefresh: () => load(showLoader: false),
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 18, 20, 110),
           children: [
@@ -108,12 +146,12 @@ class _CompanyManagementState extends State<CompanyManagementScreen> {
             const SizedBox(height: 4),
             Row(children: [
               const Expanded(child: Text('Companies', style: TextStyle(fontSize: 27, fontWeight: FontWeight.w800))),
-              IconButton.filled(onPressed: createCompany, icon: const Icon(Icons.add_business_outlined), tooltip: 'Onboard company'),
+              IconButton.filled(onPressed: creatingCompany ? null : createCompany, icon: creatingCompany ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.add_business_outlined), tooltip: 'Onboard company'),
             ]),
             const SizedBox(height: 5),
             const Text('Onboard companies, provision their first admin, view employees and control tenant access.', style: TextStyle(color: muted, height: 1.4)),
             const SizedBox(height: 18),
-            if (error != null) CardBox(child: Text(error!, style: const TextStyle(color: Colors.red))),
+            if (error != null) CardBox(child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Expanded(child: Text(error!, style: const TextStyle(color: Colors.red))), IconButton(onPressed: () => load(showLoader: false), icon: const Icon(Icons.refresh))])),
             if (loading)
               const Padding(padding: EdgeInsets.all(30), child: Center(child: CircularProgressIndicator(color: accent)))
             else if (companies.isEmpty)
@@ -124,7 +162,7 @@ class _CompanyManagementState extends State<CompanyManagementScreen> {
                 const SizedBox(height: 5),
                 const Text('Create the first company to get started.', style: TextStyle(color: muted)),
                 const SizedBox(height: 14),
-                FilledButton.icon(onPressed: createCompany, icon: const Icon(Icons.add), label: const Text('Create Company')),
+                FilledButton.icon(onPressed: creatingCompany ? null : createCompany, icon: const Icon(Icons.add), label: const Text('Create Company')),
               ]))
             else
               ...companies.map(_companyCard),
