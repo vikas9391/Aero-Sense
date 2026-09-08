@@ -190,7 +190,8 @@ class _RegisterTagState extends State<RegisterTagScreen> {
   }
 
   Future<bool> _ensureNfcReady() async {
-    if (await NfcManager.instance.checkAvailability() == NfcAvailability.enabled) return true;
+    final availability = await NfcManager.instance.checkAvailability();
+    if (availability == Availability.enabled) return true;
     if (!mounted) return false;
     final open = await showDialog<bool>(
       context: context,
