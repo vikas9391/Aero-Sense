@@ -48,6 +48,7 @@ pub struct User {
     pub role: String,
     pub company_id: Option<i64>,
     pub created_at: String,
+    pub status: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -59,6 +60,7 @@ pub struct UserResponse {
     pub role: String,
     pub company_id: Option<i64>,
     pub created_at: String,
+    pub status: String,
 }
 
 impl From<User> for UserResponse {
@@ -71,8 +73,22 @@ impl From<User> for UserResponse {
             role: u.role,
             company_id: u.company_id,
             created_at: u.created_at,
+            status: u.status,
         }
     }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserProfileResponse {
+    pub user: UserResponse,
+    pub company_name: Option<String>,
+    pub maintenance_count: i64,
+    pub component_update_count: i64,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct UpdateUserStatusRequest {
+    pub status: String,
 }
 
 #[derive(Debug, Deserialize)]
