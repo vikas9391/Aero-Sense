@@ -23,6 +23,28 @@ pub struct CreateComponentRequest {
     pub status: Option<String>,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct UpdateComponentRequest {
+    pub aircraft_id: Option<i64>,
+    pub serial_number: String,
+    pub component_type: String,
+    pub manufacturer: String,
+    pub status: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct ComponentUpdateHistory {
+    pub id: i64,
+    pub component_id: i64,
+    pub user_id: i64,
+    pub serial_number: String,
+    pub component_type: String,
+    pub manufacturer: String,
+    pub status: String,
+    pub aircraft_id: Option<i64>,
+    pub updated_at: String,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ComponentResponse {
     pub id: i64,
