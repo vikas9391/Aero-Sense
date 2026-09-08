@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion';
-import { useRef } from 'react';
 
 const STAGES = [
   { label: 'Manufactured', body: 'The component is produced and given a base identity record.' },
@@ -11,72 +10,59 @@ const STAGES = [
   { label: 'Verified', body: 'Authorized organizations can verify its full history.' },
 ];
 
+const EASE = [0.16, 1, 0.3, 1] as const;
+
 export const TraceabilityTimeline: React.FC = () => {
   const listRef = useRef<HTMLDivElement>(null);
-
-  // Primary driver: scroll progress through the list itself. 'start
-  // center' -> 'end center' means the mapped index tracks whichever
-  // stage is nearest the viewport's vertical center as the user scrolls,
-  // independent of any pointer/keyboard interaction.
-  const { scrollYProgress } = useScroll({
-    target: listRef,
-    offset: ['start center', 'end center'],
-  });
+  const { scrollYProgress } = useScroll({ target: listRef, offset: ['start center', 'end center'] });
   const scrollStageMV = useTransform(scrollYProgress, [0, 1], [0, STAGES.length - 1]);
-
   const [scrollIndex, setScrollIndex] = useState(0);
-  useMotionValueEvent(scrollStageMV, 'change', (v) => {
-    const clamped = Math.min(STAGES.length - 1, Math.max(0, Math.round(v)));
-    setScrollIndex((cur) => (cur === clamped ? cur : clamped));
-  });
-
-  // Secondary override: hover/focus, exactly as before. When present it
-  // wins over the scroll-driven value; clearing it (mouse leave / blur)
-  // falls back to whatever the scroll position currently indicates.
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const activeIndex = hoverIndex ?? scrollIndex;
 
+  useMotionValueEvent(scrollStageMV, 'change', (value) => {
+    const next = Math.min(STAGES.length - 1, Math.max(0, Math.round(value)));
+    setScrollIndex((current) => (current === next ? current : next));
+  });
+
   return (
-    <section id="traceability" className="bg-[var(--bg-app)] px-6 py-28 text-ink md:px-10">
+    <section id="traceability" className="bg-white px-6 py-24 md:px-10 md:py-28">
       <div className="mx-auto max-w-[1400px]">
-        <motion.h2
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="max-w-2xl font-display text-[2.75rem] font-semibold leading-[1.05] tracking-tight sm:text-[3.5rem]"
+          transition={{ duration: 0.7, ease: EASE }}
         >
-          From component to complete lifecycle.
-        </motion.h2>
+          <span className="inline-flex rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1.5 font-body text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-600">
+            Lifecycle traceability
+          </span>
+          <h2 className="mt-5 max-w-2xl font-display text-[2.75rem] font-semibold leading-[1.05] tracking-tight text-ink sm:text-[3.5rem]">
+            From component to complete lifecycle.
+          </h2>
+        </motion.div>
 
-        <div ref={listRef} className="mt-20 flex flex-col">
+        <div ref={listRef} className="mt-14 flex flex-col rounded-[26px] border border-indigo-100 bg-[var(--bg-app)] p-2 shadow-[0_20px_60px_rgba(79,70,229,.07)] md:mt-20 md:p-4">
           {STAGES.map((stage, i) => (
             <motion.button
               key={stage.label}
+              type="button"
               initial={{ opacity: 0, x: -12 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: '-60px' }}
-              transition={{ duration: 0.55, delay: i * 0.05, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.55, delay: i * 0.05, ease: EASE }}
               onMouseEnter={() => setHoverIndex(i)}
               onMouseLeave={() => setHoverIndex(null)}
               onFocus={() => setHoverIndex(i)}
               onBlur={() => setHoverIndex(null)}
-              className="group flex items-center gap-6 border-t border-pebble py-6 text-left last:border-b"
+              className="group flex items-center gap-4 rounded-2xl border-b border-indigo-100 px-4 py-5 text-left last:border-b-0 hover:bg-white/70 md:gap-6 md:px-6 md:py-6"
             >
-              <span className="font-body text-xs text-ash">0{i + 1}</span>
-              <span
-                className={`h-2 w-2 shrink-0 rounded-full border border-pebble transition-colors duration-300 ${
-                  activeIndex === i ? 'bg-ink border-ink' : 'bg-transparent'
-                }`}
-              />
-              <span className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
+              <span className={`font-mono text-xs transition-colors duration-300 ${activeIndex === i ? 'text-indigo-600' : 'text-ash/60'}`}>0{i + 1}</span>
+              <span className={`h-2.5 w-2.5 shrink-0 rounded-full border transition-all duration-300 ${activeIndex === i ? 'scale-110 border-blue-600 bg-blue-600 shadow-[0_0_0_5px_rgba(37,99,235,.10)]' : 'border-indigo-200 bg-white'}`} />
+              <span className={`font-display text-2xl font-semibold tracking-tight transition-colors duration-300 sm:text-3xl ${activeIndex === i ? 'text-ink' : 'text-ink/55 group-hover:text-ink/80'}`}>
                 {stage.label}
               </span>
-              <span
-                className={`ml-auto hidden max-w-sm font-body text-sm text-ash transition-opacity duration-300 md:block ${
-                  activeIndex === i ? 'opacity-100' : 'opacity-0'
-                }`}
-              >
+              <span className={`ml-auto hidden max-w-sm font-body text-sm leading-relaxed text-ash transition-opacity duration-300 md:block ${activeIndex === i ? 'opacity-100' : 'opacity-0'}`}>
                 {stage.body}
               </span>
             </motion.button>
