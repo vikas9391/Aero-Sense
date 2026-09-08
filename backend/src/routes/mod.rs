@@ -23,7 +23,6 @@ pub fn create_router(pool: DbPool, config: Config, blockchain: BlockchainService
     crate::middleware::rate_limit::spawn_cleanup_task(login_rate_limiter.clone());
     let config_arc = Arc::new(config);
     let blockchain_arc = Arc::new(blockchain);
-
     Router::new()
         .route("/health", get(health::health_check))
         .route("/api/auth/login", post(auth::login))
@@ -41,6 +40,7 @@ pub fn create_router(pool: DbPool, config: Config, blockchain: BlockchainService
         .route("/api/users", get(users::list_users))
         .route("/api/users/:id", get(users::get_user_profile).delete(users::delete_user))
         .route("/api/users/:id/status", put(users::update_user_status))
+        .route("/api/users/:id/role", put(users::update_user_role))
         .route("/api/aircraft", post(aircraft::create_aircraft))
         .route("/api/aircraft", get(aircraft::list_aircraft))
         .route("/api/aircraft/:id", get(aircraft::get_aircraft))
@@ -57,10 +57,5 @@ pub fn create_router(pool: DbPool, config: Config, blockchain: BlockchainService
         .route("/api/verification/logs", get(verification::list_verifications))
         .route("/api/components/:id/verification", get(verification::get_component_verifications))
         .route("/api/blockchain/verify", post(verification::verify_blockchain_record))
-        .layer(Extension(config_arc))
-        .layer(Extension(blockchain_arc))
-        .layer(Extension(login_rate_limiter))
-        .layer(cors)
-        .layer(TraceLayer::new_for_http())
-        .with_state(pool)
+        .layer(Extension(config_arc)).layer(Extension(blockchain_arc)).layer(Extension(login_rate_limiter)).layer(cors).layer(TraceLayer::new_for_http()).with_state(pool)
 }
