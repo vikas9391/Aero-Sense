@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { usersApi } from '../services/api';
 import { User, UserRole } from '../types';
-import { UserPlus, AlertCircle, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { UserPlus, AlertCircle, ShieldCheck } from 'lucide-react';
 import { PasswordInput } from '../components/PasswordInput';
 import { UserActionMenu } from '../components/UserActionMenu';
 import { useToast } from '../context/ToastContext';
@@ -10,81 +10,92 @@ import { Card, CardHeader } from '../components/ui/Card';
 import { Badge, BadgeTone } from '../components/ui/Badge';
 
 const ROLES: UserRole[] = ['COMPANY_ADMIN', 'MANUFACTURER', 'MAINTENANCE_TECHNICIAN', 'INSPECTOR', 'VIEWER'];
-const statusTone = (status: User['status']): BadgeTone => status === 'ACTIVE' ? 'verified' : status === 'SUSPENDED' ? 'warning' : 'critical';
 
-export const UsersPage: React.FC = () => {
+export default function UsersPage() {
+  const { showToast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const { showToast } = useToast();
+  const [showCreate, setShowCreate] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<UserRole>('VIEWER');
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [creating, setCreating] = useState(false);
 
-  const loadUsers = () => {
+  const load = async () => {
     setLoading(true);
-    usersApi.list().then(setUsers).catch((err) => {
-      console.error(err);
-      showToast("Couldn't load the user list. Please refresh the page.", 'error');
-    }).finally(() => setLoading(false));
-  };
-
-  useEffect(() => { loadUsers(); }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); setError(null); setSuccess(null); setSubmitting(true);
     try {
-      const created = await usersApi.create({ name, email, password, role });
-      setSuccess(`User created — ID #${created.id} (${created.email})`);
-      setName(''); setEmail(''); setPassword(''); setRole('VIEWER'); loadUsers();
-    } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Failed to create user');
-    } finally { setSubmitting(false); }
+      setUsers(await usersApi.list());
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Failed to load users', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const replaceUser = (updated: User) => setUsers((current) => current.map((item) => item.id === updated.id ? updated : item));
+  useEffect(() => { void load(); }, []);
+
+  const create = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setCreating(true);
+    try {
+      await usersApi.create({ name, email, password, role });
+      showToast('User created successfully', 'success');
+      setName(''); setEmail(''); setPassword(''); setRole('VIEWER'); setShowCreate(false);
+      await load();
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Failed to create user', 'error');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const statusTone = (status: string): BadgeTone => status === 'ACTIVE' ? 'success' : status === 'SUSPENDED' ? 'warning' : 'danger';
 
   return (
-    <div className="space-y-8">
-      <PageHeader eyebrow="Team & Access" title="User Management" />
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-1 p-6 h-fit space-y-6">
-          <CardHeader title="Add New User" icon={UserPlus} />
-          {error && <div className="flex items-center gap-3 rounded-xl bg-[#fbeceb]/60 p-3 text-xs text-[#b13a2f] border border-[#f0cbc7]"><AlertCircle className="h-4 w-4 shrink-0" /><span>{error}</span></div>}
-          {success && <div className="flex items-center gap-3 rounded-xl bg-[#e9f6ef]/60 p-3 text-xs text-[#0a7a4c] border border-[#c9e8d7]"><CheckCircle2 className="h-4 w-4 shrink-0" /><span>{success}</span></div>}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2"><label className="aero-eyebrow text-[10px]">Full Name</label><input type="text" required value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Jane Doe" className="w-full rounded-xl border border-pebble bg-white px-4 py-2.5 text-sm text-ink placeholder-ash focus:border-ink focus:outline-none" /></div>
-            <div className="space-y-2"><label className="aero-eyebrow text-[10px]">Email</label><input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="e.g. jane@aircraft.com" className="w-full rounded-xl border border-pebble bg-white px-4 py-2.5 text-sm text-ink placeholder-ash focus:border-ink focus:outline-none" /></div>
-            <div className="space-y-2"><label className="aero-eyebrow text-[10px]">Password</label><PasswordInput value={password} onChange={setPassword} required minLength={8} placeholder="Min. 8 characters" mono /></div>
-            <div className="space-y-2"><label className="aero-eyebrow text-[10px]">Role</label><select value={role} onChange={(e) => setRole(e.target.value as UserRole)} className="w-full rounded-xl border border-pebble bg-white px-4 py-2.5 text-sm text-ink focus:border-ink focus:outline-none">{ROLES.map((r) => <option key={r} value={r}>{r.replaceAll('_', ' ')}</option>)}</select></div>
-            <button type="submit" disabled={submitting} className="pill-btn pill-btn-primary w-full text-sm disabled:opacity-50">{submitting ? 'Creating...' : 'Create User'}</button>
+    <div className="space-y-6">
+      <PageHeader title="Users" description="Manage accounts belonging to your company." action={<button className="btn-primary" onClick={() => setShowCreate(v => !v)}><UserPlus size={18} /> Add user</button>} />
+
+      {showCreate && (
+        <Card>
+          <CardHeader title="Create account" />
+          <form onSubmit={create} className="grid gap-4 md:grid-cols-2">
+            <input className="input" placeholder="Full name" value={name} onChange={e => setName(e.target.value)} required />
+            <input className="input" type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
+            <PasswordInput value={password} onChange={setPassword} placeholder="Password" />
+            <select className="input" value={role} onChange={e => setRole(e.target.value as UserRole)}>
+              {ROLES.map(item => <option key={item} value={item}>{item.replaceAll('_', ' ')}</option>)}
+            </select>
+            <div className="md:col-span-2 flex justify-end gap-2">
+              <button type="button" className="btn-secondary" onClick={() => setShowCreate(false)}>Cancel</button>
+              <button type="submit" className="btn-primary" disabled={creating}>{creating ? 'Creating…' : 'Create account'}</button>
+            </div>
           </form>
         </Card>
+      )}
 
-        <Card tight className="lg:col-span-2 overflow-hidden">
-          <div className="px-6 py-4 border-b border-pebble flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-ash" /><h2 className="text-sm font-semibold text-ink">Your Company's Accounts</h2></div>
-          {loading ? <div className="py-12 text-center text-ash text-sm">Loading users...</div> : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead><tr className="text-left border-b border-pebble"><th className="aero-eyebrow text-[10px] px-6 py-3">ID</th><th className="aero-eyebrow text-[10px] px-6 py-3">Name</th><th className="aero-eyebrow text-[10px] px-6 py-3">Email</th><th className="aero-eyebrow text-[10px] px-6 py-3">Role</th><th className="aero-eyebrow text-[10px] px-6 py-3">Status</th><th className="aero-eyebrow text-[10px] px-6 py-3 text-right">Actions</th></tr></thead>
-                <tbody className="divide-y divide-pebble">
-                  {users.map((u) => <tr key={u.id} className="hover:bg-[#f7f7f5]">
-                    <td className="px-6 py-3 aero-mono text-ash">#{u.id}</td>
-                    <td className="px-6 py-3 text-ink font-medium">{u.name}</td>
-                    <td className="px-6 py-3 text-ash">{u.email}</td>
-                    <td className="px-6 py-3"><span className="rounded border border-pebble bg-[#f7f7f5] px-2.5 py-1 text-xs font-semibold text-ink aero-mono">{u.role}</span></td>
-                    <td className="px-6 py-3"><Badge tone={statusTone(u.status)} mono>{u.status}</Badge></td>
-                    <td className="px-6 py-3 text-right"><div className="flex justify-end"><UserActionMenu user={u} onChanged={replaceUser} /></div></td>
-                  </tr>)}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </Card>
-      </div>
+      <Card>
+        <CardHeader title="Your Company’s Accounts" />
+        {loading ? <div className="p-8 text-center">Loading users…</div> : users.length === 0 ? (
+          <div className="p-8 text-center text-muted-foreground"><AlertCircle className="mx-auto mb-2" />No users found.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead><tr className="border-b text-left"><th className="p-3">User</th><th className="p-3">Role</th><th className="p-3">Status</th><th className="p-3 text-right">Actions</th></tr></thead>
+              <tbody>{users.map(user => (
+                <tr key={user.id} className="border-b last:border-0">
+                  <td className="p-3"><div className="font-semibold">{user.name}</div><div className="text-muted-foreground">{user.email}</div></td>
+                  <td className="p-3"><Badge>{user.role.replaceAll('_', ' ')}</Badge></td>
+                  <td className="p-3"><Badge tone={statusTone(user.status)}>{user.status}</Badge></td>
+                  <td className="p-3 text-right"><UserActionMenu user={user} onChanged={updated => setUsers(current => current.map(item => item.id === updated.id ? updated : item))} /></td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+
+      <div className="flex items-center gap-2 text-xs text-muted-foreground"><ShieldCheck size={15} /> Account deletion is handled as a soft delete so operational history is retained.</div>
     </div>
   );
-};
+}
