@@ -6,15 +6,24 @@ export type UserRole =
   | 'INSPECTOR'
   | 'VIEWER';
 
+export type UserStatus = 'ACTIVE' | 'SUSPENDED' | 'DELETED';
+
 export interface User {
   id: number;
   uuid: string;
   name: string;
   email: string;
   role: UserRole;
-  /** Null only for the platform Super Admin — every other user belongs to one company. */
   company_id: number | null;
   created_at: string;
+  status: UserStatus;
+}
+
+export interface UserProfile {
+  user: User;
+  company_name: string | null;
+  maintenance_count: number;
+  component_update_count: number;
 }
 
 export interface Company {
@@ -119,10 +128,6 @@ export interface MaintenanceRecord {
   created_at: string;
 }
 
-// Same as MaintenanceRecord, but for the company-wide listing rather than
-// a single already-known component's history — carries the component's
-// serial number/type and a technician name that can legitimately be null
-// (the join is a LEFT JOIN) so the UI can identify each row on its own.
 export interface MaintenanceRecordWithComponent {
   id: number;
   component_id: number;
@@ -172,10 +177,6 @@ export interface VerificationLog {
   created_at: string;
 }
 
-// Same as VerificationLog, but for the company-wide log stream — carries
-// the scanned component's serial number/type (both nullable: the log's
-// own component_id is nullable, and the join is a LEFT JOIN) so each row
-// can identify itself without a separate lookup per component.
 export interface VerificationLogWithComponent {
   id: number;
   component_id: number | null;
