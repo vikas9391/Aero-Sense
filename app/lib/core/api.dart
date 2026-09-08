@@ -223,6 +223,9 @@ class ComponentUpdateHistory {
   final int? previousAircraftId;
   ComponentUpdateHistory({required this.id, required this.componentId, required this.userId, required this.serial, required this.type, required this.manufacturer, required this.status, required this.updatedAt, this.aircraftId, this.previousSerial, this.previousType, this.previousManufacturer, this.previousStatus, this.previousAircraftId, this.userName, this.updateNote});
   factory ComponentUpdateHistory.fromJson(Map<String, dynamic> j) => ComponentUpdateHistory(id: j['id'] ?? 0, componentId: j['component_id'] ?? 0, userId: j['user_id'] ?? 0, serial: j['serial_number'] ?? '', type: j['component_type'] ?? '', manufacturer: j['manufacturer'] ?? '', status: j['status'] ?? '', updatedAt: j['updated_at'] ?? '', aircraftId: j['aircraft_id'], previousSerial: j['previous_serial_number'], previousType: j['previous_component_type'], previousManufacturer: j['previous_manufacturer'], previousStatus: j['previous_status'], previousAircraftId: j['previous_aircraft_id'], userName: j['user_name'], updateNote: j['update_note']);
+  String get actor => userName?.trim().isNotEmpty == true ? userName! : 'Unknown user';
+  String get summary => 'Component updated';
+  String? get note => updateNote;
 }
 
 class MaintenanceRecord {
