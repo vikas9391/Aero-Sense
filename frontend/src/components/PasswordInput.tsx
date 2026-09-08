@@ -9,36 +9,20 @@ interface PasswordInputProps {
   required?: boolean;
   minLength?: number;
   autoComplete?: string;
-  /** Shows a leading lock icon (used on the login form). */
   leadingIcon?: boolean;
-  /** Monospace text, matching the "generated password" style fields use. */
   mono?: boolean;
-  /** Slightly translucent background, matching the login card. */
   translucent?: boolean;
 }
 
-/**
- * A password field with a show/hide toggle. Visual styling intentionally
- * mirrors the plain <input type="password"> fields used across the app so it
- * drops in as a straight replacement.
- */
 export const PasswordInput: React.FC<PasswordInputProps> = ({
-  id,
-  value,
-  onChange,
-  placeholder,
-  required,
-  minLength,
-  autoComplete = 'new-password',
-  leadingIcon = false,
-  mono = false,
-  translucent = false,
+  id, value, onChange, placeholder, required, minLength,
+  autoComplete = 'new-password', leadingIcon = false, mono = false, translucent = false,
 }) => {
   const [visible, setVisible] = useState(false);
 
   return (
     <div className="relative">
-      {leadingIcon && <Lock className="absolute left-3.5 top-3 h-5 w-5 text-ash pointer-events-none" />}
+      {leadingIcon && <Lock className="pointer-events-none absolute left-3.5 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-slate-400" />}
       <input
         id={id}
         type={visible ? 'text' : 'password'}
@@ -48,18 +32,14 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className={`w-full rounded-xl border border-pebble ${translucent ? 'bg-white/90' : 'bg-white'} py-2.5 ${
-          leadingIcon ? 'pl-11' : 'pl-4'
-        } pr-11 text-sm text-ink placeholder-ash focus:border-ink focus:outline-none ${
-          mono ? 'aero-mono' : ''
-        }`}
+        className={`w-full rounded-2xl border border-white/15 bg-white/[0.08] py-3.5 ${leadingIcon ? 'pl-11' : 'pl-4'} pr-12 text-[15px] font-medium text-white caret-white placeholder:text-white/35 outline-none transition focus:border-blue-300/70 focus:bg-white/[0.11] focus:ring-4 focus:ring-blue-400/10 ${mono ? 'aero-mono' : ''} ${translucent ? 'bg-white/[0.10]' : ''}`}
       />
       <button
         type="button"
         tabIndex={-1}
         onClick={() => setVisible((v) => !v)}
         aria-label={visible ? 'Hide password' : 'Show password'}
-        className="absolute right-3 top-2.5 text-ash transition hover:text-ink"
+        className="absolute right-3.5 top-1/2 z-10 -translate-y-1/2 rounded-lg p-1 text-white/45 transition hover:bg-white/10 hover:text-white"
       >
         {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
       </button>
