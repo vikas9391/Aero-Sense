@@ -101,12 +101,8 @@ class _NfcVerificationState extends State<NfcVerificationScreen> {
       _handlingTag = false;
       return;
     }
-
-    // Hardware UID is displayed immediately. Stop NFC reader mode before the
-    // API request so network latency cannot make the physical scan feel slow.
     if (mounted) setState(() { uid = identifier; error = null; scanning = false; });
     await _stopReader();
-
     try {
       final verification = await nfcApi.verifyNfc(identifier);
       if (mounted) setState(() => result = verification);
@@ -131,14 +127,8 @@ class _NfcVerificationState extends State<NfcVerificationScreen> {
         return;
       }
       if (Platform.isAndroid) {
-        // NTAG213/215/216 use ISO 14443-A. Restricting the reader to this
-        // protocol reduces polling work and keeps Aero-Sense exclusive while scanning.
         await NfcManagerAndroid.instance.enableReaderMode(
-          flags: {
-            NfcReaderFlagAndroid.nfcA,
-            NfcReaderFlagAndroid.noPlatformSounds,
-            NfcReaderFlagAndroid.skipNdefCheck,
-          },
+          flags: {NfcReaderFlagAndroid.nfcA, NfcReaderFlagAndroid.noPlatformSounds, NfcReaderFlagAndroid.skipNdefCheck},
           onTagDiscovered: _handleTag,
         );
       } else {
@@ -226,9 +216,10 @@ class _VerificationResultCardState extends State<VerificationResultCard> {
   late final TextEditingController serial = TextEditingController(text: widget.result.component?['serial_number']?.toString() ?? '');
   late final TextEditingController type = TextEditingController(text: widget.result.component?['component_type']?.toString() ?? '');
   late final TextEditingController manufacturer = TextEditingController(text: widget.result.component?['manufacturer']?.toString() ?? '');
+  late final TextEditingController updateNote = TextEditingController();
   late String status = widget.result.component?['status']?.toString() ?? 'OPERATIONAL';
 
-  @override void dispose() { serial.dispose(); type.dispose(); manufacturer.dispose(); super.dispose(); }
+  @override void dispose() { serial.dispose(); type.dispose(); manufacturer.dispose(); updateNote.dispose(); super.dispose(); }
 
   Future<void> _loadHistory(int id) async {
     if (mounted) setState(() => loadingHistory = true);
@@ -246,6 +237,7 @@ class _VerificationResultCardState extends State<VerificationResultCard> {
     final data = widget.result.component;
     final id = data?['database_id'];
     if (id is! num) return;
+    updateNote.clear();
     setState(() { editing = true; selectedAircraft = data?['aircraft_id']?.toString(); });
     try {
       final loaded = await nfcApi.aircraft();
@@ -270,6 +262,7 @@ class _VerificationResultCardState extends State<VerificationResultCard> {
         'component_type': type.text.trim(),
         'manufacturer': manufacturer.text.trim(),
         'status': status,
+        if (updateNote.text.trim().isNotEmpty) 'update_note': updateNote.text.trim(),
       });
       widget.result.component?.addAll({
         'serial_number': updated.serial,
@@ -388,6 +381,21 @@ class _VerificationResultCardState extends State<VerificationResultCard> {
     DropdownButtonFormField<String>(value: status, decoration: const InputDecoration(labelText: 'Status'), items: const [DropdownMenuItem(value: 'OPERATIONAL', child: Text('Operational')), DropdownMenuItem(value: 'MAINTENANCE', child: Text('Maintenance')), DropdownMenuItem(value: 'RETIRED', child: Text('Retired')), DropdownMenuItem(value: 'SUSPENDED', child: Text('Suspended'))], onChanged: saving ? null : (value) { if (value != null) setState(() => status = value); }),
     const SizedBox(height: 10),
     DropdownButtonFormField<String?>(value: selectedAircraft, decoration: const InputDecoration(labelText: 'Aircraft'), items: [const DropdownMenuItem<String?>(value: null, child: Text('Unassigned')), ...aircraft.map((item) => DropdownMenuItem<String?>(value: item.id.toString(), child: Text(item.registration)))], onChanged: saving ? null : (value) => setState(() => selectedAircraft = value)),
+    const SizedBox(height: 10),
+    TextField(
+      controller: updateNote,
+      minLines: 2,
+      maxLines: 4,
+      textCapitalization: TextCapitalization.sentences,
+      decoration: const InputDecoration(
+        labelText: 'Update note / additional data',
+        hintText: 'Add any information about this component update…',
+        alignLabelWithHint: true,
+        prefixIcon: Icon(Icons.notes_outlined),
+      ),
+    ),
+    const SizedBox(height: 6),
+    const Text('Optional. This note is saved with the update history entry.', style: TextStyle(color: muted, fontSize: 11)),
     const SizedBox(height: 12),
     Row(children: [Expanded(child: OutlinedButton(onPressed: saving ? null : () => setState(() => editing = false), child: const Text('Cancel'))), const SizedBox(width: 10), Expanded(child: FilledButton(onPressed: saving ? null : _saveEdit, child: Text(saving ? 'Saving…' : 'Save update')))]),
   ]);
