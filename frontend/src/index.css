@@ -1,20 +1,19 @@
 @import "tailwindcss";
 
-/* AERO-SENSE shared design system: warm aviation console + indigo trust signal. */
 @theme {
-  --color-ink: #242321;
-  --color-ash: #77746f;
-  --color-pebble: #e4e0d9;
+  --color-ink: #071218;
+  --color-ash: #687780;
+  --color-pebble: #dbe4e8;
   --color-slate-elevated: #ffffff;
-  --color-clay: #34439b;
-  --color-sky: #f4f1ec;
-  --color-cream: #f8f6f2;
-  --color-accent: #34439b;
-  --color-accent-soft: #eeeffa;
-  --color-good: #16856d;
-  --color-warning: #b5790f;
-  --color-critical: #b13a2f;
-  --color-info: #2a5d8f;
+  --color-clay: #1f6feb;
+  --color-sky: #edf4f7;
+  --color-cream: #f5f9fb;
+  --color-accent: #1769ff;
+  --color-accent-soft: #eaf1ff;
+  --color-good: #0b9b83;
+  --color-warning: #c77a13;
+  --color-critical: #d34b4b;
+  --color-info: #2877c7;
   --font-display: 'Clash Display', 'General Sans', system-ui, sans-serif;
   --font-body: 'General Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
@@ -24,24 +23,27 @@
 
 @layer base {
   :root {
-    --bg-app: #f4f1ec;
-    --card-bg: #fff;
-    --border-color: #e4e0d9;
-    --accent: #34439b;
-    --accent-soft: #eeeffa;
-    --status-verified: #16856d;
-    --status-verified-soft: #e8f5f0;
-    --status-warning: #b5790f;
-    --status-warning-soft: #fbf1de;
-    --status-critical: #b13a2f;
-    --status-critical-soft: #fbeceb;
-    --status-info: #2a5d8f;
-    --status-info-soft: #eaf1f8;
+    --bg-app: #edf4f7;
+    --card-bg: rgba(255,255,255,.86);
+    --border-color: #dbe4e8;
+    --accent: #1769ff;
+    --accent-soft: #eaf1ff;
+    --status-verified: #0b9b83;
+    --status-verified-soft: #e5f7f3;
+    --status-warning: #c77a13;
+    --status-warning-soft: #fff4df;
+    --status-critical: #d34b4b;
+    --status-critical-soft: #fff0f0;
+    --status-info: #2877c7;
+    --status-info-soft: #eaf4ff;
   }
 
   html { background: var(--bg-app); scroll-behavior: smooth; }
   body {
-    background: var(--bg-app);
+    background:
+      radial-gradient(circle at 12% 0%, rgba(23,105,255,.08), transparent 28rem),
+      radial-gradient(circle at 90% 15%, rgba(11,155,131,.055), transparent 24rem),
+      var(--bg-app);
     color: var(--color-ink);
     font-family: var(--font-body);
     min-height: 100vh;
@@ -50,42 +52,43 @@
     -webkit-font-smoothing: antialiased;
   }
   button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
-  ::selection { background: #dfe2f8; color: var(--color-ink); }
+  ::selection { background: #dce8ff; color: var(--color-ink); }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 }
 
 .pill-btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
-  border-radius: 1000px; padding: .85rem 1.75rem; font-family: var(--font-body);
-  font-weight: 700; font-size: .9rem; letter-spacing: -.01em;
-  transition: transform .18s ease, background-color .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease;
+  display: inline-flex; align-items: center; justify-content: center; gap: .55rem;
+  border-radius: 999px; padding: .82rem 1.45rem; font-family: var(--font-body);
+  font-weight: 750; font-size: .88rem; letter-spacing: -.01em;
+  transition: transform .2s ease, background-color .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease;
   white-space: nowrap;
 }
-.pill-btn:hover { transform: translateY(-1px); }
-.pill-btn-primary { background: var(--color-accent); color: #fff; box-shadow: 0 8px 20px rgba(52,67,155,.16); }
-.pill-btn-primary:hover { background: #29357f; box-shadow: 0 10px 24px rgba(52,67,155,.22); }
-.pill-btn-ghost { background: transparent; color: var(--color-ink); border: 1px solid var(--color-pebble); }
-.pill-btn-ghost:hover { border-color: var(--color-accent); color: var(--color-accent); background: var(--accent-soft); }
+.pill-btn:hover { transform: translateY(-2px); }
+.pill-btn-primary { background: linear-gradient(135deg, #1769ff, #3d83ff); color: #fff; box-shadow: 0 12px 28px rgba(23,105,255,.22); }
+.pill-btn-primary:hover { background: linear-gradient(135deg, #0e5be5, #3277ef); box-shadow: 0 15px 34px rgba(23,105,255,.28); }
+.pill-btn-ghost { background: rgba(255,255,255,.7); color: var(--color-ink); border: 1px solid var(--color-pebble); }
+.pill-btn-ghost:hover { border-color: rgba(23,105,255,.4); color: var(--color-accent); background: var(--accent-soft); }
 .pill-btn-on-dark { background: #fff; color: var(--color-accent); }
-.pill-btn-on-dark:hover { background: var(--color-cream); }
-.pill-btn-ghost-on-dark { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.25); }
-.pill-btn-ghost-on-dark:hover { border-color: #fff; }
+.pill-btn-on-dark:hover { background: #edf4ff; }
+.pill-btn-ghost-on-dark { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.22); }
+.pill-btn-ghost-on-dark:hover { border-color: #fff; background: rgba(255,255,255,.06); }
 
 .hairline { border: 1px solid var(--color-pebble); }
 .hairline-on-dark { border: 1px solid rgba(255,255,255,.12); }
-.aero-hero-sky { background: linear-gradient(180deg, #eeece7 0%, #f4f1ec 45%, #f8f6f2 75%, #fff 100%); }
+.aero-hero-sky { background: linear-gradient(180deg, #e8f1f5 0%, #f2f7f9 52%, #fff 100%); }
 
 .aero-panel {
   background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  box-shadow: 0 8px 28px rgba(36,35,33,.045);
+  border: 1px solid rgba(207,220,226,.9);
+  border-radius: 20px;
+  box-shadow: 0 18px 50px rgba(7,18,24,.055), 0 2px 8px rgba(7,18,24,.025);
+  backdrop-filter: blur(18px);
   transition: box-shadow .2s ease, transform .2s ease, border-color .2s ease;
 }
-.aero-panel:hover { box-shadow: 0 12px 34px rgba(36,35,33,.07); }
-.aero-panel-tight { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; }
+.aero-panel:hover { box-shadow: 0 22px 60px rgba(7,18,24,.08), 0 3px 12px rgba(7,18,24,.03); }
+.aero-panel-tight { background: rgba(255,255,255,.78); border: 1px solid var(--border-color); border-radius: 16px; }
 .aero-mono { font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: -.01em; }
-.aero-eyebrow { font-family: var(--font-body); font-size: .6875rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--color-ash); }
+.aero-eyebrow { font-family: var(--font-body); font-size: .66rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; color: var(--color-ash); }
 .aero-accent { color: var(--accent); }
 .aero-accent-bg { background: var(--accent-soft); }
 .aero-good { color: var(--status-verified); }
@@ -97,14 +100,31 @@
 .aero-info { color: var(--status-info); }
 .aero-info-bg { background: var(--status-info-soft); }
 
-/* Consistent form controls across all admin pages. */
 input, select, textarea {
-  border-radius: 12px;
+  border-radius: 14px;
   border-color: var(--border-color);
+  background: rgba(255,255,255,.82);
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: rgba(23,105,255,.55) !important;
+  box-shadow: 0 0 0 4px rgba(23,105,255,.08);
+  background: #fff;
 }
 
-/* Thin, quiet scrollbars keep dense operational pages polished. */
-* { scrollbar-width: thin; scrollbar-color: #c9c5bd transparent; }
+* { scrollbar-width: thin; scrollbar-color: #b8c7ce transparent; }
+
+/* Shared application-shell makeover. Existing page components keep their
+   behavior and routes while inheriting the new aerospace command-center
+   surfaces, spacing and depth. */
+.aero-app-shell { position: relative; isolation: isolate; }
+.aero-app-shell::before {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: -1; opacity: .42;
+  background-image: linear-gradient(rgba(7,18,24,.028) 1px, transparent 1px), linear-gradient(90deg, rgba(7,18,24,.028) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(to bottom, black, transparent 75%);
+}
+.aero-app-shell .aero-panel { border-radius: 22px; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
