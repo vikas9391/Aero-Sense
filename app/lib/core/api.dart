@@ -40,7 +40,6 @@ class Api {
   Future<Map<String, dynamic>> login(String company, String email, String password) async => Map<String, dynamic>.from((await dio.post('/auth/login', data: {'company_name': company, 'email': email, 'password': password})).data as Map);
   Future<User> me() async => User.fromJson(Map<String, dynamic>.from((await dio.get('/auth/me')).data));
   Future<User> changePassword(String currentPassword, String newPassword) async => User.fromJson(Map<String, dynamic>.from((await dio.put('/auth/change-password', data: {'current_password': currentPassword, 'new_password': newPassword})).data));
-
   Future<Analytics> analytics() async => Analytics.fromJson(Map<String, dynamic>.from((await dio.get('/analytics/overview')).data));
   Future<List<User>> users() async => _list((await dio.get('/users')).data).map(User.fromJson).toList();
   Future<User> createUser(String name, String email, String password, String role) async => User.fromJson(Map<String, dynamic>.from((await dio.post('/users', data: {'name': name, 'email': email, 'password': password, 'role': role})).data));
@@ -49,13 +48,14 @@ class Api {
   Future<List<Component>> components() async => _list((await dio.get('/components')).data).map(Component.fromJson).toList();
   Future<Component> component(int id) async => Component.fromJson(Map<String, dynamic>.from((await dio.get('/components/$id')).data));
   Future<Component> createComponent(Map<String, dynamic> data) async => Component.fromJson(Map<String, dynamic>.from((await dio.post('/components', data: data)).data));
+  Future<Component> updateComponent(int id, Map<String, dynamic> data) async => Component.fromJson(Map<String, dynamic>.from((await dio.put('/components/$id', data: data)).data));
+  Future<List<ComponentUpdateHistory>> componentUpdateHistory(int id) async => _list((await dio.get('/components/$id/update-history')).data).map(ComponentUpdateHistory.fromJson).toList();
   Future<List<MaintenanceRecord>> maintenance() async => _list((await dio.get('/maintenance')).data).map(MaintenanceRecord.fromJson).toList();
   Future<MaintenanceRecord> createMaintenance(Map<String, dynamic> data) async => MaintenanceRecord.fromJson(Map<String, dynamic>.from((await dio.post('/maintenance', data: data)).data));
   Future<List<VerificationLog>> verificationLogs() async => _list((await dio.get('/verification/logs')).data).map(VerificationLog.fromJson).toList();
   Future<List<VerificationLog>> componentVerifications(int id) async => _list((await dio.get('/components/$id/verification')).data).map(VerificationLog.fromJson).toList();
   Future<VerificationResponse> verifyNfc(String tag, {String? payload}) async => VerificationResponse.fromJson(Map<String, dynamic>.from((await dio.post('/verification/nfc', data: {'tag_identifier': tag, if (payload != null && payload.isNotEmpty) 'payload': payload})).data));
   Future<Map<String, dynamic>> verifyBlockchain(int recordId) async => Map<String, dynamic>.from((await dio.post('/blockchain/verify', data: {'record_id': recordId})).data);
-
   Future<List<CompanySummary>> companies() async => _list((await dio.get('/companies')).data).map(CompanySummary.fromJson).toList();
   Future<CompanySummary> company(int id) async => CompanySummary.fromJson(Map<String, dynamic>.from((await dio.get('/companies/$id')).data));
   Future<List<User>> companyUsers(int id) async => _list((await dio.get('/companies/$id/users')).data).map(User.fromJson).toList();
@@ -90,10 +90,7 @@ class Api {
 }
 
 class User {
-  final int id;
-  final String uuid;
-  final String name, email, role;
-  final int? companyId;
+  final int id; final String uuid; final String name, email, role; final int? companyId;
   User({required this.id, required this.uuid, required this.name, required this.email, required this.role, this.companyId});
   factory User.fromJson(Map<String, dynamic> j) => User(id: j['id'] ?? 0, uuid: j['uuid'] ?? '', name: j['name'] ?? '', email: j['email'] ?? '', role: j['role'] ?? 'VIEWER', companyId: j['company_id']);
 }
@@ -128,6 +125,12 @@ class Component {
   factory Component.fromJson(Map<String, dynamic> j) => Component(id: j['id'] ?? 0, uuid: j['component_uuid'] ?? '', serial: j['serial_number'] ?? '', type: j['component_type'] ?? '', manufacturer: j['manufacturer'] ?? '', status: j['status'] ?? '', aircraftId: j['aircraft_id'], aircraftRegistration: j['aircraft_registration']);
 }
 
+class ComponentUpdateHistory {
+  final int id, componentId, userId; final String serial, type, manufacturer, status, updatedAt; final int? aircraftId;
+  ComponentUpdateHistory({required this.id, required this.componentId, required this.userId, required this.serial, required this.type, required this.manufacturer, required this.status, required this.updatedAt, this.aircraftId});
+  factory ComponentUpdateHistory.fromJson(Map<String, dynamic> j) => ComponentUpdateHistory(id: j['id'] ?? 0, componentId: j['component_id'] ?? 0, userId: j['user_id'] ?? 0, serial: j['serial_number'] ?? '', type: j['component_type'] ?? '', manufacturer: j['manufacturer'] ?? '', status: j['status'] ?? '', updatedAt: j['updated_at'] ?? '', aircraftId: j['aircraft_id']);
+}
+
 class MaintenanceRecord {
   final int id, componentId; final String technician, type, description, result, hash, createdAt; final String? parts;
   MaintenanceRecord({required this.id, required this.componentId, required this.technician, required this.type, required this.description, required this.result, required this.hash, required this.createdAt, this.parts});
@@ -141,19 +144,7 @@ class VerificationLog {
 }
 
 class VerificationResponse {
-  final bool verified;
-  final String status;
-  final Map<String, bool> checks;
-  final String? reason;
-  final Map<String, dynamic>? component;
-
+  final bool verified; final String status; final Map<String, bool> checks; final String? reason; final Map<String, dynamic>? component;
   VerificationResponse({required this.verified, required this.status, required this.checks, this.reason, this.component});
-
-  factory VerificationResponse.fromJson(Map<String, dynamic> j) => VerificationResponse(
-        verified: j['verified'] == true,
-        status: j['status'] ?? 'INVALID',
-        checks: Map<String, bool>.from((j['checks'] ?? {}).map((k, v) => MapEntry(k.toString(), v == true))),
-        reason: j['failure_reason'],
-        component: j['component'] is Map ? Map<String, dynamic>.from(j['component']) : null,
-      );
+  factory VerificationResponse.fromJson(Map<String, dynamic> j) => VerificationResponse(verified: j['verified'] == true, status: j['status'] ?? 'INVALID', checks: Map<String, bool>.from((j['checks'] ?? {}).map((k, v) => MapEntry(k.toString(), v == true))), reason: j['failure_reason'], component: j['component'] is Map ? Map<String, dynamic>.from(j['component']) : null);
 }
