@@ -3,7 +3,7 @@ use crate::{
     db::DbPool,
     errors::AppError,
     middleware::auth::create_jwt,
-    models::{AuthResponse, ChangePasswordRequest, Company, CreateUserRequest, LoginRequest, User, UserResponse, UserRole},
+    models::{AuthResponse, ChangePasswordRequest, Company, CreateUserRequest, LoginRequest, User, UserProfileResponse, UserResponse, UserRole},
 };
 use argon2::{
     password_hash::{rand_core::OsRng, SaltString},
@@ -25,6 +25,14 @@ impl AuthService {
         let user: Option<User> = sqlx::query_as("SELECT * FROM users WHERE email = $1")
             .bind(&email).fetch_optional(pool).await?;
         let user = user.ok_or_else(invalid)?;
+
+        if user.status != "ACTIVE" {
+            return Err(AppError::Forbidden(if user.status == "SUSPENDED" {
+                "This user account is suspended. Contact your company administrator.".to_string()
+            } else {
+                "This user account is no longer active.".to_string()
+            }));
+        }
 
         match user.company_id {
             None => {
@@ -56,6 +64,29 @@ impl AuthService {
         Ok(UserResponse::from(user))
     }
 
+    pub async fn get_user_profile(pool: &DbPool, user_id: i64) -> Result<UserProfileResponse, AppError> {
+        let user: User = sqlx::query_as("SELECT * FROM users WHERE id = $1")
+            .bind(user_id).fetch_optional(pool).await?
+            .ok_or_else(|| AppError::NotFound("User not found".to_string()))?;
+
+        let company_name: Option<String> = match user.company_id {
+            Some(company_id) => sqlx::query_scalar("SELECT name FROM companies WHERE id = $1")
+                .bind(company_id).fetch_optional(pool).await?,
+            None => None,
+        };
+        let maintenance_count: i64 = sqlx::query_scalar("SELECT COUNT(*)::BIGINT FROM maintenance_records WHERE technician_id = $1")
+            .bind(user_id).fetch_one(pool).await?;
+        let component_update_count: i64 = sqlx::query_scalar("SELECT COUNT(*)::BIGINT FROM component_update_history WHERE user_id = $1")
+            .bind(user_id).fetch_one(pool).await?;
+
+        Ok(UserProfileResponse {
+            user: UserResponse::from(user),
+            company_name,
+            maintenance_count,
+            component_update_count,
+        })
+    }
+
     pub async fn create_user(pool: &DbPool, company_id: i64, req: CreateUserRequest) -> Result<UserResponse, AppError> {
         let name = req.name.trim().to_string();
         let email = req.email.trim().to_lowercase();
@@ -84,6 +115,17 @@ impl AuthService {
             AppError::DatabaseError(e)
         })?;
         Self::get_user_by_id(pool, id).await
+    }
+
+    pub async fn update_user_status(pool: &DbPool, user_id: i64, status: &str) -> Result<UserResponse, AppError> {
+        let normalized = status.trim().to_uppercase();
+        if !matches!(normalized.as_str(), "ACTIVE" | "SUSPENDED" | "DELETED") {
+            return Err(AppError::ValidationError("User status must be ACTIVE, SUSPENDED, or DELETED".to_string()));
+        }
+        let result = sqlx::query("UPDATE users SET status = $1 WHERE id = $2")
+            .bind(&normalized).bind(user_id).execute(pool).await?;
+        if result.rows_affected() == 0 { return Err(AppError::NotFound("User not found".to_string())); }
+        Self::get_user_by_id(pool, user_id).await
     }
 
     pub async fn change_password(pool: &DbPool, user_id: i64, req: ChangePasswordRequest) -> Result<UserResponse, AppError> {
