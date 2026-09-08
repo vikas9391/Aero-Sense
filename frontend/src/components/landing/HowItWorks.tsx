@@ -43,9 +43,7 @@ const imageVariants = {
   exit: (dir: number) => ({ y: dir > 0 ? '-100%' : '100%', opacity: 0 }),
 };
 
-export interface HowItWorksProps {}
-
-export const HowItWorks: React.FC<HowItWorksProps> = () => {
+export const HowItWorks: React.FC = () => {
   const prefersReducedMotion = useReducedMotion();
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState(1);
