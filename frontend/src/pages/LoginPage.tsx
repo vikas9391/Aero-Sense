@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Building2, ArrowRight, AlertCircle, ShieldCheck, ScanLine, Database, Activity, KeyRound } from 'lucide-react';
+import { Mail, Building2, ArrowRight, AlertCircle, ShieldCheck, ScanLine, Database, Activity, LogIn } from 'lucide-react';
 import { PasswordInput } from '../components/PasswordInput';
 import { AeroLogo } from '../components/Logo';
 
@@ -11,15 +11,8 @@ export const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const { login } = useAuth();
+  const { login, loginAsDemoSuperAdmin } = useAuth();
   const navigate = useNavigate();
-
-  const useSuperAdminAccess = () => {
-    setCompanyName('Super Admin');
-    setEmail('admin@gmail.com');
-    setError(null);
-    document.getElementById('password')?.focus();
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,6 +23,19 @@ export const LoginPage: React.FC = () => {
       navigate(user.role === 'SUPER_ADMIN' ? '/companies' : '/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.error?.message || 'Authentication failed. Please check your credentials.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDemoLogin = async () => {
+    setError(null);
+    setSubmitting(true);
+    try {
+      const user = await loginAsDemoSuperAdmin();
+      navigate(user.role === 'SUPER_ADMIN' ? '/companies' : '/dashboard');
+    } catch (err: any) {
+      setError(err.response?.data?.error?.message || 'Super Admin demo access is not enabled on the server.');
     } finally {
       setSubmitting(false);
     }
@@ -74,7 +80,6 @@ export const LoginPage: React.FC = () => {
                 <div>
                   <label htmlFor="company" className="mb-2 block text-xs font-bold uppercase tracking-[.13em] text-slate-600">Company name</label>
                   <div className="relative"><Building2 className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><input id="company" type="text" required autoComplete="organization" value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder="Your company" className={`${inputClass} pl-11`} /></div>
-                  <p className="mt-2 text-[11px] text-slate-400">Platform administrators use <span className="font-semibold text-slate-500">Super Admin</span>.</p>
                 </div>
                 <div>
                   <label htmlFor="email" className="mb-2 block text-xs font-bold uppercase tracking-[.13em] text-slate-600">Email address</label>
@@ -87,8 +92,10 @@ export const LoginPage: React.FC = () => {
                 <button type="submit" disabled={submitting} className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-blue-600/25 disabled:cursor-wait disabled:opacity-50"><span>{submitting ? 'Authenticating...' : 'Enter Command Center'}</span><ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></button>
               </form>
 
-              <button type="button" onClick={useSuperAdminAccess} className="group mt-5 flex w-full items-center justify-between rounded-2xl border border-blue-100 bg-blue-50/70 px-4 py-3.5 text-left transition hover:border-blue-200 hover:bg-blue-50">
-                <span className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-blue-600 shadow-sm"><KeyRound className="h-4 w-4" /></span><span><span className="block text-xs font-bold text-slate-800">Super Admin Access</span><span className="mt-0.5 block text-[10px] text-slate-500">Fill the temporary administrator account</span></span></span><ArrowRight className="h-4 w-4 text-blue-500 transition-transform group-hover:translate-x-1" />
+              <div className="my-6 flex items-center gap-3"><div className="h-px flex-1 bg-slate-100" /><span className="text-[10px] font-bold uppercase tracking-[.16em] text-slate-300">Hackathon access</span><div className="h-px flex-1 bg-slate-100" /></div>
+
+              <button type="button" onClick={handleDemoLogin} disabled={submitting} className="group flex w-full items-center justify-between rounded-2xl border border-blue-100 bg-blue-50/70 px-4 py-3.5 text-left transition hover:border-blue-200 hover:bg-blue-50 disabled:cursor-wait disabled:opacity-50">
+                <span className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-blue-600 shadow-sm"><LogIn className="h-4 w-4" /></span><span><span className="block text-xs font-bold text-slate-800">Continue as Super Admin</span><span className="mt-0.5 block text-[10px] text-slate-500">No password entry required</span></span></span><ArrowRight className="h-4 w-4 text-blue-500 transition-transform group-hover:translate-x-1" />
               </button>
 
               <div className="mt-8 flex items-center justify-between border-t border-slate-100 pt-5 text-[10px] font-bold uppercase tracking-[.13em] text-slate-400"><span className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-emerald-500" /> Protected access</span><button type="button" onClick={() => navigate('/')} className="transition hover:text-slate-700">Back to AeroSense</button></div>
