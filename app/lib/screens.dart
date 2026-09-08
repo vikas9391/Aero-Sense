@@ -251,8 +251,8 @@ class _ProfileState extends State<ProfileScreen> {
         const SizedBox(height: 16),
         CardBox(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const CircleAvatar(radius: 28, backgroundColor: Color(0xFFECECF8), child: Icon(Icons.person_outline, color: accent)),
-            const SizedBox(height: 14),
+            const Row(children: [AeroLogo(size: 56), SizedBox(width: 14), Expanded(child: Text('AERO-SENSE', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w900, letterSpacing: 1.2)))]),
+            const SizedBox(height: 16),
             Text(user?.name ?? 'Loading…', style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w800)),
             Text(user?.email ?? '', style: const TextStyle(color: muted)),
             const SizedBox(height: 15),
@@ -409,11 +409,11 @@ class _LoginState extends State<LoginScreen> {
                 constraints: const BoxConstraints(maxWidth: 520),
                 child: CardBox(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const Icon(Icons.flight_takeoff_rounded, color: accent, size: 42),
+                    const Center(child: AeroLogo(size: 76)),
                     const SizedBox(height: 18),
-                    const Text('AERO-SENSE', style: TextStyle(fontSize: 27, fontWeight: FontWeight.w900, letterSpacing: 1.4)),
+                    const Center(child: Text('AERO-SENSE', style: TextStyle(fontSize: 27, fontWeight: FontWeight.w900, letterSpacing: 1.4))),
                     const SizedBox(height: 4),
-                    const Text('Secure aircraft component intelligence', style: TextStyle(color: muted)),
+                    const Center(child: Text('Secure aircraft component intelligence', style: TextStyle(color: muted))),
                     const SizedBox(height: 25),
                     TextField(controller: company, decoration: const InputDecoration(labelText: 'Company name', prefixIcon: Icon(Icons.business_outlined))),
                     const SizedBox(height: 12),
