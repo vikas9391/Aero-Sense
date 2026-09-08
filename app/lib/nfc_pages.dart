@@ -141,7 +141,7 @@ class _NfcVerificationState extends State<NfcVerificationScreen> {
             const SizedBox(height: 18), Text(scanning ? 'READY — HOLD TAG NEAR PHONE' : 'NFC READER READY', style: const TextStyle(color: accent, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.15), textAlign: TextAlign.center), const SizedBox(height: 8),
             Text(scanning ? 'Waiting for a tag…' : 'Tap Start Scan when the tag is ready.', style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800), textAlign: TextAlign.center), const SizedBox(height: 8),
             const Text('Keep the NFC area of the phone close to the physical tag until it is detected. The UID is then sent to the backend for verification.', textAlign: TextAlign.center, style: TextStyle(color: muted, height: 1.5)), const SizedBox(height: 18),
-            SizedBox(width: double.infinity, height: 52, child: FilledButton.icon(onPressed: scanning ? null : scan, icon: Icon(scanning ? Icons.sensors : Icons.nfc), label: Text(scanning ? 'Waiting for tag…' : 'Start NFC scan'))),
+            SizedBox(width: double.infinity, height: 52, child: FilledButton.icon(onPressed: scanning ? null : scan, icon: Icon(scanning ? Icons.sensors : Icons.nfc), label: Text(scanning ? 'Waiting for tag…' : 'Start NFC scan')),
             if (uid != null) ...[const SizedBox(height: 16), Container(width: double.infinity, padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: soft, borderRadius: BorderRadius.circular(14)), child: Row(children: [const Icon(Icons.tag_outlined, size: 18, color: muted), const SizedBox(width: 9), Expanded(child: Text(uid!, style: const TextStyle(fontWeight: FontWeight.w800, letterSpacing: 1.0)))]))],
           ])),
           if (error != null) ...[
@@ -200,7 +200,7 @@ class _VerificationResultCardState extends State<VerificationResultCard> {
     ]));
   }
 
-  Widget _dataSection(String title, List<Widget> children, {bool filled = false}) => Container(width: double.infinity, padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: filled ? soft : null, border: filled ? null : Border.all(color: soft), borderRadius: BorderRadius.circular(16)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(color: accent, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.1)), const SizedBox(height: 10), ...children]);
+  Widget _dataSection(String title, List<Widget> children, {bool filled = false}) => Container(width: double.infinity, padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: filled ? soft : null, border: filled ? null : Border.all(color: soft), borderRadius: BorderRadius.circular(16)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(color: accent, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.1)), const SizedBox(height: 10), ...children]));
 
   Widget _detail(String label, Object? value) => Padding(padding: const EdgeInsets.only(bottom: 8), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [SizedBox(width: 112, child: Text(label, style: const TextStyle(color: muted, fontSize: 12))), const SizedBox(width: 8), Expanded(child: Text('${value ?? '—'}', style: const TextStyle(fontWeight: FontWeight.w700, height: 1.3)))]));
 
