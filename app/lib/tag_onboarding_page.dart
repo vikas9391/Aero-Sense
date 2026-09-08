@@ -185,7 +185,7 @@ class _TagOnboardingScreenState extends State<TagOnboardingScreen> {
         ),
         const SizedBox(height: 12),
         OutlinedButton.icon(
-          onPressed: () => context.go('/register-tag?uid=${Uri.encodeComponent(widget.uid)}'),
+          onPressed: () => context.go('/register-tag?uid=${Uri.encodeComponent(widget.uid)}&mode=existing'),
           icon: const Icon(Icons.link),
           label: const Text('Bind to an existing component instead'),
         ),
