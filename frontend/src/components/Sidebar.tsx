@@ -1,25 +1,9 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import {
-  LayoutDashboard,
-  ScanLine,
-  Plane,
-  Cpu,
-  Wrench,
-  ShieldAlert,
-  User,
-  Users,
-  BarChart3,
-  Building2,
-} from 'lucide-react';
+import { LayoutDashboard, ScanLine, Plane, Cpu, Wrench, ShieldAlert, User, Users, BarChart3, Building2 } from 'lucide-react';
 
-type NavItem = {
-  to: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  highlight?: boolean;
-};
+type NavItem = { to: string; label: string; icon: React.ComponentType<{ className?: string }>; highlight?: boolean };
 
 const NavGroup: React.FC<{ title: string; items: NavItem[] }> = ({ title, items }) => (
   <div>
@@ -28,26 +12,10 @@ const NavGroup: React.FC<{ title: string; items: NavItem[] }> = ({ title, items 
       {items.map((item) => {
         const Icon = item.icon;
         return (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) =>
-              `group flex items-center space-x-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150 ${
-                isActive
-                  ? 'bg-[#f1f1ef] text-ink'
-                  : item.highlight
-                    ? 'text-[#0a7a4c] hover:bg-[#e9f6ef]'
-                    : 'text-[#4b4b52] hover:bg-[#f7f7f5] hover:text-ink'
-              }`
-            }
-          >
+          <NavLink key={item.to} to={item.to} className={({ isActive }) => `group flex items-center space-x-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-150 ${isActive ? 'bg-[#eeeffa] text-[#34439b]' : item.highlight ? 'text-[#16856d] hover:bg-[#e8f5f0]' : 'text-[#77746f] hover:bg-[#f8f6f2] hover:text-[#242321]'}`}>
             {({ isActive }) => (
               <>
-                <Icon
-                  className={`h-4 w-4 shrink-0 ${
-                    isActive ? 'text-ink' : item.highlight ? 'text-[#0a7a4c]' : 'text-ash group-hover:text-ink'
-                  }`}
-                />
+                <Icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-[#34439b]' : item.highlight ? 'text-[#16856d]' : 'text-[#77746f] group-hover:text-[#242321]'}`} />
                 <span>{item.label}</span>
               </>
             )}
@@ -66,20 +34,9 @@ export const Sidebar: React.FC = () => {
   const canVerify = isCompanyAdmin || role === 'MANUFACTURER' || role === 'MAINTENANCE_TECHNICIAN' || role === 'INSPECTOR';
   const canMaintain = isCompanyAdmin || role === 'MAINTENANCE_TECHNICIAN';
   const canAudit = isCompanyAdmin || role === 'INSPECTOR';
+  const shell = 'w-64 shrink-0 bg-white border-r border-pebble p-4 flex flex-col justify-between sticky top-[65px] h-[calc(100vh-65px)] overflow-y-auto';
 
-  if (isSuperAdmin) {
-    return (
-      <aside className="w-64 shrink-0 bg-white border-r border-pebble p-4 flex flex-col justify-between sticky top-[65px] h-[calc(100vh-65px)] overflow-y-auto">
-        <NavGroup
-          title="Platform Administration"
-          items={[
-            { to: '/companies', label: 'Companies', icon: Building2 },
-            { to: '/profile', label: 'My Profile', icon: User },
-          ]}
-        />
-      </aside>
-    );
-  }
+  if (isSuperAdmin) return <aside className={shell}><NavGroup title="Platform Administration" items={[{ to: '/companies', label: 'Companies', icon: Building2 }, { to: '/profile', label: 'My Profile', icon: User }]} /></aside>;
 
   const coreItems: NavItem[] = [
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -87,35 +44,21 @@ export const Sidebar: React.FC = () => {
     { to: '/aircraft', label: 'Aircraft Fleet', icon: Plane },
     { to: '/components', label: 'Component Catalog', icon: Cpu },
   ];
-
   const managementItems: NavItem[] = [
     ...(canMaintain ? [{ to: '/maintenance', label: 'Log Maintenance', icon: Wrench }] : []),
-    ...(isCompanyAdmin
-      ? [
-          { to: '/users', label: 'User Management', icon: Users },
-          { to: '/analytics', label: 'Work Analytics', icon: BarChart3 },
-        ]
-      : []),
+    ...(isCompanyAdmin ? [{ to: '/users', label: 'User Management', icon: Users }, { to: '/analytics', label: 'Work Analytics', icon: BarChart3 }] : []),
     ...(canAudit ? [{ to: '/security', label: 'Security & Audit', icon: ShieldAlert }] : []),
   ];
 
   return (
-    <aside className="w-64 shrink-0 bg-white border-r border-pebble p-4 flex flex-col justify-between sticky top-[65px] h-[calc(100vh-65px)] overflow-y-auto">
+    <aside className={shell}>
       <div className="space-y-7">
         <NavGroup title="Core Operations" items={coreItems} />
         {managementItems.length > 0 && <NavGroup title="Management & Audit" items={managementItems} />}
       </div>
       <div className="space-y-3">
-        <NavLink
-          to="/profile"
-          className={({ isActive }) =>
-            `flex items-center space-x-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-              isActive ? 'bg-[#f1f1ef] text-ink' : 'text-[#4b4b52] hover:bg-[#f7f7f5] hover:text-ink'
-            }`
-          }
-        >
-          <User className="h-4 w-4 shrink-0 text-ash" />
-          <span>My Profile</span>
+        <NavLink to="/profile" className={({ isActive }) => `flex items-center space-x-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${isActive ? 'bg-[#eeeffa] text-[#34439b]' : 'text-[#77746f] hover:bg-[#f8f6f2] hover:text-[#242321]'}`}>
+          <User className="h-4 w-4 shrink-0 text-ash" /><span>My Profile</span>
         </NavLink>
       </div>
     </aside>
