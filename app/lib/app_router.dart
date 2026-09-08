@@ -32,23 +32,23 @@ final appRouter = GoRouter(
         GoRoute(path: '/security', builder: (context, state) => const SecurityAuditScreen()),
         GoRoute(path: '/profile', builder: (context, state) => const ProfileScreen()),
         GoRoute(path: '/companies', builder: (context, state) => const CompanyManagementScreen()),
+        GoRoute(path: '/register-component', builder: (context, state) => const RegisterComponentScreen()),
+        GoRoute(path: '/register-tag', builder: (context, state) => const RegisterTagScreen()),
+        GoRoute(
+          path: '/passport',
+          builder: (context, state) {
+            final component = state.extra;
+            return component is Component ? PassportScreen(component: component) : const ComponentsScreen();
+          },
+        ),
+        GoRoute(
+          path: '/company-detail',
+          builder: (context, state) {
+            final company = state.extra;
+            return company is CompanySummary ? CompanyDetailScreen(company: company) : const CompanyManagementScreen();
+          },
+        ),
       ],
-    ),
-    GoRoute(path: '/register-component', builder: (context, state) => const RegisterComponentScreen()),
-    GoRoute(path: '/register-tag', builder: (context, state) => const RegisterTagScreen()),
-    GoRoute(
-      path: '/passport',
-      builder: (context, state) {
-        final component = state.extra;
-        return component is Component ? PassportScreen(component: component) : const ComponentsScreen();
-      },
-    ),
-    GoRoute(
-      path: '/company-detail',
-      builder: (context, state) {
-        final company = state.extra;
-        return company is CompanySummary ? CompanyDetailScreen(company: company) : const CompanyManagementScreen();
-      },
     ),
   ],
   redirect: (context, state) async {
@@ -150,21 +150,34 @@ class _AppShellFrameState extends State<AppShellFrame> {
       ]);
     }
     if (canAudit) result.add(const _RouteNavItem('Security & Audit', '/security', Icons.security_outlined));
+    if (canRegister) {
+      result.addAll(const [
+        _RouteNavItem('Register Component', '/register-component', Icons.add_box_outlined),
+        _RouteNavItem('Register NFC Tag', '/register-tag', Icons.nfc_outlined),
+      ]);
+    }
     return result;
   }
+
+  bool get canRegister => isCompanyAdmin || role == 'MANUFACTURER';
 
   _RouteNavItem? get currentItem {
     final path = GoRouterState.of(context).uri.path;
     for (final item in drawerItems) {
       if (path == item.route) return item;
     }
+    if (path == '/passport') return const _RouteNavItem('Component Passport', '/passport', Icons.badge_outlined);
+    if (path == '/company-detail') return const _RouteNavItem('Company Details', '/company-detail', Icons.business_outlined);
     return null;
   }
 
-  void go(String route) {
-    const secondary = ['/register-component', '/register-tag', '/passport', '/company-detail'];
-    if (drawerItems.any((item) => item.route == route) || secondary.contains(route)) {
-      context.go(route);
+  void go(String route, {Object? extra}) {
+    final allowed = drawerItems.any((item) => item.route == route) ||
+        route == '/dashboard' ||
+        route == '/passport' ||
+        route == '/company-detail';
+    if (allowed) {
+      context.go(route, extra: extra);
     } else {
       context.go('/dashboard');
     }
