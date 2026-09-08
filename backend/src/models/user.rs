@@ -65,16 +65,7 @@ pub struct UserResponse {
 
 impl From<User> for UserResponse {
     fn from(u: User) -> Self {
-        Self {
-            id: u.id,
-            uuid: u.uuid,
-            name: u.name,
-            email: u.email,
-            role: u.role,
-            company_id: u.company_id,
-            created_at: u.created_at,
-            status: u.status,
-        }
+        Self { id: u.id, uuid: u.uuid, name: u.name, email: u.email, role: u.role, company_id: u.company_id, created_at: u.created_at, status: u.status }
     }
 }
 
@@ -89,6 +80,11 @@ pub struct UserProfileResponse {
 #[derive(Debug, Deserialize)]
 pub struct UpdateUserStatusRequest {
     pub status: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct UpdateUserRoleRequest {
+    pub role: String,
 }
 
 #[derive(Debug, Deserialize)]
