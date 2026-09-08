@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { User as UserIcon, Bell, Search, Download } from 'lucide-react';
+import { Bell, Search, Download } from 'lucide-react';
 import { AeroLogo } from './Logo';
 
 export const Navbar: React.FC = () => {
@@ -35,10 +35,6 @@ export const Navbar: React.FC = () => {
             <button className="hidden h-10 w-10 items-center justify-center rounded-xl border border-pebble bg-white/80 text-ash shadow-sm transition hover:border-accent/25 hover:bg-white hover:text-accent sm:flex" title="Notifications">
               <Bell className="h-4 w-4" />
             </button>
-            <div className="hidden items-center gap-3 border-l border-pebble pl-3 sm:flex" title={user.name}>
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-accent/15 bg-accent-soft text-accent"><UserIcon className="h-4 w-4" /></div>
-              <div className="max-w-40"><div className="truncate text-sm font-bold text-ink">{user.name}</div></div>
-            </div>
           </div>
         )}
       </div>
