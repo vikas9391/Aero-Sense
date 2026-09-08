@@ -43,6 +43,12 @@ pub struct ComponentUpdateHistory {
     pub status: String,
     pub aircraft_id: Option<i64>,
     pub updated_at: String,
+    pub previous_serial_number: Option<String>,
+    pub previous_component_type: Option<String>,
+    pub previous_manufacturer: Option<String>,
+    pub previous_status: Option<String>,
+    pub previous_aircraft_id: Option<i64>,
+    pub user_name: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
