@@ -19,6 +19,44 @@ const NavGroup: React.FC<{ title: string; items: NavItem[] }> = ({ title, items 
   </div>
 );
 
+const roleLabel = (role?: string) => {
+  switch (role) {
+    case 'SUPER_ADMIN': return 'SUPER ADMIN';
+    case 'COMPANY_ADMIN': return 'COMPANY ADMIN';
+    case 'MANUFACTURER': return 'MANUFACTURER';
+    case 'MAINTENANCE_TECHNICIAN': return 'MAINTENANCE TECHNICIAN';
+    case 'INSPECTOR': return 'INSPECTOR';
+    default: return role?.replace(/_/g, ' ') || 'USER';
+  }
+};
+
+const roleInitials = (role?: string) => {
+  switch (role) {
+    case 'SUPER_ADMIN': return 'SA';
+    case 'COMPANY_ADMIN': return 'CA';
+    case 'MANUFACTURER': return 'MF';
+    case 'MAINTENANCE_TECHNICIAN': return 'MT';
+    case 'INSPECTOR': return 'IN';
+    default: return 'US';
+  }
+};
+
+const ProfileLogoutCard: React.FC<{ user: any; logout: () => void }> = ({ user, logout }) => (
+  <div className="rounded-2xl border border-indigo-100 bg-white/90 p-3 shadow-sm">
+    <div className="flex items-center gap-3">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 via-blue-600 to-violet-600 text-sm font-extrabold text-white shadow-md shadow-indigo-200">{roleInitials(user?.role)}</div>
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-sm font-bold text-ink">{user?.name || 'User'}</div>
+        <div className="mt-0.5 truncate text-[9px] font-extrabold uppercase tracking-[.12em] text-accent">{roleLabel(user?.role)}</div>
+      </div>
+    </div>
+    <button type="button" onClick={logout} className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-blue-50 to-violet-50 px-3 py-2.5 text-xs font-bold text-accent transition-all hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-md hover:shadow-indigo-100">
+      <LogOut className="h-4 w-4" />
+      <span>Logout</span>
+    </button>
+  </div>
+);
+
 export const Sidebar: React.FC = () => {
   const { user, logout } = useAuth();
   const role = user?.role;
@@ -29,27 +67,12 @@ export const Sidebar: React.FC = () => {
   const canAudit = isCompanyAdmin || role === 'INSPECTOR';
   const shell = 'w-[17rem] shrink-0 bg-[#f7fafb]/90 border-r border-white p-4 flex flex-col justify-between sticky top-[65px] h-[calc(100vh-65px)] overflow-y-auto backdrop-blur-xl';
 
+  const bottom = <div className="mt-auto space-y-3 pt-6"><AppDownloadCard /><ProfileLogoutCard user={user} logout={logout} /></div>;
+
   if (isSuperAdmin) return <aside className={shell}>
     <div className="flex min-h-full flex-col">
-      <div className="space-y-7">
-        <NavGroup title="Platform Administration" items={[{ to: '/companies', label: 'Companies', icon: Building2 }, { to: '/profile', label: 'My Profile', icon: User }]} />
-      </div>
-      <div className="mt-auto space-y-3 pt-6">
-        <AppDownloadCard />
-        <div className="rounded-2xl border border-indigo-100 bg-white/90 p-3 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 via-blue-600 to-violet-600 text-sm font-extrabold text-white shadow-md shadow-indigo-200">SA</div>
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-bold text-ink">Super Admin</div>
-              <div className="mt-0.5 text-[9px] font-extrabold uppercase tracking-[.14em] text-accent">SUPER ADMIN</div>
-            </div>
-          </div>
-          <button type="button" onClick={logout} className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-blue-50 to-violet-50 px-3 py-2.5 text-xs font-bold text-accent transition-all hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-md hover:shadow-indigo-100">
-            <LogOut className="h-4 w-4" />
-            <span>Logout</span>
-          </button>
-        </div>
-      </div>
+      <NavGroup title="Platform Administration" items={[{ to: '/companies', label: 'Companies', icon: Building2 }, { to: '/profile', label: 'My Profile', icon: User }]} />
+      {bottom}
     </div>
   </aside>;
 
@@ -66,11 +89,9 @@ export const Sidebar: React.FC = () => {
   ];
 
   return <aside className={shell}>
-    <div className="space-y-7"><NavGroup title="Core Operations" items={coreItems} />{managementItems.length > 0 && <NavGroup title="Management & Audit" items={managementItems} />}</div>
-    <div className="space-y-2.5">
-      {canVerify && <NavLink to="/verify" className="group flex items-center gap-3 rounded-2xl border border-accent/15 bg-accent-soft px-3 py-3 text-sm font-bold text-accent transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-accent/10"><span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/70"><Nfc className="h-4 w-4" /></span><span className="truncate">Quick NFC Verify</span></NavLink>}
-      <AppDownloadCard />
-      <NavLink to="/profile" className={({ isActive }) => `flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition-colors ${isActive ? 'bg-accent-soft text-accent shadow-sm' : 'text-ash hover:bg-white hover:text-ink'}`}><span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100"><User className="h-4 w-4 text-ash" /></span><span className="truncate">My Profile</span></NavLink>
+    <div className="flex min-h-full flex-col">
+      <div className="space-y-7"><NavGroup title="Core Operations" items={coreItems} />{managementItems.length > 0 && <NavGroup title="Management & Audit" items={managementItems} />}</div>
+      {bottom}
     </div>
   </aside>;
 };
