@@ -349,37 +349,32 @@ class _VerificationResultCardState extends State<VerificationResultCard> {
   List<Widget> _componentContent(Map<String, dynamic> data) => [
     const SizedBox(height: 18),
     _section('COMPONENT DETAILS', [
-      _detail('Serial Number', data['serial_number']), _detail('Component Type', data['component_type']), _detail('Manufacturer', data['manufacturer']), _detail('Status', data['status']), _detail('Aircraft', data['aircraft']), _detail('Component ID', data['id']), _detail('Last Updated', data['updated_at']),
+      _detail('Serial Number', data['serial_number']), _detail('Component Type', data['component_type']), _detail('Manufacturer', data['manufacturer']),
+      _detail('Status', data['status']), _detail('Aircraft', data['aircraft'] ?? 'Unassigned'), _detail('Last Update', data['updated_at']),
     ]),
-    const SizedBox(height: 12),
-    _section('TAG DETAILS', [
-      _detail('Identifier', data['tag_identifier']), _detail('Technology', data['tag_technology']), _detail('Security', data['tag_security_type']), _detail('Tamper status', data['tag_tamper_status']), _detail('Registered', data['tag_registered_at']),
-    ]),
-    const SizedBox(height: 12),
-    Row(children: [
-      Expanded(child: FilledButton.icon(onPressed: () => _openPassport(context), icon: const Icon(Icons.badge_outlined), label: const Text('Passport'))),
-      const SizedBox(width: 10),
-      Expanded(child: OutlinedButton.icon(onPressed: editing ? null : _startEdit, icon: const Icon(Icons.edit_outlined), label: const Text('Update data'))),
-    ]),
-    if (editing) ...[const SizedBox(height: 14), _editPanel()],
-    const SizedBox(height: 14),
-    _historySection(data['database_id']),
+    if (editing) ...[
+      const Divider(height: 26),
+      _editPanel(),
+    ],
+    if (data['database_id'] is num) ...[
+      const Divider(height: 26),
+      if (editing == false) SizedBox(width: double.infinity, child: OutlinedButton.icon(onPressed: _startEdit, icon: const Icon(Icons.edit_outlined), label: const Text('Update component'))),
+      const SizedBox(height: 8),
+      SizedBox(width: double.infinity, child: OutlinedButton.icon(onPressed: () => _loadHistory((data['database_id'] as num).toInt()), icon: Icon(loadingHistory ? Icons.sync : Icons.history), label: Text(loadingHistory ? 'Loading history…' : 'View update history'))),
+      if (history.isNotEmpty) ...[
+        const SizedBox(height: 10),
+        ...history.map((item) => _historyRow(item)),
+      ],
+      const SizedBox(height: 8),
+      SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: () => _openPassport(context), icon: const Icon(Icons.badge_outlined), label: const Text('Open component passport'))),
+    ],
   ];
 
-  List<Widget> _unboundContent() => [
-    const SizedBox(height: 12),
-    const Text('This NFC tag is not bound to a component yet. The scanned UID is preserved for binding.', style: TextStyle(color: muted, height: 1.45)),
-    const SizedBox(height: 12),
-    SizedBox(width: double.infinity, child: OutlinedButton.icon(onPressed: () => _bind(context), icon: const Icon(Icons.link), label: const Text('Bind this scanned NFC tag'))),
-  ];
+  List<Widget> _unboundContent() => [const SizedBox(height: 18), const Text('This NFC tag is not currently bound to a registered component.', style: TextStyle(color: muted, height: 1.4))];
 
-  Widget _checkRow(MapEntry<String, bool> entry) => Padding(
-    padding: const EdgeInsets.only(bottom: 9),
-    child: Row(children: [
-      Icon(entry.value ? Icons.check_circle_outline : Icons.cancel_outlined, color: entry.value ? good : Colors.red, size: 18),
-      const SizedBox(width: 8),
-      Expanded(child: Text(_label(entry.key), style: const TextStyle(fontWeight: FontWeight.w600))),
-    ]),
+  Widget _checkRow(MapEntry<String, dynamic> entry) => Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Row(children: [Icon(entry.value == true || entry.value == 'PASS' ? Icons.check_circle : Icons.cancel, color: entry.value == true || entry.value == 'PASS' ? good : Colors.red, size: 18), const SizedBox(width: 8), Expanded(child: Text(_label(entry.key), style: const TextStyle(fontWeight: FontWeight.w600)))]),
   );
 
   String _label(String value) => value.replaceAll('_', ' ').replaceAll(RegExp(r'\s+'), ' ').trim().toUpperCase();
@@ -400,9 +395,9 @@ class _VerificationResultCardState extends State<VerificationResultCard> {
     const SizedBox(height: 10),
     TextField(controller: manufacturer, decoration: const InputDecoration(labelText: 'Manufacturer')),
     const SizedBox(height: 10),
-    DropdownButtonFormField<String>(value: status, decoration: const InputDecoration(labelText: 'Status'), items: const [DropdownMenuItem(value: 'OPERATIONAL', child: Text('Operational')), DropdownMenuItem(value: 'MAINTENANCE', child: Text('Maintenance')), DropdownMenuItem(value: 'RETIRED', child: Text('Retired')), DropdownMenuItem(value: 'SUSPENDED', child: Text('Suspended'))], onChanged: saving ? null : (value) { if (value != null) setState(() => status = value); }),
+    DropdownButtonFormField<String>(initialValue: status, decoration: const InputDecoration(labelText: 'Status'), items: const [DropdownMenuItem(value: 'OPERATIONAL', child: Text('Operational')), DropdownMenuItem(value: 'MAINTENANCE', child: Text('Maintenance')), DropdownMenuItem(value: 'RETIRED', child: Text('Retired')), DropdownMenuItem(value: 'SUSPENDED', child: Text('Suspended'))], onChanged: saving ? null : (value) { if (value != null) setState(() => status = value); }),
     const SizedBox(height: 10),
-    DropdownButtonFormField<String?>(value: selectedAircraft, decoration: const InputDecoration(labelText: 'Aircraft'), items: [const DropdownMenuItem<String?>(value: null, child: Text('Unassigned')), ...aircraft.map((item) => DropdownMenuItem<String?>(value: item.id.toString(), child: Text(item.registration)))], onChanged: saving ? null : (value) => setState(() => selectedAircraft = value)),
+    DropdownButtonFormField<String?>(initialValue: selectedAircraft, decoration: const InputDecoration(labelText: 'Aircraft'), items: [const DropdownMenuItem<String?>(value: null, child: Text('Unassigned')), ...aircraft.map((item) => DropdownMenuItem<String?>(value: item.id.toString(), child: Text(item.registration)))], onChanged: saving ? null : (value) => setState(() => selectedAircraft = value)),
     const SizedBox(height: 10),
     TextField(
       controller: updateNote,
@@ -422,18 +417,18 @@ class _VerificationResultCardState extends State<VerificationResultCard> {
     Row(children: [Expanded(child: OutlinedButton(onPressed: saving ? null : () => setState(() => editing = false), child: const Text('Cancel'))), const SizedBox(width: 10), Expanded(child: FilledButton(onPressed: saving ? null : _saveEdit, child: Text(saving ? 'Saving…' : 'Save update')))]),
   ]);
 
-  Widget _historySection(Object? rawId) {
-    final id = rawId is num ? rawId.toInt() : null;
-    if (id == null) return const SizedBox.shrink();
-    return ExpansionTile(
-      tilePadding: EdgeInsets.zero,
-      title: const Text('Update history', style: TextStyle(fontWeight: FontWeight.w800)),
-      onExpansionChanged: (open) { if (open && history.isEmpty) _loadHistory(id); },
-      children: [
-        if (loadingHistory) const Padding(padding: EdgeInsets.all(12), child: CircularProgressIndicator(color: accent)),
-        if (!loadingHistory && history.isEmpty) const Padding(padding: EdgeInsets.all(12), child: Align(alignment: Alignment.centerLeft, child: Text('No updates recorded.', style: TextStyle(color: muted)))),
-        ...history.map((item) => ListTile(contentPadding: EdgeInsets.zero, title: Text(item.action, style: const TextStyle(fontWeight: FontWeight.w700)), subtitle: Text('${item.actorName ?? 'System'} · ${item.createdAt}', style: const TextStyle(color: muted, fontSize: 11)))),
-      ],
-    );
-  }
+  Widget _historyRow(ComponentUpdateHistory item) => Padding(
+    padding: const EdgeInsets.only(bottom: 10),
+    child: Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(border: Border.all(color: Colors.black12), borderRadius: BorderRadius.circular(12)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(item.updatedAt, style: const TextStyle(fontWeight: FontWeight.w700)),
+        const SizedBox(height: 3),
+        Text('${item.actor} · ${item.summary}', style: const TextStyle(color: muted, fontSize: 12)),
+        if (item.note != null && item.note!.trim().isNotEmpty) ...[const SizedBox(height: 4), Text(item.note!, style: const TextStyle(fontSize: 12))],
+      ]),
+    ),
+  );
 }
