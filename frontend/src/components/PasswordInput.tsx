@@ -32,14 +32,14 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className={`w-full rounded-2xl border border-white/15 bg-white/[0.08] py-3.5 ${leadingIcon ? 'pl-11' : 'pl-4'} pr-12 text-[15px] font-medium text-white caret-white placeholder:text-white/35 outline-none transition focus:border-blue-300/70 focus:bg-white/[0.11] focus:ring-4 focus:ring-blue-400/10 ${mono ? 'aero-mono' : ''} ${translucent ? 'bg-white/[0.10]' : ''}`}
+        className={`w-full rounded-2xl border border-slate-200 bg-white py-3.5 ${leadingIcon ? 'pl-11' : 'pl-4'} pr-12 text-[15px] font-medium text-slate-900 caret-indigo-600 placeholder:text-slate-400 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 ${mono ? 'aero-mono' : ''} ${translucent ? 'bg-white/90' : ''}`}
       />
       <button
         type="button"
         tabIndex={-1}
         onClick={() => setVisible((v) => !v)}
         aria-label={visible ? 'Hide password' : 'Show password'}
-        className="absolute right-3.5 top-1/2 z-10 -translate-y-1/2 rounded-lg p-1 text-white/45 transition hover:bg-white/10 hover:text-white"
+        className="absolute right-3.5 top-1/2 z-10 -translate-y-1/2 rounded-lg p-1 text-slate-400 transition hover:bg-indigo-50 hover:text-indigo-600"
       >
         {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
       </button>
