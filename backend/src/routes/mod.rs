@@ -11,7 +11,7 @@ pub mod verification;
 
 use crate::{config::Config, db::DbPool, middleware::LoginRateLimiter, services::blockchain_service::BlockchainService};
 use axum::http::{HeaderValue, Method};
-use axum::{routing::{delete, get, post, put}, Extension, Router};
+use axum::{routing::{get, post, put}, Extension, Router};
 use std::sync::Arc;
 use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
