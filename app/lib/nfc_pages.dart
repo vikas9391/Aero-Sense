@@ -107,10 +107,10 @@ class _NfcVerificationState extends State<NfcVerificationScreen> {
 
     try {
       final availability = await NfcManager.instance.checkAvailability();
-      if (availability != Availability.enabled) {
+      if (availability != NfcAvailability.enabled) {
         if (mounted) {
           setState(() {
-            error = availability == Availability.disabled ? 'NFC is disabled on this phone.' : 'NFC is not available on this phone.';
+            error = availability == NfcAvailability.disabled ? 'NFC is disabled on this phone.' : 'NFC is not available on this phone.';
             scanning = false;
           });
         }
@@ -282,18 +282,20 @@ class _VerificationResultCardState extends State<VerificationResultCard> {
     }
 
     if (result.checks.isNotEmpty) {
-      children.addAll([
-        const Divider(height: 26),
-        ...result.checks.entries.map((entry) => Padding(
-              padding: const EdgeInsets.only(bottom: 9),
-              child: Row(children: [
-                Icon(entry.value ? Icons.check_circle_outline : Icons.cancel_outlined, color: entry.value ? good : Colors.red, size: 18),
-                const SizedBox(width: 8),
-                Expanded(child: Text(_label(entry.key), style: const TextStyle(fontWeight: FontWeight.w600))),
-                Text(entry.value ? 'PASS' : 'FAIL', style: TextStyle(fontWeight: FontWeight.w900, color: entry.value ? good : Colors.red)),
-              ]),
-            )),
-      ]);
+      children.add(const Divider(height: 26));
+      for (final entry in result.checks.entries) {
+        children.add(
+          Padding(
+            padding: const EdgeInsets.only(bottom: 9),
+            child: Row(children: [
+              Icon(entry.value ? Icons.check_circle_outline : Icons.cancel_outlined, color: entry.value ? good : Colors.red, size: 18),
+              const SizedBox(width: 8),
+              Expanded(child: Text(_label(entry.key), style: const TextStyle(fontWeight: FontWeight.w600))),
+              Text(entry.value ? 'PASS' : 'FAIL', style: TextStyle(fontWeight: FontWeight.w900, color: entry.value ? good : Colors.red)),
+            ]),
+          ),
+        );
+      }
     }
 
     return CardBox(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: children));
