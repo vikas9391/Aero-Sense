@@ -11,8 +11,8 @@ const NavGroup: React.FC<{ title: string; items: NavItem[] }> = ({ title, items 
     <nav className="space-y-1">
       {items.map((item) => {
         const Icon = item.icon;
-        return <NavLink key={item.to} to={item.to} className={({ isActive }) => `group flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition-all duration-200 ${isActive ? 'bg-ink text-white shadow-[0_12px_28px_rgba(7,18,24,.14)]' : item.highlight ? 'bg-good/6 text-good hover:bg-good/10' : 'text-ash hover:bg-white hover:text-ink hover:shadow-sm'}`}>
-          {({ isActive }) => <><span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${isActive ? 'bg-white/10' : item.highlight ? 'bg-good/10' : 'bg-slate-100'}`}><Icon className={`h-4 w-4 ${isActive ? 'text-white' : item.highlight ? 'text-good' : 'text-ash group-hover:text-accent'}`} /></span><span className="truncate">{item.label}</span>{isActive && <ChevronRight className="ml-auto h-3.5 w-3.5 text-white/50" />}</>}
+        return <NavLink key={item.to} to={item.to} className={({ isActive }) => `group flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition-all duration-200 ${isActive ? 'bg-gradient-to-r from-indigo-600 via-blue-600 to-violet-600 text-white shadow-[0_12px_28px_rgba(79,70,229,.20)]' : item.highlight ? 'bg-good/6 text-good hover:bg-good/10' : 'text-ash hover:bg-white hover:text-ink hover:shadow-sm'}`}>
+          {({ isActive }) => <><span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${isActive ? 'bg-white/15' : item.highlight ? 'bg-good/10' : 'bg-slate-100'}`}><Icon className={`h-4 w-4 ${isActive ? 'text-white' : item.highlight ? 'text-good' : 'text-ash group-hover:text-accent'}`} /></span><span className="truncate">{item.label}</span>{isActive && <ChevronRight className="ml-auto h-3.5 w-3.5 text-white/60" />}</>}
         </NavLink>;
       })}
     </nav>
@@ -48,13 +48,13 @@ export const Sidebar: React.FC = () => {
     <div className="space-y-2.5">
       {canVerify && <NavLink to="/verify" className="group flex items-center gap-3 rounded-2xl border border-accent/15 bg-accent-soft px-3 py-3 text-sm font-bold text-accent transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-accent/10"><span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/70"><Nfc className="h-4 w-4" /></span><span className="truncate">Quick NFC Verify</span></NavLink>}
       <AppDownloadCard />
-      <NavLink to="/profile" className={({ isActive }) => `flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition-colors ${isActive ? 'bg-white text-ink shadow-sm' : 'text-ash hover:bg-white hover:text-ink'}`}><span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100"><User className="h-4 w-4 text-ash" /></span><span className="truncate">My Profile</span></NavLink>
+      <NavLink to="/profile" className={({ isActive }) => `flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition-colors ${isActive ? 'bg-accent-soft text-accent shadow-sm' : 'text-ash hover:bg-white hover:text-ink'}`}><span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100"><User className="h-4 w-4 text-ash" /></span><span className="truncate">My Profile</span></NavLink>
     </div>
   </aside>;
 };
 
 const AppDownloadCard: React.FC = () => (
-  <a href="/aerosense.apk" download className="group block rounded-2xl border border-ink/10 bg-ink p-3 text-white shadow-[0_14px_32px_rgba(7,18,24,.12)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(7,18,24,.18)]">
-    <div className="flex items-center gap-3"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10"><Smartphone className="h-4 w-4 text-white" /></span><div className="min-w-0 flex-1"><div className="text-xs font-bold">AeroSense Mobile</div><div className="mt-0.5 text-[10px] text-white/55">Android app · APK</div></div><span className="text-[10px] font-bold text-accent">GET</span></div>
+  <a href="/aerosense.apk" download className="group block rounded-2xl border border-accent/15 bg-gradient-to-br from-indigo-600 via-blue-600 to-violet-600 p-3 text-white shadow-[0_14px_32px_rgba(79,70,229,.16)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(79,70,229,.24)]">
+    <div className="flex items-center gap-3"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/15"><Smartphone className="h-4 w-4 text-white" /></span><div className="min-w-0 flex-1"><div className="text-xs font-bold">AeroSense Mobile</div><div className="mt-0.5 text-[10px] text-white/65">Android app · APK</div></div><span className="text-[10px] font-bold text-white/80">GET</span></div>
   </a>
 );
