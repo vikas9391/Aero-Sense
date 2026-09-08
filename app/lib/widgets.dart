@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:nfc_manager/nfc_manager_ios.dart';
+import 'core/api.dart';
 import 'theme.dart';
 
 /// Shared Aero-Sense brand mark. The aircraft, tracking arc and NFC waves
