@@ -369,6 +369,7 @@ class _LoginState extends State<LoginScreen> {
   final email = TextEditingController();
   final password = TextEditingController();
   bool busy = false;
+  bool showPassword = false;
 
   @override
   void dispose() {
@@ -418,7 +419,7 @@ class _LoginState extends State<LoginScreen> {
                     const SizedBox(height: 12),
                     TextField(controller: email, keyboardType: TextInputType.emailAddress, decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.email_outlined))),
                     const SizedBox(height: 12),
-                    TextField(controller: password, obscureText: true, onSubmitted: (_) { if (!busy) go(); }, decoration: const InputDecoration(labelText: 'Password', prefixIcon: Icon(Icons.lock_outline))),
+                    TextField(controller: password, obscureText: !showPassword, onSubmitted: (_) { if (!busy) go(); }, decoration: InputDecoration(labelText: 'Password', prefixIcon: const Icon(Icons.lock_outline), suffixIcon: IconButton(onPressed: () => setState(() => showPassword = !showPassword), tooltip: showPassword ? 'Hide password' : 'Show password', icon: Icon(showPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined)))),
                     const SizedBox(height: 18),
                     SizedBox(width: double.infinity, height: 52, child: FilledButton.icon(onPressed: busy ? null : go, icon: const Icon(Icons.login), label: Text(busy ? 'Signing in…' : 'Sign in'))),
                   ]),
