@@ -32,7 +32,6 @@ class Api {
       },
     ));
   }
-
   late final Dio dio;
   final storage = const FlutterSecureStorage();
   Future<bool> isBackendReachable() async { try { return (await dio.get('/health')).statusCode == 200; } catch (_) { return false; } }
@@ -44,7 +43,7 @@ class Api {
   Future<User> createUser(String name, String email, String password, String role) async => User.fromJson(Map<String, dynamic>.from((await dio.post('/users', data: {'name': name, 'email': email, 'password': password, 'role': role})).data));
   Future<List<Aircraft>> aircraft() async => _list((await dio.get('/aircraft')).data).map(Aircraft.fromJson).toList();
   Future<Aircraft> createAircraft(Map<String, dynamic> data) async => Aircraft.fromJson(Map<String, dynamic>.from((await dio.post('/aircraft', data: data)).data));
-  Future<List<Component>> components() async => _list((await dio.get('/components')).data.map((e) => Map<String, dynamic>.from(e as Map)).toList()).map(Component.fromJson).toList();
+  Future<List<Component>> components() async => _list((await dio.get('/components')).data).map(Component.fromJson).toList();
   Future<Component> component(int id) async => Component.fromJson(Map<String, dynamic>.from((await dio.get('/components/$id')).data));
   Future<Component> createComponent(Map<String, dynamic> data) async => Component.fromJson(Map<String, dynamic>.from((await dio.post('/components', data: data)).data));
   Future<Component> updateComponent(int id, Map<String, dynamic> data) async => Component.fromJson(Map<String, dynamic>.from((await dio.put('/components/$id', data: data)).data));
@@ -61,7 +60,6 @@ class Api {
   Future<Company> createCompany(String name, {String? slug}) async => Company.fromJson(Map<String, dynamic>.from((await dio.post('/companies', data: {'name': name, if (slug != null && slug.isNotEmpty) 'slug': slug})).data));
   Future<User> createCompanyAdmin(int companyId, String name, String email, String password) async => User.fromJson(Map<String, dynamic>.from((await dio.post('/companies/$companyId/admins', data: {'name': name, 'email': email, 'password': password})).data));
   Future<Company> updateCompanyStatus(int id, String status) async => Company.fromJson(Map<String, dynamic>.from((await dio.put('/companies/$id/status', data: {'status': status})).data));
-
   String errorMessage(Object error) {
     if (error is DioException) {
       final data = error.response?.data;
@@ -80,7 +78,6 @@ class Api {
     }
     return error.toString().replaceFirst('Exception: ', '');
   }
-
   List<Map<String, dynamic>> _list(dynamic data) {
     if (data is List) return data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
     if (data is Map && data['data'] is List) return (data['data'] as List).map((e) => Map<String, dynamic>.from(e as Map)).toList();
