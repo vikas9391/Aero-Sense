@@ -12,6 +12,7 @@ pub struct Config {
     pub super_admin_email: String,
     pub super_admin_password: String,
     pub allow_verification_simulation: bool,
+    pub allow_demo_super_admin_login: bool,
     pub demo_seed: bool,
     pub allowed_origins: Vec<String>,
     pub login_rate_limit_max_attempts: usize,
@@ -29,11 +30,12 @@ impl Config {
         let super_admin_password = env::var("SUPER_ADMIN_PASSWORD").expect("SUPER_ADMIN_PASSWORD must be set in the environment (see backend/.env.example)");
         assert!(super_admin_password.len() >= 8, "SUPER_ADMIN_PASSWORD must be at least 8 characters");
         let allow_verification_simulation = env::var("ALLOW_VERIFICATION_SIMULATION").map(|v| v.eq_ignore_ascii_case("true") || v == "1").unwrap_or(false);
+        let allow_demo_super_admin_login = env::var("ALLOW_DEMO_SUPER_ADMIN_LOGIN").map(|v| v.eq_ignore_ascii_case("true") || v == "1").unwrap_or(false);
         let demo_seed = env::var("DEMO_SEED").map(|v| v.eq_ignore_ascii_case("true") || v == "1").unwrap_or(false);
         let allowed_origins = env::var("ALLOWED_ORIGINS").map(|v| v.split(',').map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).collect()).unwrap_or_else(|_| vec!["http://localhost:5173".to_string(), "http://127.0.0.1:5173".to_string()]);
         let login_rate_limit_max_attempts = env::var("LOGIN_RATE_LIMIT_MAX_ATTEMPTS").ok().and_then(|v| v.parse::<usize>().ok()).unwrap_or(5);
         let login_rate_limit_window = env::var("LOGIN_RATE_LIMIT_WINDOW_SECS").ok().and_then(|v| v.parse::<u64>().ok()).map(std::time::Duration::from_secs).unwrap_or_else(|| std::time::Duration::from_secs(15 * 60));
-        Self { database_url, port, host, jwt_secret, super_admin_email, super_admin_password, allow_verification_simulation, demo_seed, allowed_origins, login_rate_limit_max_attempts, login_rate_limit_window }
+        Self { database_url, port, host, jwt_secret, super_admin_email, super_admin_password, allow_verification_simulation, allow_demo_super_admin_login, demo_seed, allowed_origins, login_rate_limit_max_attempts, login_rate_limit_window }
     }
 
     fn jwt_secret() -> String {
