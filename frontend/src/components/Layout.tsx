@@ -8,7 +8,7 @@ export const Layout: React.FC = () => {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#f4f1ec] text-ink flex flex-col font-body">
+    <div className="aero-app-shell min-h-screen bg-transparent text-ink flex flex-col font-body">
       <Navbar />
       <div className="flex flex-1 min-w-0">
         <div className="hidden lg:block">
@@ -19,16 +19,16 @@ export const Layout: React.FC = () => {
             <button
               type="button"
               aria-label="Close navigation"
-              className="fixed inset-0 z-40 bg-black/20 lg:hidden"
+              className="fixed inset-0 z-40 bg-ink/35 backdrop-blur-[2px] lg:hidden"
               onClick={() => setMobileNavOpen(false)}
             />
-            <div className="fixed inset-y-0 left-0 z-50 w-[min(82vw,20rem)] lg:hidden">
+            <div className="fixed inset-y-0 left-0 z-50 w-[min(88vw,22rem)] lg:hidden">
               <div className="relative h-full">
                 <Sidebar />
                 <button
                   type="button"
                   aria-label="Close navigation"
-                  className="absolute right-3 top-3 rounded-lg border border-pebble bg-white p-2 text-ash shadow-sm"
+                  className="absolute right-3 top-3 rounded-xl border border-pebble bg-white/90 p-2 text-ash shadow-lg backdrop-blur"
                   onClick={() => setMobileNavOpen(false)}
                 >
                   <X className="h-4 w-4" />
@@ -41,10 +41,10 @@ export const Layout: React.FC = () => {
           <button
             type="button"
             aria-label="Open navigation"
-            className="mb-4 inline-flex items-center gap-2 rounded-xl border border-pebble bg-white px-3 py-2 text-xs font-semibold text-ink shadow-sm lg:hidden"
+            className="mb-5 inline-flex items-center gap-2 rounded-xl border border-pebble bg-white/85 px-3.5 py-2.5 text-xs font-bold text-ink shadow-sm backdrop-blur lg:hidden"
             onClick={() => setMobileNavOpen(true)}
           >
-            <Menu className="h-4 w-4" />
+            <Menu className="h-4 w-4 text-accent" />
             Menu
           </button>
           <Outlet />
