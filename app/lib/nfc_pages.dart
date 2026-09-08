@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -78,6 +80,32 @@ class _NfcVerificationState extends State<NfcVerificationScreen> {
 
   Future<void> _openNfcSettings() async { try { await _settings.invokeMethod('openNfcSettings'); } catch (_) {} }
 
+  Future<void> _handleTag(NfcTag tag) async {
+    final identifier = _identifier(tag);
+    if (identifier == null) {
+      if (Platform.isAndroid) {
+        await NfcManagerAndroid.instance.disableReaderMode();
+      } else {
+        await NfcManager.instance.stopSession(errorMessageIos: 'Unable to read NFC identifier');
+      }
+      if (mounted) setState(() { scanning = false; error = 'The NFC tag did not expose a readable identifier.'; });
+      return;
+    }
+    if (mounted) setState(() => uid = identifier);
+    try {
+      final verification = await nfcApi.verifyNfc(identifier);
+      if (mounted) setState(() { result = verification; scanning = false; });
+    } catch (e) {
+      if (mounted) setState(() { error = nfcApi.errorMessage(e); scanning = false; });
+    } finally {
+      if (Platform.isAndroid) {
+        await NfcManagerAndroid.instance.disableReaderMode();
+      } else {
+        await NfcManager.instance.stopSession();
+      }
+    }
+  }
+
   Future<void> _scan() async {
     setState(() { scanning = true; uid = null; error = null; result = null; });
     try {
@@ -90,29 +118,32 @@ class _NfcVerificationState extends State<NfcVerificationScreen> {
         });
         return;
       }
-      await NfcManager.instance.startSession(
-        pollingOptions: {NfcPollingOption.iso14443, NfcPollingOption.iso15693, NfcPollingOption.iso18092},
-        onDiscovered: (tag) async {
-          final identifier = _identifier(tag);
-          if (identifier == null) {
-            await NfcManager.instance.stopSession(errorMessageIos: 'Unable to read NFC identifier');
-            if (mounted) setState(() { scanning = false; error = 'The NFC tag did not expose a readable identifier.'; });
-            return;
-          }
-          if (mounted) setState(() => uid = identifier);
-          try {
-            final verification = await nfcApi.verifyNfc(identifier);
-            if (mounted) setState(() { result = verification; scanning = false; });
-          } catch (e) {
-            if (mounted) setState(() { error = nfcApi.errorMessage(e); scanning = false; });
-          } finally {
-            await NfcManager.instance.stopSession();
-          }
-        },
-      );
+      if (Platform.isAndroid) {
+        await NfcManagerAndroid.instance.enableReaderMode(
+          flags: {
+            NfcReaderFlagAndroid.nfcA,
+            NfcReaderFlagAndroid.nfcB,
+            NfcReaderFlagAndroid.nfcF,
+            NfcReaderFlagAndroid.nfcV,
+            NfcReaderFlagAndroid.nfcBarcode,
+            NfcReaderFlagAndroid.noPlatformSounds,
+            NfcReaderFlagAndroid.skipNdefCheck,
+          },
+          onTagDiscovered: _handleTag,
+        );
+      } else {
+        await NfcManager.instance.startSession(
+          pollingOptions: {NfcPollingOption.iso14443, NfcPollingOption.iso15693, NfcPollingOption.iso18092},
+          onDiscovered: _handleTag,
+        );
+      }
     } catch (e) {
       if (mounted) setState(() { error = nfcApi.errorMessage(e); scanning = false; });
-      try { await NfcManager.instance.stopSession(); } catch (_) {}
+      if (Platform.isAndroid) {
+        try { await NfcManagerAndroid.instance.disableReaderMode(); } catch (_) {}
+      } else {
+        try { await NfcManager.instance.stopSession(); } catch (_) {}
+      }
     }
   }
 
@@ -313,7 +344,7 @@ class _VerificationResultCardState extends State<VerificationResultCard> {
     const SizedBox(height: 12),
     const Text('This NFC tag is not bound to a component yet. The scanned UID is preserved for binding.', style: TextStyle(color: muted, height: 1.45)),
     const SizedBox(height: 12),
-    SizedBox(width: double.infinity, child: OutlinedButton.icon(onPressed: () => _bind(context), icon: const Icon(Icons.link), label: const Text('Bind this scanned NFC tag'))),
+    SizedBox(width: double.infinity, child: OutlinedButton.icon(onPressed: () => _bind(context), icon: const Icon(Icons.link), label: const Text('Bind this scanned NFC tag')),
   ];
 
   Widget _checkRow(MapEntry<String, bool> entry) => Padding(
