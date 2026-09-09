@@ -3,6 +3,7 @@ import { verificationApi } from '../services/api';
 import { VerificationLog } from '../types';
 import { useToast } from '../context/ToastContext';
 import { ShieldAlert, Activity, CheckCircle2, AlertTriangle, XCircle, Radio, Fingerprint, Database, Clock3 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Card, CardHeader } from '../components/ui/Card';
 
@@ -29,6 +30,13 @@ export const SecurityPage: React.FC = () => {
     failed: logs.filter((l) => l.final_result !== 'AUTHENTIC' && l.final_result !== 'SUSPICIOUS').length,
   }), [logs]);
 
+  const statItems: Array<[string, number, LucideIcon]> = [
+    ['TOTAL', stats.total, Activity],
+    ['AUTHENTIC', stats.authentic, CheckCircle2],
+    ['SUSPICIOUS', stats.suspicious, AlertTriangle],
+    ['FAILED', stats.failed, XCircle],
+  ];
+
   return (
     <div className="min-w-0 space-y-7 pb-8">
       <PageHeader
@@ -50,15 +58,13 @@ export const SecurityPage: React.FC = () => {
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">Review NFC authentication, component binding, physical tamper signals and proof integrity from a single operational view.</p>
           </div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {[
-              ['TOTAL', stats.total, Activity],
-              ['AUTHENTIC', stats.authentic, CheckCircle2],
-              ['SUSPICIOUS', stats.suspicious, AlertTriangle],
-              ['FAILED', stats.failed, XCircle],
-            ].map(([label, value, Icon]) => {
-              const I = Icon as React.ComponentType<{ className?: string }>;
-              return <div key={String(label)} className="min-w-[88px] rounded-2xl border border-white/10 bg-white/[.06] px-3 py-3"><I className="mb-3 h-4 w-4 text-sky-300" /><div className="font-display text-xl font-semibold">{loading ? '—' : value}</div><div className="mt-1 text-[9px] font-bold uppercase tracking-[.13em] text-slate-400">{label}</div></div>;
-            })}
+            {statItems.map(([label, value, Icon]) => (
+              <div key={label} className="min-w-[88px] rounded-2xl border border-white/10 bg-white/[.06] px-3 py-3">
+                <Icon className="mb-3 h-4 w-4 text-sky-300" />
+                <div className="font-display text-xl font-semibold">{loading ? '—' : value}</div>
+                <div className="mt-1 text-[9px] font-bold uppercase tracking-[.13em] text-slate-400">{label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -68,7 +74,7 @@ export const SecurityPage: React.FC = () => {
           { icon: Radio, title: 'NFC authentication', text: 'Dynamic cryptographic authentication helps prevent cloned or replayed tag identities.' },
           { icon: Fingerprint, title: 'Physical tamper', text: 'TagTamper state changes can surface physical interference with the protected component tag.' },
           { icon: Database, title: 'Proof integrity', text: 'Anchored maintenance digests provide an independent signal when records no longer match.' },
-        ].map(({ icon: Icon, title, text }) => (
+        ].map(({ icon: Icon, title, text }: { icon: LucideIcon; title: string; text: string }) => (
           <Card key={title} className="group p-5 sm:p-6">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#dce8ff] bg-[#f6f9ff] text-accent transition group-hover:-translate-y-0.5"><Icon className="h-4 w-4" /></div>
             <h3 className="mt-4 text-sm font-bold text-ink">{title}</h3>
@@ -91,7 +97,7 @@ export const SecurityPage: React.FC = () => {
             {logs.map((log) => {
               const authentic = log.final_result === 'AUTHENTIC';
               const suspicious = log.final_result === 'SUSPICIOUS';
-              const Icon = authentic ? CheckCircle2 : suspicious ? AlertTriangle : XCircle;
+              const Icon: LucideIcon = authentic ? CheckCircle2 : suspicious ? AlertTriangle : XCircle;
               const tone = authentic ? 'text-[#087a58] bg-[#effaf5] border-[#bfe5d5]' : suspicious ? 'text-[#ad730d] bg-[#fff9eb] border-[#f0d9a5]' : 'text-[#bd4037] bg-[#fff2f1] border-[#efc8c4]';
               return (
                 <div key={log.id} className="group grid gap-4 px-5 py-4 transition hover:bg-[var(--bg-app)] sm:grid-cols-[auto_1fr_auto] sm:items-center sm:px-6">
