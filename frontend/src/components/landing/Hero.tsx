@@ -3,7 +3,7 @@ import { motion, useTransform, useScroll, useReducedMotion } from 'framer-motion
 import { frameSrc, useFrameCache, type FrameSequenceConfig } from '../../lib/useCinematicFrames';
 
 const AIRCRAFT: FrameSequenceConfig = { path: '/cinematic/aircraft', count: 120 };
-const ENGINE: FrameSequenceConfig = { path: '/cinematic/engine2', count: 119 };
+const ENGINE: FrameSequenceConfig = { path: '/cinematic/engine3', count: 225 };
 const PRELOAD_RADIUS = 12;
 const SCROLL_DISTANCE_VH = 380;
 const NFC_HOLD_ZONE = 0.08;
@@ -77,10 +77,6 @@ export const Hero: React.FC = () => {
 
     if (!img) {
       load(targetSrc);
-      // Prefer the nearest already-decoded frame. Crucially, remember the
-      // frame we actually drew rather than pretending the requested frame
-      // was rendered; otherwise a late image load could permanently freeze
-      // the sequence on the fallback frame.
       for (let d = 1; d < cfg.count && !img; d++) {
         const previous = idx - d;
         const next = idx + d;
