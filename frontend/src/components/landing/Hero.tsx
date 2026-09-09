@@ -77,7 +77,6 @@ export const Hero: React.FC = () => {
     if (force || frameChanged) {
       const targetSrc = frameSrc(cfg, idx);
       let img = get(targetSrc);
-      let drawnSrc = targetSrc;
 
       if (!img) {
         load(targetSrc);
@@ -88,7 +87,6 @@ export const Hero: React.FC = () => {
             const candidate = get(frameSrc(cfg, previous));
             if (candidate) {
               img = candidate;
-              drawnSrc = frameSrc(cfg, previous);
               break;
             }
           }
@@ -96,7 +94,6 @@ export const Hero: React.FC = () => {
             const candidate = get(frameSrc(cfg, next));
             if (candidate) {
               img = candidate;
-              drawnSrc = frameSrc(cfg, next);
               break;
             }
           }
@@ -108,8 +105,6 @@ export const Hero: React.FC = () => {
       lastSequenceRef.current = sequenceKey;
     }
 
-    // Preloading/eviction is intentionally tied to frame changes rather than
-    // every animation frame. This keeps scrolling responsive on phones.
     if (frameChanged || force) {
       preload(cfg, idx, PRELOAD_RADIUS);
       preload(other, otherBoundary, 5);
