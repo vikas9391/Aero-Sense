@@ -4,7 +4,7 @@ import { frameSrc, useFrameCache, type FrameSequenceConfig } from '../../lib/use
 
 const AIRCRAFT: FrameSequenceConfig = { path: '/cinematic/aircraft', count: 120 };
 const ENGINE: FrameSequenceConfig = { path: '/cinematic/engine2', count: 119 };
-const PRELOAD_RADIUS = 8;
+const PRELOAD_RADIUS = 12;
 const SCROLL_DISTANCE_VH = 380;
 const NFC_HOLD_ZONE = 0.08;
 const STAGE_LABELS = ['01/AIRCRAFT', '02/ENGINE', '03/NFC', '04/VERIFIED'] as const;
@@ -73,18 +73,43 @@ export const Hero: React.FC = () => {
     const { cfg, other, idx, otherBoundary } = resolveFrame(progressRef.current);
     const targetSrc = frameSrc(cfg, idx);
     let img = get(targetSrc);
+    let drawnSrc = targetSrc;
+
     if (!img) {
       load(targetSrc);
+      // Prefer the nearest already-decoded frame. Crucially, remember the
+      // frame we actually drew rather than pretending the requested frame
+      // was rendered; otherwise a late image load could permanently freeze
+      // the sequence on the fallback frame.
       for (let d = 1; d < cfg.count && !img; d++) {
-        img = get(frameSrc(cfg, Math.max(0, idx - d))) || get(frameSrc(cfg, Math.min(cfg.count - 1, idx + d)));
+        const previous = idx - d;
+        const next = idx + d;
+        if (previous >= 0) {
+          const candidate = get(frameSrc(cfg, previous));
+          if (candidate) {
+            img = candidate;
+            drawnSrc = frameSrc(cfg, previous);
+            break;
+          }
+        }
+        if (next < cfg.count) {
+          const candidate = get(frameSrc(cfg, next));
+          if (candidate) {
+            img = candidate;
+            drawnSrc = frameSrc(cfg, next);
+            break;
+          }
+        }
       }
     }
-    if (img && lastDrawnSrcRef.current !== targetSrc) {
+
+    if (img && lastDrawnSrcRef.current !== drawnSrc) {
       drawFrame(img);
-      lastDrawnSrcRef.current = targetSrc;
+      lastDrawnSrcRef.current = drawnSrc;
     }
+
     preload(cfg, idx, PRELOAD_RADIUS);
-    preload(other, otherBoundary, 6);
+    preload(other, otherBoundary, 8);
     evictAround(cfg, idx, other, otherBoundary);
   }, [resolveFrame, get, load, drawFrame, preload, evictAround]);
 
@@ -131,7 +156,7 @@ export const Hero: React.FC = () => {
   useEffect(() => {
     if (prefersReducedMotion) return;
     load(frameSrc(AIRCRAFT, 0));
-    preload(AIRCRAFT, 0, 12);
+    preload(AIRCRAFT, 0, 16);
   }, [load, preload, prefersReducedMotion]);
 
   if (prefersReducedMotion) return <HeroStillFallback />;
@@ -140,8 +165,6 @@ export const Hero: React.FC = () => {
     <section ref={wrapperRef} className="relative w-full bg-[var(--color-sky)]" style={{ height: `${SCROLL_DISTANCE_VH}vh` }}>
       <div className="sticky top-0 h-screen w-full overflow-hidden" style={{ transform: 'translateZ(0)' }}>
         <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" aria-hidden="true" />
-
-        {/* Keep the top of the aircraft scene bright so the glass navigation remains visually integrated instead of creating a dark strip behind it. */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 z-[5] h-36 bg-gradient-to-b from-white/30 via-white/8 to-transparent md:h-44" />
         <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-80 bg-gradient-to-t from-[var(--color-ink)]/75 via-[var(--color-ink)]/35 to-transparent md:h-[28rem]" />
 
