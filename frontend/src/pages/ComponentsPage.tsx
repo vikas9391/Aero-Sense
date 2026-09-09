@@ -42,6 +42,16 @@ export const ComponentsPage: React.FC = () => {
   const assigned = components.filter((c) => Boolean(c.aircraft_registration)).length;
   const unassigned = components.length - assigned;
 
+  const metrics: Array<{
+    label: string;
+    value: number;
+    Icon: React.ComponentType<{ className?: string }>;
+  }> = [
+    { label: 'Tracked', value: components.length, Icon: Layers3 },
+    { label: 'Operational', value: operational, Icon: ShieldCheck },
+    { label: 'Assigned', value: assigned, Icon: Plane },
+  ];
+
   return (
     <div className="min-w-0 space-y-7">
       <PageHeader
@@ -66,10 +76,10 @@ export const ComponentsPage: React.FC = () => {
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">Track physical hardware, aircraft assignment and NFC-backed identity from one controlled registry.</p>
           </div>
           <div className="grid grid-cols-3 gap-2 sm:gap-3">
-            {[['Tracked', components.length, Layers3], ['Operational', operational, ShieldCheck], ['Assigned', assigned, Plane]].map(([label, value, Icon]) => (
-              <div key={String(label)} className="min-w-[86px] rounded-2xl border border-white/10 bg-white/[.06] px-3 py-3 backdrop-blur-sm">
+            {metrics.map(({ label, value, Icon }) => (
+              <div key={label} className="min-w-[86px] rounded-2xl border border-white/10 bg-white/[.06] px-3 py-3 backdrop-blur-sm">
                 <Icon className="mb-3 h-4 w-4 text-sky-300" />
-                <div className="font-display text-xl font-semibold">{loading ? '—' : String(value)}</div>
+                <div className="font-display text-xl font-semibold">{loading ? '—' : value}</div>
                 <div className="mt-1 text-[10px] uppercase tracking-wider text-slate-400">{label}</div>
               </div>
             ))}
