@@ -4,7 +4,7 @@ import { frameSrc, useFrameCache, type FrameSequenceConfig } from '../../lib/use
 
 const AIRCRAFT: FrameSequenceConfig = { path: '/cinematic/aircraft', count: 120 };
 const ENGINE: FrameSequenceConfig = { path: '/cinematic/engine3', count: 225 };
-const PRELOAD_RADIUS = 12;
+const PRELOAD_RADIUS = 8;
 const SCROLL_DISTANCE_VH = 380;
 const NFC_HOLD_ZONE = 0.08;
 const STAGE_LABELS = ['01/AIRCRAFT', '02/ENGINE', '03/NFC', '04/VERIFIED'] as const;
@@ -15,8 +15,8 @@ export const Hero: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { load, get, preload, evictAround } = useFrameCache();
   const progressRef = useRef(0);
-  const lastDrawnSrcRef = useRef<string | null>(null);
-  const rafRef = useRef<number | null>(null);
+  const lastFrameIndexRef = useRef(-1);
+  const lastSequenceRef = useRef<string | null>(null);
   const sizeRef = useRef({ w: 0, h: 0 });
   const { scrollYProgress } = useScroll({ target: wrapperRef, offset: ['start start', 'end end'] });
 
@@ -69,57 +69,63 @@ export const Hero: React.FC = () => {
     ctx.drawImage(img, dx, dy, dw, dh);
   }, []);
 
-  const render = useCallback(() => {
+  const render = useCallback((force = false) => {
     const { cfg, other, idx, otherBoundary } = resolveFrame(progressRef.current);
-    const targetSrc = frameSrc(cfg, idx);
-    let img = get(targetSrc);
-    let drawnSrc = targetSrc;
+    const sequenceKey = cfg.path;
+    const frameChanged = idx !== lastFrameIndexRef.current || sequenceKey !== lastSequenceRef.current;
 
-    if (!img) {
-      load(targetSrc);
-      for (let d = 1; d < cfg.count && !img; d++) {
-        const previous = idx - d;
-        const next = idx + d;
-        if (previous >= 0) {
-          const candidate = get(frameSrc(cfg, previous));
-          if (candidate) {
-            img = candidate;
-            drawnSrc = frameSrc(cfg, previous);
-            break;
+    if (force || frameChanged) {
+      const targetSrc = frameSrc(cfg, idx);
+      let img = get(targetSrc);
+      let drawnSrc = targetSrc;
+
+      if (!img) {
+        load(targetSrc);
+        for (let d = 1; d < Math.min(cfg.count, 18) && !img; d++) {
+          const previous = idx - d;
+          const next = idx + d;
+          if (previous >= 0) {
+            const candidate = get(frameSrc(cfg, previous));
+            if (candidate) {
+              img = candidate;
+              drawnSrc = frameSrc(cfg, previous);
+              break;
+            }
           }
-        }
-        if (next < cfg.count) {
-          const candidate = get(frameSrc(cfg, next));
-          if (candidate) {
-            img = candidate;
-            drawnSrc = frameSrc(cfg, next);
-            break;
+          if (next < cfg.count) {
+            const candidate = get(frameSrc(cfg, next));
+            if (candidate) {
+              img = candidate;
+              drawnSrc = frameSrc(cfg, next);
+              break;
+            }
           }
         }
       }
+
+      if (img) drawFrame(img);
+      lastFrameIndexRef.current = idx;
+      lastSequenceRef.current = sequenceKey;
     }
 
-    if (img && lastDrawnSrcRef.current !== drawnSrc) {
-      drawFrame(img);
-      lastDrawnSrcRef.current = drawnSrc;
+    // Preloading/eviction is intentionally tied to frame changes rather than
+    // every animation frame. This keeps scrolling responsive on phones.
+    if (frameChanged || force) {
+      preload(cfg, idx, PRELOAD_RADIUS);
+      preload(other, otherBoundary, 5);
+      evictAround(cfg, idx, other, otherBoundary);
     }
-
-    preload(cfg, idx, PRELOAD_RADIUS);
-    preload(other, otherBoundary, 8);
-    evictAround(cfg, idx, other, otherBoundary);
   }, [resolveFrame, get, load, drawFrame, preload, evictAround]);
 
   useEffect(() => {
     if (prefersReducedMotion) return;
-    const loop = () => {
-      progressRef.current = scrollYProgress.get();
+    const unsubscribe = scrollYProgress.on('change', (value) => {
+      progressRef.current = value;
       render();
-      rafRef.current = requestAnimationFrame(loop);
-    };
-    rafRef.current = requestAnimationFrame(loop);
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
+    });
+    progressRef.current = scrollYProgress.get();
+    render(true);
+    return () => unsubscribe();
   }, [scrollYProgress, render, prefersReducedMotion]);
 
   useEffect(() => {
@@ -129,15 +135,14 @@ export const Hero: React.FC = () => {
     const handleResize = () => {
       const rect = canvas.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const w = Math.round(rect.width * dpr);
-      const h = Math.round(rect.height * dpr);
+      const w = Math.max(1, Math.round(rect.width * dpr));
+      const h = Math.max(1, Math.round(rect.height * dpr));
       if (canvas.width !== w || canvas.height !== h) {
         canvas.width = w;
         canvas.height = h;
       }
       sizeRef.current = { w, h };
-      lastDrawnSrcRef.current = null;
-      render();
+      render(true);
     };
     handleResize();
     const ro = new ResizeObserver(handleResize);
@@ -152,7 +157,7 @@ export const Hero: React.FC = () => {
   useEffect(() => {
     if (prefersReducedMotion) return;
     load(frameSrc(AIRCRAFT, 0));
-    preload(AIRCRAFT, 0, 16);
+    preload(AIRCRAFT, 0, 12);
   }, [load, preload, prefersReducedMotion]);
 
   if (prefersReducedMotion) return <HeroStillFallback />;
