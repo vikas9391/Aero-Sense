@@ -1,0 +1,41 @@
+name: Adjust Hero Ending
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  adjust:
+    if: github.event.head_commit.message != 'Adjust cinematic ending timing [skip ci]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preserve ending animation before Verified overlay
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('frontend/src/components/landing/Hero.tsx')
+          s = p.read_text()
+          replacements = {
+            "const verifiedOpacity = useTransform(scrollYProgress, [0.85, 0.92, 1], [0, 1, 1]);": "const verifiedOpacity = useTransform(scrollYProgress, [0.94, 0.97, 1], [0, 1, 1]);",
+            "const verifiedY = useTransform(scrollYProgress, [0.85, 0.92], [20, 0]);": "const verifiedY = useTransform(scrollYProgress, [0.94, 0.97], [20, 0]);",
+            "const verifiedScale = useTransform(scrollYProgress, [0.85, 0.92], [0.97, 1]);": "const verifiedScale = useTransform(scrollYProgress, [0.94, 0.97], [0.97, 1]);",
+            "const verifiedPulseScale = useTransform(scrollYProgress, [0.9, 0.93, 0.97], [1, 1.15, 1]);": "const verifiedPulseScale = useTransform(scrollYProgress, [0.96, 0.98, 1], [1, 1.15, 1]);",
+            "const verifiedGlowOpacity = useTransform(scrollYProgress, [0.9, 0.93, 0.97], [0, 0.55, 0]);": "const verifiedGlowOpacity = useTransform(scrollYProgress, [0.96, 0.98, 1], [0, 0.55, 0]);",
+          }
+          for old, new in replacements.items():
+              if old not in s:
+                  raise SystemExit(f'Missing expected text: {old}')
+              s = s.replace(old, new)
+          p.write_text(s)
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/src/components/landing/Hero.tsx
+          git commit -m "Adjust cinematic ending timing [skip ci]"
+          git push
