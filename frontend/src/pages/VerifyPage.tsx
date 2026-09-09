@@ -234,49 +234,48 @@ export const VerifyPage: React.FC = () => {
                     </div>
                     <div className="flex items-center gap-2 self-start sm:self-center">
                       <Activity className="h-4 w-4 text-slate-400" />
-                      <span className="text-[10px] font-bold uppercase tracking-[.13em] text-slate-500">4-layer security check</span>
+                      <span className="text-[10px] font-bold uppercase tracking-[.13em] text-slate-500">Pipeline complete</span>
                     </div>
                   </div>
-                  {result.failure_reason && <div className="mt-5 rounded-2xl border border-white/80 bg-white/75 p-3 text-xs font-medium text-slate-600">{result.failure_reason}</div>}
+                  {result.failure_reason && (
+                    <div className="mt-5 rounded-2xl border border-white/80 bg-white/80 p-4 text-sm text-slate-700">
+                      <div className="text-[9px] font-extrabold uppercase tracking-[.15em] text-slate-400">Failure reason</div>
+                      <div className="mt-1 font-semibold">{result.failure_reason}</div>
+                    </div>
+                  )}
                 </div>
 
                 {result.component && (
                   <Card className="p-5 sm:p-6">
-                    <div className="mb-5 flex items-center justify-between gap-4">
-                      <CardHeader title="Matched component passport" icon={Cpu} className="mb-0" />
-                      <ShieldCheck className="h-5 w-5 text-accent" />
-                    </div>
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <CardHeader title="Matched component passport" icon={ShieldCheck} className="mb-5" />
+                    <div className="grid gap-4 sm:grid-cols-2">
                       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                        <div className="aero-eyebrow text-[9px]">Component ID</div>
-                        <div className="mt-1 text-sm font-bold text-slate-900 aero-mono">{result.component.id}</div>
+                        <div className="text-[9px] font-extrabold uppercase tracking-[.14em] text-slate-400">Component ID</div>
+                        <div className="mt-1.5 text-sm font-bold text-slate-900 aero-mono">{result.component.id}</div>
                       </div>
                       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                        <div className="aero-eyebrow text-[9px]">Serial number</div>
-                        <div className="mt-1 text-sm font-bold text-slate-900 aero-mono">{result.component.serial_number}</div>
+                        <div className="text-[9px] font-extrabold uppercase tracking-[.14em] text-slate-400">Aircraft</div>
+                        <div className="mt-1.5 text-sm font-bold text-slate-900">{result.component.aircraft}</div>
                       </div>
                       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                        <div className="aero-eyebrow text-[9px]">Aircraft</div>
-                        <div className="mt-1 text-sm font-bold text-slate-900">{result.component.aircraft}</div>
+                        <div className="text-[9px] font-extrabold uppercase tracking-[.14em] text-slate-400">Serial number</div>
+                        <div className="mt-1.5 text-sm font-bold text-slate-900 aero-mono">{result.component.serial_number}</div>
                       </div>
                       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                        <div className="aero-eyebrow text-[9px]">Tag identity</div>
-                        <div className="mt-1 text-sm font-bold text-slate-900 aero-mono">{result.component.tag_identifier}</div>
+                        <div className="text-[9px] font-extrabold uppercase tracking-[.14em] text-slate-400">Identity state</div>
+                        <div className="mt-1.5 text-sm font-bold text-slate-900">Verified binding match</div>
                       </div>
                     </div>
                   </Card>
                 )}
 
                 <Card className="p-5 sm:p-6">
-                  <div className="mb-5 flex items-center justify-between gap-4">
-                    <CardHeader title="Integrity layers" icon={ShieldCheck} className="mb-0" />
-                    <span className="text-[9px] font-bold uppercase tracking-[.14em] text-slate-400">Live result</span>
-                  </div>
-                  <div className="space-y-3">
-                    <CheckRow icon={Lock} label="NFC Authentication" description="Cryptographic tag authentication" passed={result.checks.nfc_authentication} />
-                    <CheckRow icon={Cpu} label="Component Binding" description="Tag-to-component ownership match" passed={result.checks.component_binding} />
-                    <CheckRow icon={AlertTriangle} label="Tamper Status" description="Physical tamper loop integrity" passed={result.checks.tamper_status} />
-                    <CheckRow icon={Database} label="Blockchain Integrity" description="Immutable record hash verification" passed={result.checks.blockchain_integrity} />
+                  <CardHeader title="Four-layer integrity check" icon={Cpu} className="mb-5" />
+                  <div className="grid gap-3">
+                    <CheckRow icon={Lock} label="NFC authentication" description="Cryptographic tag authentication" passed={result.checks.nfc_authentication} />
+                    <CheckRow icon={Fingerprint} label="Component binding" description="Tag identity matches component record" passed={result.checks.component_binding} />
+                    <CheckRow icon={AlertTriangle} label="Tamper status" description="Physical tag integrity signal" passed={result.checks.tamper_status} />
+                    <CheckRow icon={Database} label="Blockchain integrity" description="Immutable record hash validation" passed={result.checks.blockchain_integrity} />
                   </div>
                 </Card>
               </motion.div>
