@@ -8,6 +8,10 @@ import { DigitalTwinSection } from '../components/landing/DigitalTwinSection';
 import { ComponentPassport } from '../components/landing/ComponentPassport';
 import { HowItWorks } from '../components/landing/HowItWorks';
 import { TraceabilityTimeline } from '../components/landing/TraceabilityTimeline';
+import { ComponentExplorer } from '../components/landing/ComponentExplorer';
+import { BlockchainHistory } from '../components/landing/BlockchainHistory';
+import { AircraftHealth } from '../components/landing/AircraftHealth';
+import { AnalyticsTeaser } from '../components/landing/AnalyticsTeaser';
 import { CompanyAccessSection } from '../components/landing/CompanyAccessSection';
 import { SecuritySection } from '../components/landing/SecuritySection';
 import { FinalCTA } from '../components/landing/FinalCTA';
@@ -34,7 +38,11 @@ export const LandingPage: React.FC = () => {
             <DigitalTwinSection />
             <ComponentPassport />
             <HowItWorks />
+            <ComponentExplorer />
             <TraceabilityTimeline />
+            <BlockchainHistory />
+            <AircraftHealth />
+            <AnalyticsTeaser />
             <CompanyAccessSection />
             <SecuritySection />
             <FinalCTA />
