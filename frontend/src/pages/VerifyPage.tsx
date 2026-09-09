@@ -210,7 +210,7 @@ export const VerifyPage: React.FC = () => {
                     </div>
                     <div className="mt-7 text-[10px] font-extrabold uppercase tracking-[.2em] text-accent">Awaiting hardware input</div>
                     <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">Ready to verify a component</h2>
-                    <p className="mt-3 max-w-md text-sm leading-6 text-slate-500">Run a scan to validate the NFC identity, component binding, physical tamper, and blockchain record integrity.</p>
+                    <p className="mt-3 max-w-md text-sm leading-6 text-slate-500">Run a scan to validate the NFC identity, component binding, physical tamper state, and blockchain record integrity.</p>
                     <div className="mt-7 flex flex-wrap justify-center gap-2">
                       {['NFC AUTH', 'IDENTITY', 'TAMPER', 'BLOCKCHAIN'].map((label) => <span key={label} className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[9px] font-extrabold tracking-[.13em] text-slate-500">{label}</span>)}
                     </div>
@@ -234,42 +234,51 @@ export const VerifyPage: React.FC = () => {
                     </div>
                     <div className="flex items-center gap-2 self-start sm:self-center">
                       <Activity className="h-4 w-4 text-slate-400" />
-                      <span className="text-[10px] font-bold uppercase tracking-[.12em] text-slate-500">Pipeline complete</span>
+                      <span className="text-[10px] font-bold uppercase tracking-[.13em] text-slate-500">4-layer security check</span>
                     </div>
                   </div>
-                  <div className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-3">
-                    <div className="rounded-2xl border border-white/80 bg-white/80 p-3"><div className="text-[9px] font-bold uppercase tracking-[.12em] text-slate-400">Tag UID</div><div className="mt-1 truncate text-xs font-bold text-slate-900 aero-mono">{result.tag_identifier}</div></div>
-                    <div className="rounded-2xl border border-white/80 bg-white/80 p-3"><div className="text-[9px] font-bold uppercase tracking-[.12em] text-slate-400">Decision code</div><div className={`mt-1 text-xs font-bold ${STATUS_TEXT_CLASSES[tone]}`}>{result.status}</div></div>
-                    <div className="rounded-2xl border border-white/80 bg-white/80 p-3"><div className="text-[9px] font-bold uppercase tracking-[.12em] text-slate-400">Failure reason</div><div className="mt-1 truncate text-xs font-semibold text-slate-700">{result.failure_reason || 'None'}</div></div>
-                  </div>
+                  {result.failure_reason && <div className="mt-5 rounded-2xl border border-white/80 bg-white/75 p-3 text-xs font-medium text-slate-600">{result.failure_reason}</div>}
                 </div>
 
                 {result.component && (
                   <Card className="p-5 sm:p-6">
-                    <CardHeader title="Matched component passport" icon={Cpu} />
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><div className="text-[9px] font-bold uppercase tracking-[.12em] text-slate-400">Component ID</div><div className="mt-1 text-sm font-bold text-slate-900 aero-mono">{result.component.component_id}</div></div>
-                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><div className="text-[9px] font-bold uppercase tracking-[.12em] text-slate-400">Serial number</div><div className="mt-1 text-sm font-bold text-slate-900 aero-mono">{result.component.serial_number}</div></div>
-                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><div className="text-[9px] font-bold uppercase tracking-[.12em] text-slate-400">Component type</div><div className="mt-1 text-sm font-semibold text-slate-900">{result.component.component_type}</div></div>
-                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><div className="text-[9px] font-bold uppercase tracking-[.12em] text-slate-400">Manufacturer</div><div className="mt-1 text-sm font-semibold text-slate-900">{result.component.manufacturer}</div></div>
+                    <div className="mb-5 flex items-center justify-between gap-4">
+                      <CardHeader title="Matched component passport" icon={Cpu} className="mb-0" />
+                      <ShieldCheck className="h-5 w-5 text-accent" />
+                    </div>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                        <div className="aero-eyebrow text-[9px]">Component ID</div>
+                        <div className="mt-1 text-sm font-bold text-slate-900 aero-mono">{result.component.id}</div>
+                      </div>
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                        <div className="aero-eyebrow text-[9px]">Serial number</div>
+                        <div className="mt-1 text-sm font-bold text-slate-900 aero-mono">{result.component.serial_number}</div>
+                      </div>
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                        <div className="aero-eyebrow text-[9px]">Aircraft</div>
+                        <div className="mt-1 text-sm font-bold text-slate-900">{result.component.aircraft}</div>
+                      </div>
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                        <div className="aero-eyebrow text-[9px]">Tag identity</div>
+                        <div className="mt-1 text-sm font-bold text-slate-900 aero-mono">{result.component.tag_identifier}</div>
+                      </div>
                     </div>
                   </Card>
                 )}
 
-                {result.security_checks && (
-                  <Card className="p-5 sm:p-6">
-                    <div className="mb-4 flex items-center justify-between gap-3">
-                      <CardHeader title="Four-layer integrity check" icon={ShieldCheck} className="mb-0" />
-                      <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[.12em] text-slate-500">{Object.values(result.security_checks).filter(Boolean).length}/4 layers</span>
-                    </div>
-                    <div className="space-y-2.5">
-                      <CheckRow icon={Radio} label="NFC authentication" description="Tag response and cryptographic authenticity" passed={Boolean(result.security_checks.nfc_authentication)} />
-                      <CheckRow icon={ShieldCheck} label="Component binding" description="UID is mapped to the expected component record" passed={Boolean(result.security_checks.component_binding)} />
-                      <CheckRow icon={AlertTriangle} label="Tamper state" description="Physical tamper loop reports a safe state" passed={Boolean(result.security_checks.tamper_detection)} />
-                      <CheckRow icon={Database} label="Blockchain integrity" description="Recorded component hash matches the trusted ledger" passed={Boolean(result.security_checks.blockchain_integrity)} />
-                    </div>
-                  </Card>
-                )}
+                <Card className="p-5 sm:p-6">
+                  <div className="mb-5 flex items-center justify-between gap-4">
+                    <CardHeader title="Integrity layers" icon={ShieldCheck} className="mb-0" />
+                    <span className="text-[9px] font-bold uppercase tracking-[.14em] text-slate-400">Live result</span>
+                  </div>
+                  <div className="space-y-3">
+                    <CheckRow icon={Lock} label="NFC Authentication" description="Cryptographic tag authentication" passed={result.checks.nfc_authentication} />
+                    <CheckRow icon={Cpu} label="Component Binding" description="Tag-to-component ownership match" passed={result.checks.component_binding} />
+                    <CheckRow icon={AlertTriangle} label="Tamper Status" description="Physical tamper loop integrity" passed={result.checks.tamper_status} />
+                    <CheckRow icon={Database} label="Blockchain Integrity" description="Immutable record hash verification" passed={result.checks.blockchain_integrity} />
+                  </div>
+                </Card>
               </motion.div>
             )}
           </AnimatePresence>
