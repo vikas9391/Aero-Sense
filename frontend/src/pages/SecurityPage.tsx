@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { verificationApi } from '../services/api';
 import { VerificationLog } from '../types';
 import { useToast } from '../context/ToastContext';
-import { ShieldAlert, Activity, CheckCircle2, AlertTriangle, XCircle, Radio, Lock, Fingerprint, Database, Clock3 } from 'lucide-react';
+import { ShieldAlert, Activity, CheckCircle2, AlertTriangle, XCircle, Radio, Fingerprint, Database, Clock3 } from 'lucide-react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Card, CardHeader } from '../components/ui/Card';
 
