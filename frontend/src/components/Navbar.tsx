@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Bell, Search, Download, ArrowRight, Command } from 'lucide-react';
+import { Bell, Search, Download, ArrowRight, Command, X } from 'lucide-react';
 import { AeroLogo } from './Logo';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -33,7 +33,7 @@ export const Navbar: React.FC = () => {
       const q = query.toLowerCase().trim();
       return `${item.label} ${item.keywords}`.toLowerCase().includes(q);
     })
-    .slice(0, 7);
+    .slice(0, 8);
 
   useEffect(() => {
     setQuery('');
@@ -84,25 +84,37 @@ export const Navbar: React.FC = () => {
             <form onSubmit={handleSubmit} className="relative z-[102] flex w-full items-center gap-3 rounded-2xl border border-pebble bg-white px-4 py-2.5 text-sm shadow-[0_5px_20px_rgba(7,18,24,.06)] transition focus-within:border-accent/40 focus-within:shadow-[0_12px_40px_-24px_rgba(23,105,255,.35)]">
               <Search className="h-4 w-4 shrink-0 text-accent" />
               <input ref={inputRef} value={query} onChange={(event) => { setQuery(event.target.value); setOpen(true); }} onFocus={() => setOpen(true)} placeholder="Search aircraft, components, NFC tags or maintenance..." aria-label="Search AeroSense" className="min-w-0 flex-1 bg-transparent text-sm font-medium text-ink outline-none placeholder:text-ash" />
-              <button type="button" onClick={() => { inputRef.current?.focus(); setOpen(true); }} className="hidden shrink-0 items-center gap-1 rounded-lg border border-pebble bg-cream px-2 py-1 text-[9px] font-bold text-ash transition hover:border-accent/20 hover:text-accent sm:flex" title="Focus search"><Command className="h-2.5 w-2.5" />K</button>
+              {query ? (
+                <button type="button" onClick={() => { setQuery(''); inputRef.current?.focus(); }} className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700" aria-label="Clear search"><X className="h-3.5 w-3.5" /></button>
+              ) : (
+                <button type="button" onClick={() => { inputRef.current?.focus(); setOpen(true); }} className="hidden shrink-0 items-center gap-1 rounded-lg border border-pebble bg-cream px-2 py-1 text-[9px] font-bold text-ash transition hover:border-accent/20 hover:text-accent sm:flex" title="Focus search"><Command className="h-2.5 w-2.5" />K</button>
+              )}
             </form>
 
             {open && (
-              <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-[101] overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-[0_28px_80px_-28px_rgba(7,18,24,.45)]">
-                <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-                  <div><div className="text-[10px] font-bold uppercase tracking-[.18em] text-accent">Quick navigation</div><div className="mt-0.5 text-xs text-slate-500">{query ? `Matching “${query}”` : 'Jump to an AeroSense workspace'}</div></div>
-                  <button type="button" onClick={() => setOpen(false)} className="rounded-lg border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-500 hover:bg-slate-50">Esc</button>
+              <div
+                className="absolute left-0 right-0 top-[calc(100%+10px)] z-[9999] overflow-hidden rounded-[22px] border border-slate-200 shadow-[0_30px_90px_-28px_rgba(7,18,24,.55)]"
+                style={{ backgroundColor: '#ffffff', opacity: 1, isolation: 'isolate', mixBlendMode: 'normal', backdropFilter: 'none', WebkitBackdropFilter: 'none' }}
+              >
+                <div className="flex items-center justify-between border-b border-slate-200 bg-white px-5 py-4">
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-[.2em] text-accent">Quick navigation</div>
+                    <div className="mt-1 text-xs font-medium text-slate-500">{query ? `Matching “${query}”` : 'Jump directly to an AeroSense workspace'}</div>
+                  </div>
+                  <button type="button" onClick={() => setOpen(false)} className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 transition hover:bg-slate-50 hover:text-slate-700" aria-label="Close search"><X className="h-3.5 w-3.5" /></button>
                 </div>
-                <div className="max-h-[min(520px,70vh)] overflow-y-auto p-2">
+
+                <div className="max-h-[min(540px,68vh)] overflow-y-auto bg-white p-2">
                   {results.length ? results.map((item, index) => (
-                    <button key={item.path} type="button" onClick={() => goToResult(item.path)} className="group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-[#eef4ff] focus:bg-[#eef4ff] focus:outline-none">
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-[10px] font-bold text-accent group-hover:border-accent/20">{String(index + 1).padStart(2, '0')}</span>
-                      <span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold text-slate-900">{item.label}</span><span className="mt-0.5 block truncate text-[10px] text-slate-500">{item.keywords}</span></span>
+                    <button key={item.path} type="button" onClick={() => goToResult(item.path)} className="group flex w-full items-center gap-3 rounded-xl bg-white px-3 py-3.5 text-left transition hover:bg-[#eef4ff] focus:bg-[#eef4ff] focus:outline-none">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-[10px] font-bold text-accent group-hover:border-accent/20 group-hover:bg-white">{String(index + 1).padStart(2, '0')}</span>
+                      <span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold text-slate-900">{item.label}</span><span className="mt-0.5 block truncate text-[10px] font-medium text-slate-500">{item.keywords}</span></span>
                       <ArrowRight className="h-4 w-4 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-accent" />
                     </button>
-                  )) : <div className="px-4 py-10 text-center"><Search className="mx-auto h-6 w-6 text-slate-300" /><p className="mt-2 text-sm font-semibold text-slate-700">No results found</p><p className="mt-1 text-xs text-slate-500">Try aircraft, components, NFC, verification or maintenance.</p></div>}
+                  )) : <div className="bg-white px-4 py-10 text-center"><Search className="mx-auto h-6 w-6 text-slate-300" /><p className="mt-2 text-sm font-semibold text-slate-700">No results found</p><p className="mt-1 text-xs text-slate-500">Try aircraft, components, NFC, verification or maintenance.</p></div>}
                 </div>
-                <div className="flex items-center gap-3 border-t border-slate-100 px-4 py-2.5 text-[10px] text-slate-400"><span className="rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 font-semibold text-slate-500">Enter</span><span>open first result</span><span className="ml-auto rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 font-semibold text-slate-500">Ctrl K</span><span>focus search</span></div>
+
+                <div className="flex items-center gap-3 border-t border-slate-200 bg-slate-50 px-5 py-3 text-[10px] font-medium text-slate-500"><span className="rounded border border-slate-200 bg-white px-1.5 py-0.5 font-semibold text-slate-600">Enter</span><span>open first result</span><span className="ml-auto rounded border border-slate-200 bg-white px-1.5 py-0.5 font-semibold text-slate-600">Ctrl K</span><span>focus search</span></div>
               </div>
             )}
           </div>
