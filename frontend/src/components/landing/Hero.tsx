@@ -26,9 +26,9 @@ export const Hero: React.FC = () => {
   const verifyY = useTransform(scrollYProgress, [0.32, 0.4, 0.55, 0.63], [24, 0, 0, -18]);
   const labelOpacity = useTransform(scrollYProgress, [0.68, 0.74, 0.82, 0.87], [0, 1, 1, 0]);
   const labelY = useTransform(scrollYProgress, [0.68, 0.74, 0.82, 0.87], [16, 0, 0, -10]);
-  const verifiedOpacity = useTransform(scrollYProgress, [0.85, 0.92, 1], [0, 1, 1]);
-  const verifiedY = useTransform(scrollYProgress, [0.85, 0.92], [20, 0]);
-  const verifiedScale = useTransform(scrollYProgress, [0.85, 0.92], [0.97, 1]);
+  const verifiedOpacity = useTransform(scrollYProgress, [0.94, 0.97, 1], [0, 1, 1]);
+  const verifiedY = useTransform(scrollYProgress, [0.94, 0.97], [20, 0]);
+  const verifiedScale = useTransform(scrollYProgress, [0.94, 0.97], [0.97, 1]);
   const scrollPromptOpacity = useTransform(scrollYProgress, [0, 0.02, 0.05], [1, 1, 0]);
   const scrollPromptY = useTransform(scrollYProgress, [0, 0.05], [0, 8]);
   const activeStage = useTransform(scrollYProgress, [0, 0.24, 0.26, 0.49, 0.51, 0.74, 0.76, 1], [0, 0, 1, 1, 2, 2, 3, 3]);
@@ -37,8 +37,8 @@ export const Hero: React.FC = () => {
   const stage2Opacity = useTransform(activeStage, (v) => (Math.round(v) === 2 ? 1 : 0.35));
   const stage3Opacity = useTransform(activeStage, (v) => (Math.round(v) === 3 ? 1 : 0.35));
   const stageOpacities = [stage0Opacity, stage1Opacity, stage2Opacity, stage3Opacity];
-  const verifiedPulseScale = useTransform(scrollYProgress, [0.9, 0.93, 0.97], [1, 1.15, 1]);
-  const verifiedGlowOpacity = useTransform(scrollYProgress, [0.9, 0.93, 0.97], [0, 0.55, 0]);
+  const verifiedPulseScale = useTransform(scrollYProgress, [0.96, 0.98, 1], [1, 1.15, 1]);
+  const verifiedGlowOpacity = useTransform(scrollYProgress, [0.96, 0.98, 1], [0, 0.55, 0]);
 
   const resolveFrame = useCallback((p: number) => {
     const clamped = Math.min(1, Math.max(0, p));
