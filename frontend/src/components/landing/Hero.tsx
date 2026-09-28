@@ -15,6 +15,7 @@ export const Hero: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { load, get, preload, evictAround } = useFrameCache();
   const progressRef = useRef(0);
+  const renderRef = useRef<(() => void) | null>(null);
   const lastFrameIndexRef = useRef(-1);
   const lastSequenceRef = useRef<string | null>(null);
   const sizeRef = useRef({ w: 0, h: 0 });
@@ -79,7 +80,10 @@ export const Hero: React.FC = () => {
       let img = get(targetSrc);
 
       if (!img) {
-        load(targetSrc);
+        const pending = load(targetSrc);
+        // Image decoding is asynchronous; redraw as soon as the requested frame is ready
+        // instead of waiting for another scroll event to arrive.
+        pending.addEventListener('load', () => renderRef.current?.(), { once: true });
         for (let d = 1; d < Math.min(cfg.count, 18) && !img; d++) {
           const previous = idx - d;
           const next = idx + d;
@@ -111,6 +115,8 @@ export const Hero: React.FC = () => {
       evictAround(cfg, idx, other, otherBoundary);
     }
   }, [resolveFrame, get, load, drawFrame, preload, evictAround]);
+
+  renderRef.current = () => render(true);
 
   useEffect(() => {
     if (prefersReducedMotion) return;
