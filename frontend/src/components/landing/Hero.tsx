@@ -114,13 +114,22 @@ export const Hero: React.FC = () => {
 
   useEffect(() => {
     if (prefersReducedMotion) return;
+    let frameRequest = 0;
     const unsubscribe = scrollYProgress.on('change', (value) => {
       progressRef.current = value;
-      render();
+      // Coalesce high-frequency scroll updates to one canvas draw per paint.
+      if (frameRequest) return;
+      frameRequest = window.requestAnimationFrame(() => {
+        frameRequest = 0;
+        render();
+      });
     });
     progressRef.current = scrollYProgress.get();
     render(true);
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      if (frameRequest) window.cancelAnimationFrame(frameRequest);
+    };
   }, [scrollYProgress, render, prefersReducedMotion]);
 
   useEffect(() => {
