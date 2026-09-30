@@ -171,9 +171,9 @@ class _PassportState extends State<PassportScreen> {
           content: const Text('No valid sensor record was found for this component. Would you like to enter the measurements manually?'),
           actions: [TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Not now')), FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Enter manually'))],
         ));
-        if (accepted != true || !mounted) return;
+        if (accepted != true || !mounted) { if (mounted) setState(() => mlLoading = false); return; }
         final entered = await enterRulRecord();
-        if (entered == null || !mounted) return;
+        if (entered == null || !mounted) { if (mounted) setState(() => mlLoading = false); return; }
         record = await api.saveComponentRulRecord(widget.component.id, entered);
       }
       final rawFeatures = Map<String, dynamic>.from(record['features'] as Map);
