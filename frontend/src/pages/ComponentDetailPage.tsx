@@ -186,6 +186,28 @@ export const ComponentDetailPage: React.FC = () => {
                   </div>
                 </div>
 
+                <div className="overflow-hidden rounded-2xl border border-[#dce3f4] bg-gradient-to-br from-[#101b3d] via-[#172653] to-[#263b72] p-5 text-white shadow-lg">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-200">RUL visualisation</div>
+                      <h3 className="mt-1 text-lg font-semibold">Prediction at a glance</h3>
+                      <p className="mt-1 text-xs text-indigo-100/75">A comparison of the current estimate and the model's test-set average error.</p>
+                    </div>
+                    <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[10px] text-indigo-100">Cycles</span>
+                  </div>
+                  <div className="mt-6 space-y-5">
+                    <div>
+                      <div className="mb-2 flex items-center justify-between text-xs"><span className="text-indigo-100">Estimated remaining life</span><strong className="aero-mono text-base">{Number(mlResult.predicted_rul_cycles).toFixed(2)}</strong></div>
+                      <div className="h-3 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-gradient-to-r from-cyan-300 to-blue-400 shadow-[0_0_18px_rgba(103,232,249,0.45)]" style={{ width: `${Math.max(0, Math.min(100, Number(mlResult.predicted_rul_cycles) / Math.max(150, Number(mlResult.predicted_rul_cycles)) * 100))}%` }} /></div>
+                    </div>
+                    <div>
+                      <div className="mb-2 flex items-center justify-between text-xs"><span className="text-indigo-100">Test-set MAE (average error)</span><strong className="aero-mono text-base">13.55</strong></div>
+                      <div className="h-3 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-gradient-to-r from-amber-300 to-orange-400" style={{ width: `${Math.max(0, Math.min(100, 13.55 / Math.max(150, Number(mlResult.predicted_rul_cycles)) * 100))}%` }} /></div>
+                    </div>
+                  </div>
+                  <div className="mt-5 flex items-center gap-2 border-t border-white/15 pt-3 text-[10px] leading-relaxed text-indigo-100/70"><span className="h-2 w-2 shrink-0 rounded-full bg-cyan-300" /> Bars share a scale for visual comparison. MAE is a dataset-level average, not a confidence interval for this prediction.</div>
+                </div>
+
                 <div className="grid gap-3 md:grid-cols-3">
                   <div className="rounded-xl border border-pebble bg-white p-4">
                     <div className="text-[10px] font-semibold uppercase tracking-wider text-ash">Model fit</div>
