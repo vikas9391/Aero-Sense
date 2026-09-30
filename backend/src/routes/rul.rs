@@ -4,12 +4,12 @@ use std::collections::BTreeMap;
 
 const DEFAULT_ML_URL: &str = "https://aero-sense-ml-model.onrender.com";
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct RulPredictionRequest {
     pub features: BTreeMap<String, f64>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct RulPredictionResponse {
     pub predicted_rul_cycles: f64,
     pub unit: String,
