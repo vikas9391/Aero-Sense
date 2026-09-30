@@ -1,15 +1,19 @@
-"""Aero-Sense RUL inference API (NASA C-MAPSS FD001 prototype)."""
+""""Aero-Sense RUL inference API (NASA C-MAPSS FD001 prototype)."""
+import math
+import os
 from pathlib import Path
 from typing import Dict
-import math
 
 import joblib
 import pandas as pd
 from fastapi import FastAPI, HTTPException
+from huggingface_hub import hf_hub_download
 from pydantic import BaseModel, Field
 
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BASE_DIR / "aerosense_rul_model.pkl"
+HF_REPO_ID = os.getenv("HF_REPO_ID", "vikas9391/aerosense-rul-fd001")
+HF_TOKEN = os.getenv("HF_TOKEN")
 
 app = FastAPI(
     title="Aero-Sense RUL Prediction API",
@@ -28,12 +32,26 @@ target_cap = 125
 @app.on_event("startup")
 def load_model() -> None:
     global model, feature_columns, target_cap
-    if not MODEL_PATH.is_file():
-        raise RuntimeError(
-            f"Model artifact not found at {MODEL_PATH}. "
-            "Place aerosense_rul_model.pkl in the ml-service directory."
-        )
-    artifact = joblib.load(MODEL_PATH)
+
+    # Prefer a local artifact for development; otherwise download from Hugging Face.
+    artifact_path = MODEL_PATH
+    if not artifact_path.is_file():
+        try:
+            artifact_path = Path(
+                hf_hub_download(
+                    repo_id=HF_REPO_ID,
+                    filename="aerosense_rul_model.pkl",
+                    repo_type="model",
+                    token=HF_TOKEN,
+                )
+            )
+        except Exception as exc:
+            raise RuntimeError(
+                "Could not find the model locally or download it from Hugging Face. "
+                "Check HF_REPO_ID, HF_TOKEN, and repository file access."
+            ) from exc
+
+    artifact = joblib.load(artifact_path)
     required = {"model", "feature_columns", "target_cap"}
     if not isinstance(artifact, dict) or not required.issubset(artifact):
         raise RuntimeError("Model artifact is missing required keys.")
