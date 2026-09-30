@@ -108,7 +108,7 @@ export const Hero: React.FC = () => {
 
   useEffect(() => {
     if (prefersReducedMotion) return;
-    const FRAME_STEP = 1 / ((AIRCRAFT.count - 1) + (ENGINE.count - 1));
+    const FRAME_STEP = Math.min(0.5 / (AIRCRAFT.count - 1), (0.5 - NFC_HOLD_ZONE) / (ENGINE.count - 1));
     const tick = () => {
       const current = progressRef.current;
       const target = targetProgressRef.current;
