@@ -210,8 +210,26 @@ class _NfcVerificationState extends State<NfcVerificationScreen> {
       CardBox(child: Column(children: [
         Icon(scanning ? Icons.contactless : Icons.nfc, size: 56, color: scanning ? accent : muted),
         const SizedBox(height: 8),
-        Text(scanning ? 'Waiting for a tag…' : 'Tap Start Scan when the tag is ready.', style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800), textAlign: TextAlign.center),
-        if (uid != null) ...[const SizedBox(height: 8), Text('UID: $uid', style: const TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.w700))],
+        Text(scanning ? 'Waiting for a tag…' : 'Ready to scan', style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800), textAlign: TextAlign.center),
+        const SizedBox(height: 5),
+        Text(scanning ? 'Keep your phone close to the NFC tag.' : 'Hold your phone near the tag, then start scanning.', style: const TextStyle(color: muted, fontSize: 12), textAlign: TextAlign.center),
+        if (scanning) ...[
+          const SizedBox(height: 14),
+          const LinearProgressIndicator(minHeight: 3, color: accent),
+        ],
+        if (uid != null) ...[
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(color: soft, borderRadius: BorderRadius.circular(12), border: Border.all(color: line)),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Text('SCANNED TAG UID', style: TextStyle(color: muted, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1)),
+              const SizedBox(height: 4),
+              SelectableText(uid!, style: const TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.w700)),
+            ]),
+          ),
+        ],
         const SizedBox(height: 14),
         SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: scanning ? null : _scan, icon: Icon(scanning ? Icons.hourglass_top : Icons.nfc), label: Text(scanning ? 'Scanning…' : 'Start Scan'))),
         const SizedBox(height: 8),
