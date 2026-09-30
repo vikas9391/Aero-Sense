@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import { motion, useTransform, useScroll, useReducedMotion, useSpring } from 'framer-motion';
+import { motion, useTransform, useScroll, useReducedMotion, useSpring, useMotionValue } from 'framer-motion';
 import { frameSrc, useFrameCache, type FrameSequenceConfig } from '../../lib/useCinematicFrames';
 
 const AIRCRAFT: FrameSequenceConfig = { path: '/cinematic/aircraft', count: 120 };
@@ -25,8 +25,11 @@ export const Hero: React.FC = () => {
   // Smooth the scroll signal itself so wheel/touch input bursts don't make the
   // frame sequence jump at different rates. The page's actual scroll remains native.
   const cinematicProgress = useSpring(scrollYProgress, { stiffness: 110, damping: 32, mass: 0.28, restDelta: 0.0005 });
+  // Keep stage labels and copy locked to the frame actually being displayed,
+  // not the scroll target. Otherwise a fast fling can show VERIFIED while NFC
+  // frames are still being played back.
 
-  const trustOpacity = useTransform(cinematicProgress, [0.08, 0.14, 0.27, 0.32], [0, 1, 1, 0]);
+  const trustOpacity = useTransform(displayProgress, [0.08, 0.14, 0.27, 0.32], [0, 1, 1, 0]);
   const trustY = useTransform(cinematicProgress, [0.08, 0.14, 0.27, 0.32], [24, 0, 0, -18]);
   const verifyOpacity = useTransform(cinematicProgress, [0.32, 0.4, 0.55, 0.63], [0, 1, 1, 0]);
   const verifyY = useTransform(cinematicProgress, [0.32, 0.4, 0.55, 0.63], [24, 0, 0, -18]);
@@ -37,13 +40,14 @@ export const Hero: React.FC = () => {
   const verifiedScale = useTransform(cinematicProgress, [0.94, 0.97], [0.97, 1]);
   const scrollPromptOpacity = useTransform(cinematicProgress, [0, 0.02, 0.05], [1, 1, 0]);
   const scrollPromptY = useTransform(cinematicProgress, [0, 0.05], [0, 8]);
-  const activeStage = useTransform(cinematicProgress, [0, 0.24, 0.26, 0.49, 0.51, 0.74, 0.76, 1], [0, 0, 1, 1, 2, 2, 3, 3]);
+  const activeStage = useTransform(displayProgress, [0, 0.24, 0.26, 0.49, 0.51, 0.74, 0.76, 1], [0, 0, 1, 1, 2, 2, 3, 3]);
   const stage0Opacity = useTransform(activeStage, (v) => (Math.round(v) === 0 ? 1 : 0.35));
   const stage1Opacity = useTransform(activeStage, (v) => (Math.round(v) === 1 ? 1 : 0.35));
   const stage2Opacity = useTransform(activeStage, (v) => (Math.round(v) === 2 ? 1 : 0.35));
   const stage3Opacity = useTransform(activeStage, (v) => (Math.round(v) === 3 ? 1 : 0.35));
   const stageOpacities = [stage0Opacity, stage1Opacity, stage2Opacity, stage3Opacity];
-  const verifiedPulseScale = useTransform(cinematicProgress, [0.96, 0.98, 1], [1, 1.15, 1]);
+  const displayProgress = useMotionValue(0);
+  const verifiedPulseScale = useTransform(displayProgress, [0.96, 0.98, 1], [1, 1.15, 1]);
   const verifiedGlowOpacity = useTransform(cinematicProgress, [0.96, 0.98, 1], [0, 0.55, 0]);
 
   const resolveFrame = useCallback((p: number) => {
@@ -118,6 +122,7 @@ export const Hero: React.FC = () => {
       } else {
         progressRef.current = current + Math.sign(delta) * FRAME_STEP;
       }
+      displayProgress.set(progressRef.current);
       render();
       if (Math.abs(targetProgressRef.current - progressRef.current) > 0.000001) {
         playbackRafRef.current = window.requestAnimationFrame(tick);
@@ -134,6 +139,7 @@ export const Hero: React.FC = () => {
     });
     progressRef.current = cinematicProgress.get();
     targetProgressRef.current = progressRef.current;
+    displayProgress.set(progressRef.current);
     render(true);
     return () => {
       unsubscribe();
