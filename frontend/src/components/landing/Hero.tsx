@@ -28,27 +28,27 @@ export const Hero: React.FC = () => {
   // Keep stage labels and copy locked to the frame actually being displayed,
   // not the scroll target. Otherwise a fast fling can show VERIFIED while NFC
   // frames are still being played back.
+  const displayProgress = useMotionValue(0);
 
   const trustOpacity = useTransform(displayProgress, [0.08, 0.14, 0.27, 0.32], [0, 1, 1, 0]);
-  const trustY = useTransform(cinematicProgress, [0.08, 0.14, 0.27, 0.32], [24, 0, 0, -18]);
-  const verifyOpacity = useTransform(cinematicProgress, [0.32, 0.4, 0.55, 0.63], [0, 1, 1, 0]);
+  const trustY = useTransform(displayProgress, [0.08, 0.14, 0.27, 0.32], [24, 0, 0, -18]);
+  const verifyOpacity = useTransform(displayProgress, [0.32, 0.4, 0.55, 0.63], [0, 1, 1, 0]);
   const verifyY = useTransform(cinematicProgress, [0.32, 0.4, 0.55, 0.63], [24, 0, 0, -18]);
-  const labelOpacity = useTransform(cinematicProgress, [0.68, 0.74, 0.82, 0.87], [0, 1, 1, 0]);
+  const labelOpacity = useTransform(displayProgress, [0.68, 0.74, 0.82, 0.87], [0, 1, 1, 0]);
   const labelY = useTransform(cinematicProgress, [0.68, 0.74, 0.82, 0.87], [16, 0, 0, -10]);
-  const verifiedOpacity = useTransform(cinematicProgress, [0.94, 0.97, 1], [0, 1, 1]);
-  const verifiedY = useTransform(cinematicProgress, [0.94, 0.97], [20, 0]);
+  const verifiedOpacity = useTransform(displayProgress, [0.94, 0.97, 1], [0, 1, 1]);
+  const verifiedY = useTransform(displayProgress, [0.94, 0.97], [20, 0]);
   const verifiedScale = useTransform(cinematicProgress, [0.94, 0.97], [0.97, 1]);
-  const scrollPromptOpacity = useTransform(cinematicProgress, [0, 0.02, 0.05], [1, 1, 0]);
-  const scrollPromptY = useTransform(cinematicProgress, [0, 0.05], [0, 8]);
+  const scrollPromptOpacity = useTransform(displayProgress, [0, 0.02, 0.05], [1, 1, 0]);
+  const scrollPromptY = useTransform(displayProgress, [0, 0.05], [0, 8]);
   const activeStage = useTransform(displayProgress, [0, 0.24, 0.26, 0.49, 0.51, 0.74, 0.76, 1], [0, 0, 1, 1, 2, 2, 3, 3]);
   const stage0Opacity = useTransform(activeStage, (v) => (Math.round(v) === 0 ? 1 : 0.35));
   const stage1Opacity = useTransform(activeStage, (v) => (Math.round(v) === 1 ? 1 : 0.35));
   const stage2Opacity = useTransform(activeStage, (v) => (Math.round(v) === 2 ? 1 : 0.35));
   const stage3Opacity = useTransform(activeStage, (v) => (Math.round(v) === 3 ? 1 : 0.35));
   const stageOpacities = [stage0Opacity, stage1Opacity, stage2Opacity, stage3Opacity];
-  const displayProgress = useMotionValue(0);
   const verifiedPulseScale = useTransform(displayProgress, [0.96, 0.98, 1], [1, 1.15, 1]);
-  const verifiedGlowOpacity = useTransform(cinematicProgress, [0.96, 0.98, 1], [0, 0.55, 0]);
+  const verifiedGlowOpacity = useTransform(displayProgress, [0.96, 0.98, 1], [0, 0.55, 0]);
 
   const resolveFrame = useCallback((p: number) => {
     const clamped = Math.min(1, Math.max(0, p));
@@ -113,25 +113,46 @@ export const Hero: React.FC = () => {
   useEffect(() => {
     if (prefersReducedMotion) return;
     const FRAME_STEP = Math.min(0.5 / (AIRCRAFT.count - 1), (0.5 - NFC_HOLD_ZONE) / (ENGINE.count - 1));
+    const schedulePlayback = () => {
+      if (!playbackRafRef.current) playbackRafRef.current = window.requestAnimationFrame(tick);
+    };
     const tick = () => {
+      playbackRafRef.current = 0;
       const current = progressRef.current;
       const target = targetProgressRef.current;
       const delta = target - current;
-      if (Math.abs(delta) <= FRAME_STEP) {
-        progressRef.current = target;
-      } else {
-        progressRef.current = current + Math.sign(delta) * FRAME_STEP;
+      if (Math.abs(delta) <= 0.000001) return;
+
+      const nextProgress = Math.abs(delta) <= FRAME_STEP
+        ? target
+        : current + Math.sign(delta) * FRAME_STEP;
+      const nextFrame = resolveFrame(nextProgress);
+      const nextImage = get(frameSrc(nextFrame.cfg, nextFrame.idx));
+
+      // Do not move the playhead past a frame that has not decoded yet.
+      // This turns a fast scroll into continuous, load-paced playback instead
+      // of racing through image URLs and displaying only whichever frame wins.
+      if (!nextImage) {
+        const pending = load(frameSrc(nextFrame.cfg, nextFrame.idx));
+        if (pending.complete && pending.naturalWidth === 0) {
+          // A failed frame must not freeze the entire sequence.
+          progressRef.current = nextProgress;
+          displayProgress.set(nextProgress);
+          render();
+          schedulePlayback();
+          return;
+        }
+        pending.addEventListener('load', schedulePlayback, { once: true });
+        pending.addEventListener('error', schedulePlayback, { once: true });
+        return;
       }
-      displayProgress.set(progressRef.current);
+
+      progressRef.current = nextProgress;
+      displayProgress.set(nextProgress);
       render();
       if (Math.abs(targetProgressRef.current - progressRef.current) > 0.000001) {
-        playbackRafRef.current = window.requestAnimationFrame(tick);
-      } else {
-        playbackRafRef.current = 0;
+        schedulePlayback();
       }
-    };
-    const schedulePlayback = () => {
-      if (!playbackRafRef.current) playbackRafRef.current = window.requestAnimationFrame(tick);
     };
     const unsubscribe = cinematicProgress.on('change', (value) => {
       targetProgressRef.current = value;
@@ -146,7 +167,7 @@ export const Hero: React.FC = () => {
       if (playbackRafRef.current) window.cancelAnimationFrame(playbackRafRef.current);
       playbackRafRef.current = 0;
     };
-  }, [cinematicProgress, render, prefersReducedMotion]);
+  }, [cinematicProgress, render, prefersReducedMotion, resolveFrame, get, load]);
 
   useEffect(() => {
     if (prefersReducedMotion) return;
