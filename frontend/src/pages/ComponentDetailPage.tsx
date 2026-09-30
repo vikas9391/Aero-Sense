@@ -208,6 +208,35 @@ export const ComponentDetailPage: React.FC = () => {
                   <div className="mt-5 flex items-center gap-2 border-t border-white/15 pt-3 text-[10px] leading-relaxed text-indigo-100/70"><span className="h-2 w-2 shrink-0 rounded-full bg-cyan-300" /> Bars share a scale for visual comparison. MAE is a dataset-level average, not a confidence interval for this prediction.</div>
                 </div>
 
+                <section className="rounded-2xl border border-[#dce3f4] bg-white p-5 shadow-sm">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-600">Training evaluation · FD001</div>
+                      <h3 className="mt-1 text-lg font-bold text-ink">How the trained model performed</h3>
+                      <p className="mt-1 text-xs text-ash">Random Forest · held-out test set · target capped at 125 cycles</p>
+                    </div>
+                    <span className="rounded-full bg-indigo-50 px-3 py-1 text-[10px] font-semibold text-indigo-700">Test metrics</span>
+                  </div>
+                  <div className="mt-5 grid gap-4 sm:grid-cols-3">
+                    <div className="rounded-xl bg-[#f6f8ff] p-4">
+                      <div className="flex items-center justify-between text-xs"><span className="font-semibold text-ink">MAE</span><strong className="aero-mono text-indigo-700">12.48</strong></div>
+                      <div className="mt-3 h-2 overflow-hidden rounded-full bg-indigo-100"><div className="h-full w-[62.4%] rounded-full bg-indigo-500" /></div>
+                      <p className="mt-2 text-[10px] leading-relaxed text-ash">Mean absolute error · cycles</p>
+                    </div>
+                    <div className="rounded-xl bg-[#f6f8ff] p-4">
+                      <div className="flex items-center justify-between text-xs"><span className="font-semibold text-ink">RMSE</span><strong className="aero-mono text-indigo-700">16.88</strong></div>
+                      <div className="mt-3 h-2 overflow-hidden rounded-full bg-indigo-100"><div className="h-full w-[84.4%] rounded-full bg-violet-500" /></div>
+                      <p className="mt-2 text-[10px] leading-relaxed text-ash">Root mean squared error · cycles</p>
+                    </div>
+                    <div className="rounded-xl bg-[#f6f8ff] p-4">
+                      <div className="flex items-center justify-between text-xs"><span className="font-semibold text-ink">R²</span><strong className="aero-mono text-indigo-700">0.822</strong></div>
+                      <div className="mt-3 h-2 overflow-hidden rounded-full bg-indigo-100"><div className="h-full w-[82.2%] rounded-full bg-cyan-500" /></div>
+                      <p className="mt-2 text-[10px] leading-relaxed text-ash">Coefficient of determination · 0–1 scale</p>
+                    </div>
+                  </div>
+                  <p className="mt-4 border-t border-pebble pt-3 text-[10px] leading-relaxed text-ash">These are the saved training evaluation metrics, not measurements from this individual component. Lower MAE/RMSE and higher R² generally indicate better test-set fit. They do not certify aircraft safety.</p>
+                </section>
+
                 <div className="grid gap-3 md:grid-cols-3">
                   <div className="rounded-xl border border-pebble bg-white p-4">
                     <div className="text-[10px] font-semibold uppercase tracking-wider text-ash">Model fit</div>
