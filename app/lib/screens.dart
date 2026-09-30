@@ -91,13 +91,17 @@ class _ComponentsState extends State<ComponentsScreen> {
             ...filtered.map(
               (item) => CardBox(
                 margin: const EdgeInsets.only(bottom: 10),
-                child: ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.memory_outlined, color: accent, size: 28),
-                  title: Text(item.serial, style: const TextStyle(fontWeight: FontWeight.w800)),
-                  subtitle: Text('${item.manufacturer} · ${item.type}\n${item.aircraftRegistration ?? 'Unassigned'}', style: const TextStyle(color: muted, height: 1.35)),
-                  trailing: StatusPill(item.status),
-                  onTap: () => context.go('/passport', extra: item),
+                child: Material(
+                  color: panel,
+                  borderRadius: BorderRadius.circular(12),
+                  child: ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.memory_outlined, color: accent, size: 28),
+                    title: Text(item.serial, style: const TextStyle(fontWeight: FontWeight.w800)),
+                    subtitle: Text('${item.manufacturer} · ${item.type}\n${item.aircraftRegistration ?? 'Unassigned'}', style: const TextStyle(color: muted, height: 1.35)),
+                    trailing: StatusPill(item.status),
+                    onTap: () => context.go('/passport', extra: item),
+                  ),
                 ),
               ),
             ),
