@@ -106,25 +106,33 @@ export const ComponentDetailPage: React.FC = () => {
             <Button className="w-full" disabled={mlLoading} onClick={async () => {
               setMlLoading(true); setMlError(null); setMlResult(null);
               try {
-                let features: Record<string, number>;
+                const emptyFeatures = Object.fromEntries(rulKeys.map(key => [key, NaN])) as Record<string, number>;
                 try {
                   const saved = await rulRecordApi.get(component.id);
-                  features = saved.features;
-                  const valid = rulKeys.every(k => typeof features[k] === 'number' && Number.isFinite(features[k]));
-                  if (!valid) throw new Error('Saved sensor record is incomplete or invalid.');
+                  const existing = saved.features || {};
+                  setRulFeatures(Object.fromEntries(rulKeys.map(key => [
+                    key,
+                    typeof existing[key] === 'number' && Number.isFinite(existing[key]) ? existing[key] : NaN
+                  ])) as Record<string, number>);
+                  setMlError('Saved measurements loaded. Review or change them, then save and predict.');
                 } catch (readError: any) {
-                  setShowRulForm(true);
-                  setMlError(readError.response?.status === 404 ? 'No sensor record found. Enter the 18 measurements below to save one.' : (readError.message || 'Sensor record is missing or invalid. Enter it manually.'));
-                  return;
+                  if (readError.response?.status === 404) {
+                    setRulFeatures(emptyFeatures);
+                    setMlError('No saved sensor record found. Enter the 18 measurements to save and predict.');
+                  } else {
+                    setRulFeatures(emptyFeatures);
+                    setMlError('Could not load the saved record. Enter measurements manually; saving will replace the record.');
+                  }
                 }
-                setMlResult(await mlApi.predictRul(features));
-              } catch (e: any) { setMlError(e.response?.data?.error?.message || e.response?.data?.detail || e.message || 'Prediction request failed'); }
-              finally { setMlLoading(false); }
-            }}>{mlLoading ? 'Reading record…' : 'Read saved record & predict RUL'}</Button>
+                setShowRulForm(true);
+              } finally {
+                setMlLoading(false);
+              }
+            }}>{mlLoading ? 'Loading measurements…' : 'Update sensor data & predict RUL'}</Button>
             {mlError && <p className="mt-3 text-xs text-[#b13a2f]">{mlError}</p>}
             {showRulForm && createPortal(<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-labelledby="rul-dialog-title"><div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-pebble bg-white p-5 shadow-2xl">
               <div className="flex items-center justify-between gap-4 mb-1"><h3 id="rul-dialog-title" className="text-sm font-semibold text-ink">Manual sensor data entry</h3><button type="button" onClick={() => setShowRulForm(false)} className="rounded-lg px-3 py-1 text-xs font-semibold text-ash hover:bg-[#f7f7f5]">Close</button></div>
-              <p className="text-[11px] text-ash mb-3">Enter actual measured values. Do not use NFC UID or maintenance descriptions as sensor values.</p>
+              <p className="text-[11px] text-ash mb-3">Saved values are prefilled when available. Review or edit the actual measured values; do not use NFC UID or maintenance descriptions as sensor values.</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {rulKeys.map(key => <label key={key} className="text-[11px] font-semibold text-ash">{key}<input type="number" step="any" value={rulFeatures[key] ?? ''} onChange={e => setRulFeatures(prev => ({...prev, [key]: e.target.value === '' ? NaN : Number(e.target.value)}))} className="mt-1 w-full rounded-lg border border-pebble p-2 text-sm text-ink" /></label>)}
               </div>
@@ -136,7 +144,7 @@ export const ComponentDetailPage: React.FC = () => {
                   setMlResult(result); setShowRulForm(false); setMlError(null);
                 } catch (e: any) { setMlError(e.response?.data?.error?.message || e.response?.data?.detail || e.message || 'Could not save sensor record or run prediction'); }
                 finally { setMlLoading(false); }
-              }}>{mlLoading ? 'Saving & predicting…' : 'Save record & predict'}</Button>
+              }}>{mlLoading ? 'Saving & predicting…' : 'Save updated measurements & predict'}</Button>
             </div>
             </div>, document.body)}
             {mlResult && <div className="mt-4 rounded-xl border border-pebble bg-white p-4">
