@@ -5,6 +5,7 @@ pub mod companies;
 pub mod components;
 pub mod health;
 pub mod maintenance;
+pub mod rul;
 pub mod tags;
 pub mod users;
 pub mod verification;
@@ -25,6 +26,7 @@ pub fn create_router(pool: DbPool, config: Config, blockchain: BlockchainService
     let blockchain_arc = Arc::new(blockchain);
     Router::new()
         .route("/health", get(health::health_check))
+        .route("/api/ml/rul/predict", post(rul::predict_rul))
         .route("/api/auth/login", post(auth::login))
         .route("/api/auth/demo-super-admin", post(auth::demo_super_admin_login))
         .route("/api/auth/me", get(auth::get_me))
