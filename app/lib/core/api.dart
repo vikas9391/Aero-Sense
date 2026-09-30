@@ -109,7 +109,7 @@ class Api {
     await _deleteCache('analytics_overview');
     return result;
   }
-  Future<Map<String, dynamic>> verifyBlockchain(int recordId) async => Map<String, dynamic>.from((await dio.post('/blockchain/verify', data: {'record_id': recordId})).data);
+  Future<Map<String, dynamic>> predictRul(Map<String, double> features) async => Map<String, dynamic>.from((await dio.post('/ml/rul/predict', data: {'features': features})).data);\n  Future<Map<String, dynamic>> verifyBlockchain(int recordId) async => Map<String, dynamic>.from((await dio.post('/blockchain/verify', data: {'record_id': recordId})).data);
   Future<List<CompanySummary>> companies() async => _list(await _cachedGet('companies', () => dio.get('/companies'))).map(CompanySummary.fromJson).toList();
   Future<CompanySummary> company(int id) async => CompanySummary.fromJson(Map<String, dynamic>.from(await _cachedGet('company_$id', () => dio.get('/companies/$id'))));
   Future<List<User>> companyUsers(int id) async => _list(await _cachedGet('company_users_$id', () => dio.get('/companies/$id/users'))).map(User.fromJson).toList();
