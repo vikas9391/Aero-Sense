@@ -125,16 +125,60 @@ class _PassportState extends State<PassportScreen> {
   String? mlError;
   User? user;
 
+  static const rulKeys = ['cycle','setting_1','setting_2','sensor_2','sensor_3','sensor_4','sensor_6','sensor_7','sensor_8','sensor_9','sensor_11','sensor_12','sensor_13','sensor_14','sensor_15','sensor_17','sensor_20','sensor_21'];
+
+  Future<Map<String, double>?> enterRulRecord() async {
+    final controllers = {for (final key in rulKeys) key: TextEditingController()};
+    try {
+      final result = await showDialog<Map<String, double>>(context: context, barrierDismissible: false, builder: (dialogContext) => StatefulBuilder(builder: (context, setDialogState) => AlertDialog(
+        title: const Text('Enter sensor measurements'),
+        content: SizedBox(width: 520, child: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, children: [
+          const Text('Enter actual measured values for this component. NFC identity and maintenance notes are not sensor measurements.', style: TextStyle(color: muted, fontSize: 12)),
+          const SizedBox(height: 12),
+          ...rulKeys.map((key) => Padding(padding: const EdgeInsets.only(bottom: 9), child: TextField(controller: controllers[key], keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true), decoration: InputDecoration(labelText: key),))),
+        ]))),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancel')),
+          FilledButton(onPressed: () {
+            final values = <String, double>{};
+            for (final key in rulKeys) {
+              final value = double.tryParse(controllers[key]!.text.trim());
+              if (value == null || !value.isFinite) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Enter a valid finite number for $key.'))); return; }
+              values[key] = value;
+            }
+            Navigator.pop(dialogContext, values);
+          }, child: const Text('Save & predict')),
+        ],
+      )));
+      return result;
+    } finally { for (final controller in controllers.values) { controller.dispose(); } }
+  }
+
   Future<void> runRulTest() async {
     setState(() { mlLoading = true; mlError = null; mlResult = null; });
     try {
-      mlResult = await api.predictRul({
-        'cycle': 31, 'setting_1': -0.0006, 'setting_2': 0.0004, 'sensor_2': 642.58,
-        'sensor_3': 1581.22, 'sensor_4': 1398.91, 'sensor_6': 21.61, 'sensor_7': 554.42,
-        'sensor_8': 2388.08, 'sensor_9': 9056.4, 'sensor_11': 47.23, 'sensor_12': 521.79,
-        'sensor_13': 2388.06, 'sensor_14': 8130.11, 'sensor_15': 8.4024, 'sensor_17': 393,
-        'sensor_20': 38.81, 'sensor_21': 23.3552,
-      });
+      Map<String, dynamic> record;
+      try {
+        record = await api.componentRulRecord(widget.component.id);
+        final raw = record['features'];
+        if (raw is! Map || !rulKeys.every((key) => raw[key] is num && (raw[key] as num).toDouble().isFinite)) {
+          throw Exception('Saved sensor record is incomplete or invalid.');
+        }
+      } catch (_) {
+        if (!mounted) return;
+        final accepted = await showDialog<bool>(context: context, builder: (context) => AlertDialog(
+          title: const Text('Sensor record unavailable'),
+          content: const Text('No valid sensor record was found for this component. Would you like to enter the measurements manually?'),
+          actions: [TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Not now')), FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Enter manually'))],
+        ));
+        if (accepted != true || !mounted) return;
+        final entered = await enterRulRecord();
+        if (entered == null || !mounted) return;
+        record = await api.saveComponentRulRecord(widget.component.id, entered);
+      }
+      final rawFeatures = Map<String, dynamic>.from(record['features'] as Map);
+      final features = {for (final key in rulKeys) key: (rawFeatures[key] as num).toDouble()};
+      mlResult = await api.predictRul(features);
     } catch (e) { mlError = api.errorMessage(e); }
     if (mounted) setState(() => mlLoading = false);
   }
@@ -188,15 +232,15 @@ class _PassportState extends State<PassportScreen> {
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             const Row(children: [Icon(Icons.insights_outlined, color: accent), SizedBox(width: 9), Expanded(child: Text('AI predictive health · RUL model', style: TextStyle(fontWeight: FontWeight.w800)))]),
             const SizedBox(height: 8),
-            const Text('Run an on-demand model test for this selected component. This demo uses sample NASA C-MAPSS engine sensor data, not live component telemetry.', style: TextStyle(color: muted, height: 1.4)),
+            const Text('Reads the saved sensor record for this component. If missing or invalid, you can enter measurements manually.', style: TextStyle(color: muted, height: 1.4)),
             const SizedBox(height: 10),
             const Text('Research prototype only · Not validated for aircraft maintenance or airworthiness decisions.', style: TextStyle(color: Color(0xff9a6a12), fontSize: 11, fontWeight: FontWeight.w600)),
             const SizedBox(height: 12),
-            SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: mlLoading ? null : runRulTest, icon: mlLoading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.play_arrow), label: Text(mlLoading ? 'Running model…' : 'Run RUL test for this component'))),
+            SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: mlLoading ? null : runRulTest, icon: mlLoading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.play_arrow), label: Text(mlLoading ? 'Running model…' : 'Read saved record & predict RUL'))),
             if (mlError != null) Padding(padding: const EdgeInsets.only(top: 10), child: Text(mlError!, style: const TextStyle(color: Colors.red))),
             if (mlResult != null) ...[
               const Divider(height: 24),
-              const Text('PREDICTED REMAINING USEFUL LIFE · SAMPLE INPUT', style: TextStyle(color: muted, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: .7)),
+              const Text('PREDICTED REMAINING USEFUL LIFE · COMPONENT RECORD', style: TextStyle(color: muted, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: .7)),
               const SizedBox(height: 5),
               Text('${(mlResult!['predicted_rul_cycles'] as num).toStringAsFixed(2)} cycles', style: const TextStyle(fontSize: 27, fontWeight: FontWeight.w900, color: accent)),
               Text('${mlResult!['model']} · ${mlResult!['dataset']}', style: const TextStyle(color: muted, fontSize: 11)),
