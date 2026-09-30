@@ -196,7 +196,17 @@ class _NfcVerificationState extends State<NfcVerificationScreen> {
       const Text('Verify component identity', style: TextStyle(fontSize: 27, fontWeight: FontWeight.w800)),
       const SizedBox(height: 6),
       const Text('Scan a registered tag to retrieve its component identity and update it with an auditable timestamp.', style: TextStyle(color: muted, height: 1.45)),
-      const SizedBox(height: 18),
+      const SizedBox(height: 16),
+      CardBox(child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const Icon(Icons.info_outline, color: accent, size: 21),
+        const SizedBox(width: 10),
+        const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('Quick scan guide', style: TextStyle(fontWeight: FontWeight.w800)),
+          SizedBox(height: 4),
+          Text('1. Turn on NFC.  2. Tap Start Scan.  3. Hold the tag near the back of your phone until it is read.', style: TextStyle(color: muted, height: 1.4, fontSize: 12)),
+        ])),
+      ])),
+      const SizedBox(height: 12),
       CardBox(child: Column(children: [
         Icon(scanning ? Icons.contactless : Icons.nfc, size: 56, color: scanning ? accent : muted),
         const SizedBox(height: 8),
