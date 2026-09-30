@@ -158,6 +158,23 @@ class _PassportState extends State<PassportScreen> {
     } finally { for (final controller in controllers.values) { controller.dispose(); } }
   }
 
+  Future<void> enterAndPredictRul() async {
+    if (mlLoading) return;
+    final entered = await enterRulRecord();
+    if (entered == null || !mounted) return;
+    setState(() { mlLoading = true; mlError = null; mlResult = null; });
+    try {
+      final record = await api.saveComponentRulRecord(widget.component.id, entered);
+      final raw = record['features'];
+      final rawFeatures = raw is Map ? Map<String, dynamic>.from(raw) : entered;
+      final features = {for (final key in rulKeys) key: (rawFeatures[key] as num).toDouble()};
+      mlResult = await api.predictRul(features);
+    } catch (e) {
+      mlError = api.errorMessage(e);
+    }
+    if (mounted) setState(() => mlLoading = false);
+  }
+
   Future<void> runRulTest() async {
     setState(() { mlLoading = true; mlError = null; mlResult = null; });
     try {
@@ -241,6 +258,12 @@ class _PassportState extends State<PassportScreen> {
             const Text('Research prototype only · Not validated for aircraft maintenance or airworthiness decisions.', style: TextStyle(color: Color(0xff9a6a12), fontSize: 11, fontWeight: FontWeight.w600)),
             const SizedBox(height: 12),
             SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: mlLoading ? null : runRulTest, icon: mlLoading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.play_arrow), label: Text(mlLoading ? 'Running model…' : 'Read saved record & predict RUL'))),
+            const SizedBox(height: 8),
+            SizedBox(width: double.infinity, child: OutlinedButton.icon(
+              onPressed: mlLoading ? null : enterAndPredictRul,
+              icon: const Icon(Icons.edit_note),
+              label: const Text('Enter / update sensor data'),
+            )),
             if (mlError != null) Padding(padding: const EdgeInsets.only(top: 10), child: Text(mlError!, style: const TextStyle(color: Colors.red))),
             if (mlResult != null) ...[
               const Divider(height: 24),
