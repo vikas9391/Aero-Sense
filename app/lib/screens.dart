@@ -111,6 +111,80 @@ class _ComponentsState extends State<ComponentsScreen> {
   }
 }
 
+
+class _RulEntryDialog extends StatefulWidget {
+  final List<String> keys;
+  const _RulEntryDialog({required this.keys});
+
+  @override
+  State<_RulEntryDialog> createState() => _RulEntryDialogState();
+}
+
+class _RulEntryDialogState extends State<_RulEntryDialog> {
+  late final Map<String, TextEditingController> controllers;
+
+  @override
+  void initState() {
+    super.initState();
+    controllers = {for (final key in widget.keys) key: TextEditingController()};
+  }
+
+  @override
+  void dispose() {
+    for (final controller in controllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  void submit() {
+    final values = <String, double>{};
+    for (final key in widget.keys) {
+      final value = double.tryParse(controllers[key]!.text.trim());
+      if (value == null || !value.isFinite) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Enter a valid finite number for $key.')),
+        );
+        return;
+      }
+      values[key] = value;
+    }
+    Navigator.of(context).pop(values);
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+        title: const Text('Enter sensor measurements'),
+        content: SizedBox(
+          width: 520,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Enter actual measured values for this component. NFC identity and maintenance notes are not sensor measurements.',
+                  style: TextStyle(color: muted, fontSize: 12),
+                ),
+                const SizedBox(height: 12),
+                ...widget.keys.map((key) => Padding(
+                      padding: const EdgeInsets.only(bottom: 9),
+                      child: TextField(
+                        controller: controllers[key],
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                        decoration: InputDecoration(labelText: key),
+                      ),
+                    )),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+          FilledButton(onPressed: submit, child: const Text('Save & predict')),
+        ],
+      );
+}
+
 class PassportScreen extends StatefulWidget {
   final Component component;
 
@@ -131,31 +205,12 @@ class _PassportState extends State<PassportScreen> {
 
   static const rulKeys = ['cycle','setting_1','setting_2','sensor_2','sensor_3','sensor_4','sensor_6','sensor_7','sensor_8','sensor_9','sensor_11','sensor_12','sensor_13','sensor_14','sensor_15','sensor_17','sensor_20','sensor_21'];
 
-  Future<Map<String, double>?> enterRulRecord() async {
-    final controllers = {for (final key in rulKeys) key: TextEditingController()};
-    try {
-      final result = await showDialog<Map<String, double>>(context: context, barrierDismissible: false, builder: (dialogContext) => StatefulBuilder(builder: (context, setDialogState) => AlertDialog(
-        title: const Text('Enter sensor measurements'),
-        content: SizedBox(width: 520, child: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, children: [
-          const Text('Enter actual measured values for this component. NFC identity and maintenance notes are not sensor measurements.', style: TextStyle(color: muted, fontSize: 12)),
-          const SizedBox(height: 12),
-          ...rulKeys.map((key) => Padding(padding: const EdgeInsets.only(bottom: 9), child: TextField(controller: controllers[key], keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true), decoration: InputDecoration(labelText: key),))),
-        ]))),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancel')),
-          FilledButton(onPressed: () {
-            final values = <String, double>{};
-            for (final key in rulKeys) {
-              final value = double.tryParse(controllers[key]!.text.trim());
-              if (value == null || !value.isFinite) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Enter a valid finite number for $key.'))); return; }
-              values[key] = value;
-            }
-            Navigator.pop(dialogContext, values);
-          }, child: const Text('Save & predict')),
-        ],
-      )));
-      return result;
-    } finally { for (final controller in controllers.values) { controller.dispose(); } }
+  Future<Map<String, double>?> enterRulRecord() {
+    return showDialog<Map<String, double>>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const _RulEntryDialog(keys: rulKeys),
+    );
   }
 
   Future<void> enterAndPredictRul() async {
