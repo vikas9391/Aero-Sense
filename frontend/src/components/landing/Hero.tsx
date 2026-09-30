@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import { motion, useTransform, useScroll, useReducedMotion } from 'framer-motion';
+import { motion, useTransform, useScroll, useReducedMotion, useSpring } from 'framer-motion';
 import { frameSrc, useFrameCache, type FrameSequenceConfig } from '../../lib/useCinematicFrames';
 
 const AIRCRAFT: FrameSequenceConfig = { path: '/cinematic/aircraft', count: 120 };
@@ -20,26 +20,29 @@ export const Hero: React.FC = () => {
   const lastSequenceRef = useRef<string | null>(null);
   const sizeRef = useRef({ w: 0, h: 0 });
   const { scrollYProgress } = useScroll({ target: wrapperRef, offset: ['start start', 'end end'] });
+  // Smooth the scroll signal itself so wheel/touch input bursts don't make the
+  // frame sequence jump at different rates. The page's actual scroll remains native.
+  const cinematicProgress = useSpring(scrollYProgress, { stiffness: 110, damping: 32, mass: 0.28, restDelta: 0.0005 });
 
-  const trustOpacity = useTransform(scrollYProgress, [0.08, 0.14, 0.27, 0.32], [0, 1, 1, 0]);
-  const trustY = useTransform(scrollYProgress, [0.08, 0.14, 0.27, 0.32], [24, 0, 0, -18]);
-  const verifyOpacity = useTransform(scrollYProgress, [0.32, 0.4, 0.55, 0.63], [0, 1, 1, 0]);
-  const verifyY = useTransform(scrollYProgress, [0.32, 0.4, 0.55, 0.63], [24, 0, 0, -18]);
-  const labelOpacity = useTransform(scrollYProgress, [0.68, 0.74, 0.82, 0.87], [0, 1, 1, 0]);
-  const labelY = useTransform(scrollYProgress, [0.68, 0.74, 0.82, 0.87], [16, 0, 0, -10]);
-  const verifiedOpacity = useTransform(scrollYProgress, [0.94, 0.97, 1], [0, 1, 1]);
-  const verifiedY = useTransform(scrollYProgress, [0.94, 0.97], [20, 0]);
-  const verifiedScale = useTransform(scrollYProgress, [0.94, 0.97], [0.97, 1]);
-  const scrollPromptOpacity = useTransform(scrollYProgress, [0, 0.02, 0.05], [1, 1, 0]);
-  const scrollPromptY = useTransform(scrollYProgress, [0, 0.05], [0, 8]);
-  const activeStage = useTransform(scrollYProgress, [0, 0.24, 0.26, 0.49, 0.51, 0.74, 0.76, 1], [0, 0, 1, 1, 2, 2, 3, 3]);
+  const trustOpacity = useTransform(cinematicProgress, [0.08, 0.14, 0.27, 0.32], [0, 1, 1, 0]);
+  const trustY = useTransform(cinematicProgress, [0.08, 0.14, 0.27, 0.32], [24, 0, 0, -18]);
+  const verifyOpacity = useTransform(cinematicProgress, [0.32, 0.4, 0.55, 0.63], [0, 1, 1, 0]);
+  const verifyY = useTransform(cinematicProgress, [0.32, 0.4, 0.55, 0.63], [24, 0, 0, -18]);
+  const labelOpacity = useTransform(cinematicProgress, [0.68, 0.74, 0.82, 0.87], [0, 1, 1, 0]);
+  const labelY = useTransform(cinematicProgress, [0.68, 0.74, 0.82, 0.87], [16, 0, 0, -10]);
+  const verifiedOpacity = useTransform(cinematicProgress, [0.94, 0.97, 1], [0, 1, 1]);
+  const verifiedY = useTransform(cinematicProgress, [0.94, 0.97], [20, 0]);
+  const verifiedScale = useTransform(cinematicProgress, [0.94, 0.97], [0.97, 1]);
+  const scrollPromptOpacity = useTransform(cinematicProgress, [0, 0.02, 0.05], [1, 1, 0]);
+  const scrollPromptY = useTransform(cinematicProgress, [0, 0.05], [0, 8]);
+  const activeStage = useTransform(cinematicProgress, [0, 0.24, 0.26, 0.49, 0.51, 0.74, 0.76, 1], [0, 0, 1, 1, 2, 2, 3, 3]);
   const stage0Opacity = useTransform(activeStage, (v) => (Math.round(v) === 0 ? 1 : 0.35));
   const stage1Opacity = useTransform(activeStage, (v) => (Math.round(v) === 1 ? 1 : 0.35));
   const stage2Opacity = useTransform(activeStage, (v) => (Math.round(v) === 2 ? 1 : 0.35));
   const stage3Opacity = useTransform(activeStage, (v) => (Math.round(v) === 3 ? 1 : 0.35));
   const stageOpacities = [stage0Opacity, stage1Opacity, stage2Opacity, stage3Opacity];
-  const verifiedPulseScale = useTransform(scrollYProgress, [0.96, 0.98, 1], [1, 1.15, 1]);
-  const verifiedGlowOpacity = useTransform(scrollYProgress, [0.96, 0.98, 1], [0, 0.55, 0]);
+  const verifiedPulseScale = useTransform(cinematicProgress, [0.96, 0.98, 1], [1, 1.15, 1]);
+  const verifiedGlowOpacity = useTransform(cinematicProgress, [0.96, 0.98, 1], [0, 0.55, 0]);
 
   const resolveFrame = useCallback((p: number) => {
     const clamped = Math.min(1, Math.max(0, p));
@@ -121,7 +124,7 @@ export const Hero: React.FC = () => {
   useEffect(() => {
     if (prefersReducedMotion) return;
     let frameRequest = 0;
-    const unsubscribe = scrollYProgress.on('change', (value) => {
+    const unsubscribe = cinematicProgress.on('change', (value) => {
       progressRef.current = value;
       // Coalesce high-frequency scroll updates to one canvas draw per paint.
       if (frameRequest) return;
@@ -130,13 +133,13 @@ export const Hero: React.FC = () => {
         render();
       });
     });
-    progressRef.current = scrollYProgress.get();
+    progressRef.current = cinematicProgress.get();
     render(true);
     return () => {
       unsubscribe();
       if (frameRequest) window.cancelAnimationFrame(frameRequest);
     };
-  }, [scrollYProgress, render, prefersReducedMotion]);
+  }, [cinematicProgress, render, prefersReducedMotion]);
 
   useEffect(() => {
     if (prefersReducedMotion) return;
