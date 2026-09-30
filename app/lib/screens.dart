@@ -120,7 +120,24 @@ class _PassportState extends State<PassportScreen> {
   List<MaintenanceRecord> maintenance = [];
   List<VerificationLog> checks = [];
   bool loading = true;
+  bool mlLoading = false;
+  Map<String, dynamic>? mlResult;
+  String? mlError;
   User? user;
+
+  Future<void> runRulTest() async {
+    setState(() { mlLoading = true; mlError = null; mlResult = null; });
+    try {
+      mlResult = await api.predictRul({
+        'cycle': 31, 'setting_1': -0.0006, 'setting_2': 0.0004, 'sensor_2': 642.58,
+        'sensor_3': 1581.22, 'sensor_4': 1398.91, 'sensor_6': 21.61, 'sensor_7': 554.42,
+        'sensor_8': 2388.08, 'sensor_9': 9056.4, 'sensor_11': 47.23, 'sensor_12': 521.79,
+        'sensor_13': 2388.06, 'sensor_14': 8130.11, 'sensor_15': 8.4024, 'sensor_17': 393,
+        'sensor_20': 38.81, 'sensor_21': 23.3552,
+      });
+    } catch (e) { mlError = api.errorMessage(e); }
+    if (mounted) setState(() => mlLoading = false);
+  }
 
   @override
   void initState() {
