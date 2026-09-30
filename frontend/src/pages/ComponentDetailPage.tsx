@@ -171,7 +171,7 @@ export const ComponentDetailPage: React.FC = () => {
                     <input aria-label={labels[key]?.title || key} type="number" step="any" value={rulFeatures[key] ?? ''} onChange={e => setRulFeatures(prev => ({...prev, [key]: e.target.value === '' ? NaN : Number(e.target.value)}))} className="mt-2 w-full rounded-lg border border-[#cbd5e1] bg-white p-2.5 text-sm text-ink placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100" />
                   </label>;
                 })}
-              </div>
+              </div></div>
               <div className="shrink-0 border-t border-pebble bg-white px-5 py-4"><div className="mb-3 text-[11px] text-ash">{rulKeys.filter(k => Number.isFinite(rulFeatures[k])).length} of {rulKeys.length} measurements entered</div><Button className="w-full" disabled={mlLoading || !rulKeys.every(k => Number.isFinite(rulFeatures[k]))} onClick={async () => {
                 setMlLoading(true); setMlError(null);
                 try {
