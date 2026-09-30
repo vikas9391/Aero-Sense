@@ -26,7 +26,7 @@ pub async fn get_component_rul_record(State(pool): State<DbPool>, user: Authenti
     match row { Some((features, updated_at)) => Ok(Json(RulRecordResponse { component_id: id, features: features.as_object().cloned().unwrap_or_default(), updated_at })), None => Err(AppError::NotFound("RUL sensor record not found for this component".into())) }
 }
 pub async fn save_component_rul_record(State(pool): State<DbPool>, user: AuthenticatedUser, Path(id): Path<i64>, Json(req): Json<SaveRulRecordRequest>) -> Result<(StatusCode, Json<RulRecordResponse>), AppError> {
-    require_role(&user, &[UserRole::CompanyAdmin, UserRole::Manufacturer])?;
+    require_role(&user, &[UserRole::CompanyAdmin, UserRole::Manufacturer, UserRole::MaintenanceTechnician])?;
     let company_id = require_company_scope(&user)?;
     validate(&req.features).map_err(AppError::ValidationError)?;
     let exists: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM components WHERE id = $1 AND company_id = $2)").bind(id).bind(company_id).fetch_one(&pool).await?;
