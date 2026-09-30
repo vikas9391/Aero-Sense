@@ -179,6 +179,11 @@ export const ComponentDetailPage: React.FC = () => {
                     </div>
                   </div>
                   <p className="mt-3 text-xs leading-relaxed text-ash">This is the model's estimated remaining useful life for the supplied NASA C-MAPSS feature vector. It is not automatically equivalent to flights, flight hours, or calendar time.</p>
+                  <div className="mt-4 rounded-xl border border-[#f0d9a5] bg-[#fff9eb] p-4">
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-[#805b13]">Model indication</div>
+                    <p className="mt-1 text-sm font-semibold text-ink">No immediate concern is indicated by this RUL estimate alone.</p>
+                    <p className="mt-1 text-xs leading-relaxed text-[#805b13]">The model estimates {Number(mlResult.predicted_rul_cycles).toFixed(2)} cycles remaining. This is not a confirmed health or safety status. The model uses simulated NASA data and has not been validated for real aircraft components. Continue to follow approved inspection and maintenance procedures.</p>
+                  </div>
                 </div>
 
                 <div className="grid gap-3 md:grid-cols-3">
