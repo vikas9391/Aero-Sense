@@ -14,7 +14,9 @@ export const Hero: React.FC = () => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { load, get, preload, evictAround } = useFrameCache();
-  const progressRef = useRef(0);
+  const progressRef = useRef(0); // displayed progress, advanced one source frame at a time
+  const targetProgressRef = useRef(0);
+  const playbackRafRef = useRef(0);
   const renderRef = useRef<(() => void) | null>(null);
   const lastFrameIndexRef = useRef(-1);
   const lastSequenceRef = useRef<string | null>(null);
@@ -123,21 +125,37 @@ export const Hero: React.FC = () => {
 
   useEffect(() => {
     if (prefersReducedMotion) return;
-    let frameRequest = 0;
+    const FRAME_STEP = 1 / ((AIRCRAFT.count - 1) + (ENGINE.count - 1));
+    const tick = () => {
+      const current = progressRef.current;
+      const target = targetProgressRef.current;
+      const delta = target - current;
+      if (Math.abs(delta) <= FRAME_STEP) {
+        progressRef.current = target;
+      } else {
+        progressRef.current = current + Math.sign(delta) * FRAME_STEP;
+      }
+      render();
+      if (Math.abs(targetProgressRef.current - progressRef.current) > 0.000001) {
+        playbackRafRef.current = window.requestAnimationFrame(tick);
+      } else {
+        playbackRafRef.current = 0;
+      }
+    };
+    const schedulePlayback = () => {
+      if (!playbackRafRef.current) playbackRafRef.current = window.requestAnimationFrame(tick);
+    };
     const unsubscribe = cinematicProgress.on('change', (value) => {
-      progressRef.current = value;
-      // Coalesce high-frequency scroll updates to one canvas draw per paint.
-      if (frameRequest) return;
-      frameRequest = window.requestAnimationFrame(() => {
-        frameRequest = 0;
-        render();
-      });
+      targetProgressRef.current = value;
+      schedulePlayback();
     });
     progressRef.current = cinematicProgress.get();
+    targetProgressRef.current = progressRef.current;
     render(true);
     return () => {
       unsubscribe();
-      if (frameRequest) window.cancelAnimationFrame(frameRequest);
+      if (playbackRafRef.current) window.cancelAnimationFrame(playbackRafRef.current);
+      playbackRafRef.current = 0;
     };
   }, [cinematicProgress, render, prefersReducedMotion]);
 
