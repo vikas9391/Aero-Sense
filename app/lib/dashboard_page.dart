@@ -73,7 +73,21 @@ class _MobileDashboardScreenState extends State<MobileDashboardScreen> {
           const Text('Fleet and component intelligence at a glance.', style: TextStyle(color: muted, height: 1.4)),
           if (error != null) ...[
             const SizedBox(height: 14),
-            CardBox(child: Text(error!, style: const TextStyle(color: Colors.red, height: 1.35))),
+            CardBox(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                const Icon(Icons.cloud_off_outlined, color: muted),
+                const SizedBox(width: 8),
+                const Expanded(child: Text('Dashboard data unavailable', style: TextStyle(fontWeight: FontWeight.w800))),
+              ]),
+              const SizedBox(height: 6),
+              Text(error!, style: const TextStyle(color: muted, height: 1.35)),
+              const SizedBox(height: 8),
+              Align(alignment: Alignment.centerRight, child: TextButton.icon(
+                onPressed: loading ? null : load,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Try again'),
+              )),
+            ])),
           ],
           const SizedBox(height: 18),
           if (canVerify)
@@ -115,8 +129,15 @@ class _MobileDashboardScreenState extends State<MobileDashboardScreen> {
           CardBox(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             const Text('REGISTERED AIRCRAFT', style: TextStyle(color: muted, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.1)),
             const SizedBox(height: 10),
-            if (!loading && aircraft.isEmpty) const Text('No aircraft registered yet.', style: TextStyle(color: muted)),
-            if (!loading)
+            if (loading)
+              const Row(children: [
+                SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: accent)),
+                SizedBox(width: 9),
+                Text('Loading aircraft…', style: TextStyle(color: muted)),
+              ])
+            else if (aircraft.isEmpty)
+              const Text('No aircraft registered yet.', style: TextStyle(color: muted))
+            else
               ...aircraft.take(5).map((a) => Padding(
                     padding: const EdgeInsets.only(bottom: 10),
                     child: _AircraftRow(aircraft: a),
@@ -131,8 +152,12 @@ class _MobileDashboardScreenState extends State<MobileDashboardScreen> {
                   IconButton(onPressed: () => context.go('/security'), icon: const Icon(Icons.arrow_forward), tooltip: 'Open security audit'),
               ]),
               const SizedBox(height: 6),
-              if (verifications.isEmpty) const Text('No verification scans recorded yet.', style: TextStyle(color: muted))
-              else ...verifications.take(5).map((v) => EventRow(title: v.status, subtitle: '${v.createdAt}${v.reason.isEmpty ? '' : ' · ${v.reason}'}', ok: v.status == 'AUTHENTIC' || v.status == 'PASSED')),
+              if (loading)
+                const Text('Loading verification history…', style: TextStyle(color: muted))
+              else if (verifications.isEmpty)
+                const Text('No verification scans recorded yet.', style: TextStyle(color: muted))
+              else
+                ...verifications.take(5).map((v) => EventRow(title: v.status, subtitle: '${v.createdAt}${v.reason.isEmpty ? '' : ' · ${v.reason}'}', ok: v.status == 'AUTHENTIC' || v.status == 'PASSED')),
             ])),
           ],
         ],
