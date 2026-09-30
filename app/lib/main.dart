@@ -41,10 +41,6 @@ class AeroSenseApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: 'Aero-Sense',
         routerConfig: appRouter,
-        builder: (context, child) {
-          final media = MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(1.0));
-          return MediaQuery(data: media, child: child ?? const SizedBox.shrink());
-        },
         theme: buildAeroTheme(),
       );
 }
@@ -55,7 +51,7 @@ class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
         body: Container(
-          decoration: const BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Color(0xFFEEECF8), bg, soft])),
+          decoration: const BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Color(0xFFE5F4F7), bg, soft])),
           child: Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
