@@ -246,6 +246,20 @@ class _PassportState extends State<PassportScreen> {
               Text('${mlResult!['model']} · ${mlResult!['dataset']}', style: const TextStyle(color: muted, fontSize: 11)),
               const SizedBox(height: 5),
               Text('${mlResult!['notice']}', style: const TextStyle(color: muted, fontSize: 10)),
+              const SizedBox(height: 16),
+              const Divider(),
+              const SizedBox(height: 10),
+              const Text('TRAINING EVALUATION · FD001', style: TextStyle(color: muted, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: .7)),
+              const SizedBox(height: 5),
+              const Text('Saved model test metrics', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+              const SizedBox(height: 5),
+              const Text('These are evaluation results from the NASA C-MAPSS FD001 test set—not measurements or an accuracy guarantee for this component.', style: TextStyle(color: muted, fontSize: 11, height: 1.35)),
+              const SizedBox(height: 14),
+              _metricBar('MAE', 12.48, 20, '12.48 cycles', 'Average absolute error'),
+              const SizedBox(height: 12),
+              _metricBar('RMSE', 16.88, 25, '16.88 cycles', 'Root mean squared error'),
+              const SizedBox(height: 12),
+              _metricBar('R²', .822, 1, '0.822', 'Coefficient of determination'),
             ],
           ]),
         ),
@@ -274,6 +288,29 @@ class _PassportState extends State<PassportScreen> {
       ],
     );
   }
+
+
+  Widget _metricBar(String label, double value, double max, String display, String description) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Expanded(child: Text(label, style: const TextStyle(fontWeight: FontWeight.w800))),
+            Text(display, style: const TextStyle(fontWeight: FontWeight.w800, color: accent)),
+          ]),
+          const SizedBox(height: 5),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: LinearProgressIndicator(
+              value: (value / max).clamp(0.0, 1.0),
+              minHeight: 9,
+              backgroundColor: const Color(0xffe7edf2),
+              color: accent,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(description, style: const TextStyle(color: muted, fontSize: 10)),
+        ],
+      );
 
   Widget _kv(String label, String value) => Padding(
         padding: const EdgeInsets.only(bottom: 9),
