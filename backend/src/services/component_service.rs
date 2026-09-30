@@ -70,7 +70,7 @@ impl ComponentService {
     }
 
     pub async fn update_history(pool: &DbPool, company_id: i64, id: i64) -> Result<Vec<ComponentUpdateHistory>, AppError> {
-        let exists: Option<(i64,)> = sqlx::query_as("SELECT id FROM components WHERE id = $1 AND company_id = $2").bind(id).fetch_optional(pool).await?;
+        let exists: Option<(i64,)> = sqlx::query_as("SELECT id FROM components WHERE id = $1 AND company_id = $2").bind(id).bind(company_id).fetch_optional(pool).await?;
         if exists.is_none() { return Err(AppError::ComponentNotFound); }
         Ok(sqlx::query_as("SELECT h.*, u.name AS user_name FROM component_update_history h JOIN components c ON c.id = h.component_id LEFT JOIN users u ON u.id = h.user_id WHERE h.component_id = $1 AND c.company_id = $2 ORDER BY h.id DESC")
             .bind(id).bind(company_id).fetch_all(pool).await?)
