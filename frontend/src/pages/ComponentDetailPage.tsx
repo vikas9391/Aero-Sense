@@ -18,6 +18,9 @@ export const ComponentDetailPage: React.FC = () => {
   const [mlLoading, setMlLoading] = useState(false);
   const [mlResult, setMlResult] = useState<any>(null);
   const [mlError, setMlError] = useState<string | null>(null);
+  const [mlLoading, setMlLoading] = useState(false);
+  const [mlResult, setMlResult] = useState<any>(null);
+  const [mlError, setMlError] = useState<string | null>(null);
   const { showToast } = useToast();
   const { user } = useAuth();
   const role = user?.role;
@@ -95,6 +98,27 @@ export const ComponentDetailPage: React.FC = () => {
         )}
 
         <div className={canMaintain ? 'space-y-6' : 'lg:col-span-2 space-y-6'}>
+          <Card className="p-6">
+            <CardHeader title="AI Predictive Health · RUL Model" icon={Activity} />
+            <p className="text-xs text-ash mb-3">Run an on-demand test for this selected component. This demo uses sample NASA C-MAPSS engine data, not live component telemetry.</p>
+            <div className="rounded-xl border border-[#f0d9a5] bg-[#fff9eb] p-3 text-[11px] text-[#805b13] mb-4">Research prototype only · Not validated for aircraft maintenance or airworthiness decisions.</div>
+            <Button className="w-full" disabled={mlLoading} onClick={async () => {
+              setMlLoading(true); setMlError(null); setMlResult(null);
+              try { setMlResult(await mlApi.predictRul({
+                cycle: 31, setting_1: -0.0006, setting_2: 0.0004, sensor_2: 642.58, sensor_3: 1581.22,
+                sensor_4: 1398.91, sensor_6: 21.61, sensor_7: 554.42, sensor_8: 2388.08, sensor_9: 9056.4,
+                sensor_11: 47.23, sensor_12: 521.79, sensor_13: 2388.06, sensor_14: 8130.11,
+                sensor_15: 8.4024, sensor_17: 393, sensor_20: 38.81, sensor_21: 23.3552
+              })); } catch (e: any) { setMlError(e.response?.data?.detail || e.message || 'Prediction request failed'); }
+              finally { setMlLoading(false); }
+            }}>{mlLoading ? 'Running model…' : 'Run RUL test for this component'}</Button>
+            {mlError && <p className="mt-3 text-xs text-[#b13a2f]">{mlError}</p>}
+            {mlResult && <div className="mt-4 rounded-xl border border-pebble bg-white p-4">
+              <div className="aero-eyebrow text-[10px]">Predicted remaining useful life · sample input</div>
+              <div className="text-3xl font-semibold text-ink aero-mono mt-1">{Number(mlResult.predicted_rul_cycles).toFixed(2)} <span className="text-sm">cycles</span></div>
+              <p className="text-[10px] text-ash mt-2">{mlResult.model} · {mlResult.dataset}</p><p className="text-[10px] text-ash mt-1">{mlResult.notice}</p>
+            </div>}
+          </Card>
           <Card className="p-6">
             <CardHeader title="NFC Hardware Identity" icon={Tag} />
             <div className="p-4 rounded-xl border border-pebble bg-white space-y-3">
