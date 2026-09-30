@@ -27,6 +27,7 @@ pub fn create_router(pool: DbPool, config: Config, blockchain: BlockchainService
     Router::new()
         .route("/health", get(health::health_check))
         .route("/api/ml/rul/predict", post(rul::predict_rul))
+        .route("/api/components/:id/rul-record", get(rul::get_component_rul_record).put(rul::save_component_rul_record))
         .route("/api/auth/login", post(auth::login))
         .route("/api/auth/demo-super-admin", post(auth::demo_super_admin_login))
         .route("/api/auth/me", get(auth::get_me))
