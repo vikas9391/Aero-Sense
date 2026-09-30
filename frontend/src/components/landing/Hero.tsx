@@ -86,27 +86,10 @@ export const Hero: React.FC = () => {
 
       if (!img) {
         const pending = load(targetSrc);
-        // Image decoding is asynchronous; redraw as soon as the requested frame is ready
-        // instead of waiting for another scroll event to arrive.
+        // Keep the last crisp frame on screen until this exact frame is decoded.
+        // Drawing a nearby frame during rapid playback can look blurry/pixelated
+        // because it may be from a noticeably different point in the sequence.
         pending.addEventListener('load', () => renderRef.current?.(), { once: true });
-        for (let d = 1; d < Math.min(cfg.count, 18) && !img; d++) {
-          const previous = idx - d;
-          const next = idx + d;
-          if (previous >= 0) {
-            const candidate = get(frameSrc(cfg, previous));
-            if (candidate) {
-              img = candidate;
-              break;
-            }
-          }
-          if (next < cfg.count) {
-            const candidate = get(frameSrc(cfg, next));
-            if (candidate) {
-              img = candidate;
-              break;
-            }
-          }
-        }
       }
 
       if (img) drawFrame(img);
