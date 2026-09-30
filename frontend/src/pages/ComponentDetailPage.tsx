@@ -108,107 +108,177 @@ export const ComponentDetailPage: React.FC = () => {
         )}
 
         <div className={canMaintain ? 'lg:col-span-3 mx-auto w-full max-w-3xl space-y-6' : 'lg:col-span-2 mx-auto w-full max-w-3xl space-y-6'}>
-          <Card className="p-6">
-            <CardHeader title="AI Predictive Health · RUL Model" icon={Activity} />
-            <p className="text-xs text-ash mb-3">Prediction uses the saved sensor record for this component. If no valid record exists, enter the measurements manually.</p>
-            <div className="rounded-xl border border-[#f0d9a5] bg-[#fff9eb] p-3 text-[11px] text-[#805b13] mb-4">Research prototype on NASA C-MAPSS data · Not validated for aircraft maintenance or airworthiness decisions.</div>
-            <Button className="w-full" disabled={mlLoading} onClick={async () => {
-              setMlLoading(true); setMlError(null); setMlResult(null);
-              try {
-                const emptyFeatures = Object.fromEntries(rulKeys.map(key => [key, NaN])) as Record<string, number>;
-                try {
-                  const saved = await rulRecordApi.get(component.id);
-                  const existing = saved.features || {};
-                  setRulFeatures(Object.fromEntries(rulKeys.map(key => [
-                    key,
-                    typeof existing[key] === 'number' && Number.isFinite(existing[key]) ? existing[key] : NaN
-                  ])) as Record<string, number>);
-                  setMlError('Saved measurements loaded. Review or change them, then save and predict.');
-                } catch (readError: any) {
-                  if (readError.response?.status === 404) {
-                    setRulFeatures(emptyFeatures);
-                    setMlError('No saved sensor record found. Enter the 18 measurements to save and predict.');
-                  } else {
-                    setRulFeatures(emptyFeatures);
-                    setMlError('Could not load the saved record. Enter measurements manually; saving will replace the record.');
-                  }
-                }
-                setShowRulForm(true);
-              } finally {
-                setMlLoading(false);
-              }
-            }}>{mlLoading ? 'Loading measurements…' : 'Update sensor data & predict RUL'}</Button>
-            {mlError && <p className="mt-3 text-xs text-[#b13a2f]">{mlError}</p>}
-            {showRulForm && createPortal(<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/65 p-3 sm:p-6 backdrop-blur-sm" onClick={() => !mlLoading && setShowRulForm(false)} role="dialog" aria-modal="true" aria-labelledby="rul-dialog-title"><div className="flex w-full max-w-3xl max-h-[92vh] flex-col overflow-hidden rounded-2xl border border-pebble bg-white shadow-2xl" onClick={e => e.stopPropagation()}>
-              <div className="shrink-0 border-b border-pebble bg-white px-5 py-4"><div className="flex items-center justify-between gap-4"><div><div className="aero-eyebrow text-[10px]">Aero-Sense · RUL input</div><h3 id="rul-dialog-title" className="mt-1 text-base font-semibold text-ink">Review sensor measurements</h3></div><button type="button" disabled={mlLoading} onClick={() => setShowRulForm(false)} className="rounded-lg border border-pebble px-3 py-2 text-xs font-semibold text-ash hover:bg-[#f7f7f5] disabled:opacity-50">Close</button></div><p className="mt-2 text-xs leading-relaxed text-ash">Saved values are prefilled when available. Enter measured NASA C-MAPSS values only. Do not guess values or enter an NFC UID, part number, or maintenance description.</p></div>
-              <div className="overflow-y-auto px-5 py-4"><div className="mb-3 rounded-lg border border-[#f0d9a5] bg-[#fff9eb] p-3 text-[11px] leading-relaxed text-[#805b13]"><strong>Important:</strong> These 18 fields are model features from a simulated engine dataset. They are not automatically collected by the NFC tag and may not correspond to measurements available for your real component.</div>
-              {mlError && <div role="alert" className="mb-3 rounded-lg border border-[#f2c5c1] bg-[#fff5f4] p-3 text-xs text-[#9b2c23]">{mlError}</div>}
-              <div className="mb-3 text-xs font-semibold text-ink">Operating conditions and sensor channels</div><div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {rulKeys.map(key => {
-                  const labels: Record<string, { title: string; help: string }> = {
-                    cycle: { title: 'Engine cycle number', help: 'Current operating cycle in the dataset.' },
-                    setting_1: { title: 'Operating setting 1', help: 'First recorded operating-condition value.' },
-                    setting_2: { title: 'Operating setting 2', help: 'Second recorded operating-condition value.' },
-                    sensor_2: { title: 'Sensor channel 2', help: 'NASA C-MAPSS sensor measurement; use the dataset value.' },
-                    sensor_3: { title: 'Sensor channel 3', help: 'NASA C-MAPSS sensor measurement; use the dataset value.' },
-                    sensor_4: { title: 'Sensor channel 4', help: 'NASA C-MAPSS sensor measurement; use the dataset value.' },
-                    sensor_6: { title: 'Sensor channel 6', help: 'NASA C-MAPSS sensor measurement; use the dataset value.' },
-                    sensor_7: { title: 'Sensor 7', help: 'Sensor channel 7 measurement.' },
-                    sensor_8: { title: 'Sensor 8', help: 'Sensor channel 8 measurement.' },
-                    sensor_9: { title: 'Sensor 9', help: 'Sensor channel 9 measurement.' },
-                    sensor_11: { title: 'Sensor 11', help: 'Sensor channel 11 measurement.' },
-                    sensor_12: { title: 'Sensor 12', help: 'Sensor channel 12 measurement.' },
-                    sensor_13: { title: 'Sensor 13', help: 'Sensor channel 13 measurement.' },
-                    sensor_14: { title: 'Sensor 14', help: 'Sensor channel 14 measurement.' },
-                    sensor_15: { title: 'Sensor 15', help: 'Sensor channel 15 measurement.' },
-                    sensor_17: { title: 'Sensor 17', help: 'Sensor channel 17 measurement.' },
-                    sensor_20: { title: 'Sensor 20', help: 'Sensor channel 20 measurement.' },
-                    sensor_21: { title: 'Sensor 21', help: 'Sensor channel 21 measurement.' }
-                  };
-                  return <label key={key} className="block rounded-xl border border-pebble bg-[#fbfcff] p-3 text-xs font-semibold text-ink">
-                    <span className="block">{labels[key]?.title || key}</span>
-                    <span className="mt-1 block text-[10px] font-normal text-ash">{labels[key]?.help || key} <span className="aero-mono">({key})</span></span>
-                    <input aria-label={labels[key]?.title || key} type="number" step="any" value={rulFeatures[key] ?? ''} onChange={e => setRulFeatures(prev => ({...prev, [key]: e.target.value === '' ? NaN : Number(e.target.value)}))} className="mt-2 w-full rounded-lg border border-[#cbd5e1] bg-white p-2.5 text-sm text-ink placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100" />
-                  </label>;
-                })}
-              </div></div>
-              <div className="shrink-0 border-t border-pebble bg-white px-5 py-4"><div className="mb-3 text-[11px] text-ash">{rulKeys.filter(k => Number.isFinite(rulFeatures[k])).length} of {rulKeys.length} measurements entered</div><Button className="w-full" disabled={mlLoading || !rulKeys.every(k => Number.isFinite(rulFeatures[k]))} onClick={async () => {
-                setMlLoading(true); setMlError(null);
-                try {
-                  const saved = await rulRecordApi.save(component.id, rulFeatures);
-                  const result = await mlApi.predictRul(saved.features);
-                  setMlResult(result); setShowRulForm(false); setMlError(null);
-                } catch (e: any) { setMlError(e.response?.data?.error?.message || e.response?.data?.detail || e.message || 'Could not save sensor record or run prediction'); }
-                finally { setMlLoading(false); }
-              }}>{mlLoading ? 'Saving & predicting…' : 'Save measurements & run prediction'}</Button><button type="button" disabled={mlLoading} onClick={() => setShowRulForm(false)} className="mt-2 w-full rounded-full border border-pebble py-3 text-sm font-semibold text-ash hover:bg-[#f7f7f5] disabled:opacity-50">Cancel</button></div>
-            </div>, document.body)}
-            {mlResult && <div className="mt-4 space-y-3">
-              <div className="rounded-xl border border-[#c7d2fe] bg-[#f5f7ff] p-4">
-                <div className="flex items-center gap-2 text-xs font-semibold text-indigo-800"><Activity className="h-4 w-4" /> MODEL PREDICTION</div>
-                <div className="mt-2 text-3xl font-bold text-ink aero-mono">{Number(mlResult.predicted_rul_cycles).toFixed(2)} <span className="text-sm font-semibold">cycles remaining</span></div>
-                <p className="mt-2 text-xs leading-relaxed text-slate-700">The model estimates remaining useful life in NASA C-MAPSS operating cycles. A cycle is not automatically equal to a flight, flight hour, or calendar day.</p>
+          <Card className="overflow-hidden">
+            <div className="border-b border-pebble bg-white p-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eef2ff] text-indigo-700"><Activity className="h-5 w-5" /></div>
+                    <div>
+                      <div className="aero-eyebrow text-[10px]">AEROSENSE AI</div>
+                      <h2 className="text-lg font-semibold text-ink">Predictive Component Health</h2>
+                    </div>
+                  </div>
+                  <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ash">Estimate remaining useful life from the 18 NASA C-MAPSS model features stored for this component.</p>
+                </div>
+                <span className="inline-flex shrink-0 items-center rounded-full border border-[#f0d9a5] bg-[#fff9eb] px-3 py-1.5 text-[10px] font-semibold text-[#805b13]">RESEARCH PROTOTYPE</span>
               </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-xl border border-[#f0d9a5] bg-[#fff9eb] p-4">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-[#805b13]"><AlertTriangle className="h-4 w-4" /> RISK INTERPRETATION</div>
-                  <p className="mt-2 text-sm font-semibold text-ink">No validated risk category available</p>
-                  <p className="mt-1 text-xs leading-relaxed text-slate-700">This prototype has no approved low/medium/high risk thresholds. Do not use this number to decide whether an aircraft component is safe to operate.</p>
+            </div>
+
+            <div className="bg-[#fafbff] p-6">
+              <div className="grid gap-3 sm:grid-cols-3 mb-5">
+                <div className="rounded-xl border border-pebble bg-white p-4">
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-ash">1. Enter data</div>
+                  <div className="mt-1 text-xs font-semibold text-ink">18 model features</div>
                 </div>
                 <div className="rounded-xl border border-pebble bg-white p-4">
-                  <div className="text-xs font-semibold text-ink">MODEL PERFORMANCE</div>
-                  <div className="mt-2 text-lg font-bold text-ink aero-mono">R² 0.81</div>
-                  <p className="text-xs text-ash">Test-set fit on NASA C-MAPSS FD001</p>
-                  <div className="mt-2 text-lg font-bold text-ink aero-mono">MAE 13.55 cycles</div>
-                  <p className="text-xs text-ash">Average absolute error on the uncapped test set</p>
-                  <p className="mt-2 text-[10px] leading-relaxed text-ash">These are dataset evaluation metrics, not a 81% success rate or a guarantee for this prediction.</p>
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-ash">2. Run model</div>
+                  <div className="mt-1 text-xs font-semibold text-ink">Random Forest prediction</div>
+                </div>
+                <div className="rounded-xl border border-pebble bg-white p-4">
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-ash">3. Understand result</div>
+                  <div className="mt-1 text-xs font-semibold text-ink">RUL + model metrics</div>
                 </div>
               </div>
-              <div className="rounded-xl border border-pebble bg-white p-3">
-                <p className="text-[10px] text-ash">{mlResult.model} · {mlResult.dataset}</p>
-                <p className="mt-1 text-[10px] leading-relaxed text-ash">{mlResult.notice}</p>
-              </div>
-            </div>}
+
+              <Button className="w-full" disabled={mlLoading} onClick={async () => {
+                setMlLoading(true); setMlError(null); setMlResult(null);
+                try {
+                  const emptyFeatures = Object.fromEntries(rulKeys.map(key => [key, NaN])) as Record<string, number>;
+                  try {
+                    const saved = await rulRecordApi.get(component.id);
+                    const existing = saved.features || {};
+                    setRulFeatures(Object.fromEntries(rulKeys.map(key => [
+                      key,
+                      typeof existing[key] === 'number' && Number.isFinite(existing[key]) ? existing[key] : NaN
+                    ])) as Record<string, number>);
+                  } catch (readError: any) {
+                    setRulFeatures(emptyFeatures);
+                    if (readError.response?.status !== 404) {
+                      setMlError('The saved sensor record could not be loaded. Enter valid measurements manually.');
+                    }
+                  }
+                  setShowRulForm(true);
+                } finally {
+                  setMlLoading(false);
+                }
+              }}>{mlLoading ? 'Loading sensor data…' : 'Enter / update sensor data'}</Button>
+
+              {mlError && !showRulForm && <div role="alert" className="mt-3 rounded-xl border border-[#f2c5c1] bg-[#fff5f4] p-3 text-xs text-[#9b2c23]">{mlError}</div>}
+
+              {mlResult && <div className="mt-5 space-y-3">
+                <div className="rounded-2xl border border-[#c7d2fe] bg-white p-5">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-wider text-indigo-700">Prediction</div>
+                      <div className="mt-1 text-4xl font-bold text-ink aero-mono">{Number(mlResult.predicted_rul_cycles).toFixed(2)} <span className="text-base font-semibold">cycles</span></div>
+                    </div>
+                    <div className="rounded-xl bg-[#f5f7ff] px-4 py-3 text-right">
+                      <div className="text-[10px] font-semibold uppercase tracking-wider text-ash">Output unit</div>
+                      <div className="text-sm font-semibold text-ink">Operating cycles</div>
+                    </div>
+                  </div>
+                  <p className="mt-3 text-xs leading-relaxed text-ash">This is the model's estimated remaining useful life for the supplied NASA C-MAPSS feature vector. It is not automatically equivalent to flights, flight hours, or calendar time.</p>
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-3">
+                  <div className="rounded-xl border border-pebble bg-white p-4">
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-ash">Model fit</div>
+                    <div className="mt-1 text-xl font-bold text-ink aero-mono">R² 0.81</div>
+                    <p className="mt-1 text-[10px] text-ash">FD001 test-set fit</p>
+                  </div>
+                  <div className="rounded-xl border border-pebble bg-white p-4">
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-ash">Typical error</div>
+                    <div className="mt-1 text-xl font-bold text-ink aero-mono">13.55 cycles</div>
+                    <p className="mt-1 text-[10px] text-ash">MAE on uncapped test data</p>
+                  </div>
+                  <div className="rounded-xl border border-[#f0d9a5] bg-[#fff9eb] p-4">
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-[#805b13]">Risk status</div>
+                    <div className="mt-1 text-sm font-semibold text-ink">Not classified</div>
+                    <p className="mt-1 text-[10px] leading-relaxed text-[#805b13]">No validated aircraft risk thresholds are implemented.</p>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-pebble bg-white p-4">
+                  <div className="text-xs font-semibold text-ink">How to read this</div>
+                  <div className="mt-2 grid gap-2 sm:grid-cols-3 text-[11px] text-ash">
+                    <div><strong className="text-ink">Prediction:</strong> estimated remaining cycles.</div>
+                    <div><strong className="text-ink">R²:</strong> model fit on the test dataset.</div>
+                    <div><strong className="text-ink">MAE:</strong> average absolute error in cycles.</div>
+                  </div>
+                  <p className="mt-3 text-[10px] leading-relaxed text-ash">{mlResult.model} · {mlResult.dataset}. These evaluation metrics are not a success-rate percentage or a safety certification.</p>
+                  <p className="mt-1 text-[10px] leading-relaxed text-ash">{mlResult.notice}</p>
+                </div>
+              </div>}
+
+              {showRulForm && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/70 p-3 sm:p-6 backdrop-blur-sm" onClick={() => !mlLoading && setShowRulForm(false)} role="dialog" aria-modal="true" aria-labelledby="rul-dialog-title">
+                  <div className="flex w-full max-w-3xl max-h-[92vh] flex-col overflow-hidden rounded-2xl border border-pebble bg-white shadow-2xl" onClick={e => e.stopPropagation()}>
+                    <div className="shrink-0 border-b border-pebble px-5 py-4">
+                      <div className="flex items-center justify-between gap-4">
+                        <div>
+                          <div className="aero-eyebrow text-[10px]">Aero-Sense · RUL input</div>
+                          <h3 id="rul-dialog-title" className="mt-1 text-base font-semibold text-ink">Enter model measurements</h3>
+                        </div>
+                        <button type="button" disabled={mlLoading} onClick={() => setShowRulForm(false)} className="rounded-lg border border-pebble px-3 py-2 text-xs font-semibold text-ash hover:bg-[#f7f7f5] disabled:opacity-50">Close</button>
+                      </div>
+                      <p className="mt-2 text-xs leading-relaxed text-ash">Use the values from your NASA C-MAPSS feature data. The NFC tag does not provide these 18 ML inputs.</p>
+                    </div>
+                    <div className="overflow-y-auto px-5 py-4">
+                      <div className="mb-4 rounded-xl border border-[#f0d9a5] bg-[#fff9eb] p-3 text-[11px] leading-relaxed text-[#805b13]"><strong>Data source:</strong> these are model feature fields, not generic aircraft sensor names. Use the exact feature values expected by the FD001-trained model.</div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {rulKeys.map(key => {
+                          const labels: Record<string, { title: string; help: string }> = {
+                            cycle: { title: 'Engine cycle', help: 'Operating cycle number.' },
+                            setting_1: { title: 'Operating setting 1', help: 'Dataset operating condition.' },
+                            setting_2: { title: 'Operating setting 2', help: 'Dataset operating condition.' },
+                            sensor_2: { title: 'Sensor 2', help: 'C-MAPSS feature sensor_2.' },
+                            sensor_3: { title: 'Sensor 3', help: 'C-MAPSS feature sensor_3.' },
+                            sensor_4: { title: 'Sensor 4', help: 'C-MAPSS feature sensor_4.' },
+                            sensor_6: { title: 'Sensor 6', help: 'C-MAPSS feature sensor_6.' },
+                            sensor_7: { title: 'Sensor 7', help: 'C-MAPSS feature sensor_7.' },
+                            sensor_8: { title: 'Sensor 8', help: 'C-MAPSS feature sensor_8.' },
+                            sensor_9: { title: 'Sensor 9', help: 'C-MAPSS feature sensor_9.' },
+                            sensor_11: { title: 'Sensor 11', help: 'C-MAPSS feature sensor_11.' },
+                            sensor_12: { title: 'Sensor 12', help: 'C-MAPSS feature sensor_12.' },
+                            sensor_13: { title: 'Sensor 13', help: 'C-MAPSS feature sensor_13.' },
+                            sensor_14: { title: 'Sensor 14', help: 'C-MAPSS feature sensor_14.' },
+                            sensor_15: { title: 'Sensor 15', help: 'C-MAPSS feature sensor_15.' },
+                            sensor_17: { title: 'Sensor 17', help: 'C-MAPSS feature sensor_17.' },
+                            sensor_20: { title: 'Sensor 20', help: 'C-MAPSS feature sensor_20.' },
+                            sensor_21: { title: 'Sensor 21', help: 'C-MAPSS feature sensor_21.' }
+                          };
+                          return <label key={key} className="block rounded-xl border border-pebble bg-[#fbfcff] p-3">
+                            <span className="block text-xs font-semibold text-ink">{labels[key].title}</span>
+                            <span className="mt-1 block text-[10px] font-normal text-ash">{labels[key].help} <span className="aero-mono">({key})</span></span>
+                            <input aria-label={labels[key].title} inputMode="decimal" type="number" step="any" value={rulFeatures[key] ?? ''} onChange={e => setRulFeatures(prev => ({...prev, [key]: e.target.value === '' ? NaN : Number(e.target.value)}))} className="mt-2 w-full rounded-lg border border-[#cbd5e1] bg-white p-2.5 text-sm text-ink outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100" />
+                          </label>;
+                        })}
+                      </div>
+                    </div>
+                    <div className="shrink-0 border-t border-pebble bg-white px-5 py-4">
+                      <div className="mb-3 text-[11px] text-ash">{rulKeys.filter(k => Number.isFinite(rulFeatures[k])).length} of {rulKeys.length} measurements entered</div>
+                      <Button className="w-full" disabled={mlLoading || !rulKeys.every(k => Number.isFinite(rulFeatures[k]))} onClick={async () => {
+                        setMlLoading(true); setMlError(null);
+                        try {
+                          const saved = await rulRecordApi.save(component.id, rulFeatures);
+                          const result = await mlApi.predictRul(saved.features);
+                          setMlResult(result); setShowRulForm(false); setMlError(null);
+                        } catch (e: any) {
+                          setMlError(e.response?.data?.error?.message || e.response?.data?.detail || e.message || 'Could not save sensor data or run prediction');
+                        } finally {
+                          setMlLoading(false);
+                        }
+                      }}>{mlLoading ? 'Saving & predicting…' : 'Save measurements & run prediction'}</Button>
+                      <button type="button" disabled={mlLoading} onClick={() => setShowRulForm(false)} className="mt-2 w-full rounded-full border border-pebble py-3 text-sm font-semibold text-ash hover:bg-[#f7f7f5] disabled:opacity-50">Cancel</button>
+                    </div>
+                  </div>
+                </div>,
+                document.body
+              )}
+            </div>
           </Card>
+
           <Card className="p-6">
             <CardHeader title="NFC Hardware Identity" icon={Tag} />
             <div className="p-4 rounded-xl border border-pebble bg-white space-y-3">
