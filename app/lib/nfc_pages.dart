@@ -127,9 +127,11 @@ class _NfcVerificationState extends State<NfcVerificationScreen> {
     }
     try {
       final verification = await nfcApi.verifyNfc(identifier);
-      if (mounted) setState(() => result = verification);
+      if (mounted) setState(() { result = verification; scanning = false; });
+      await _stopReader();
     } catch (e) {
-      if (mounted) setState(() => error = nfcApi.errorMessage(e));
+      if (mounted) setState(() { error = nfcApi.errorMessage(e); scanning = false; });
+      await _stopReader();
     } finally {
       _handlingTag = false;
     }
