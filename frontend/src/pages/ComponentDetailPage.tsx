@@ -97,7 +97,7 @@ export const ComponentDetailPage: React.FC = () => {
           </div>
         )}
 
-        <div className={canMaintain ? 'space-y-6' : 'lg:col-span-2 space-y-6'}>
+        <div className={canMaintain ? 'lg:col-span-3 mx-auto w-full max-w-3xl space-y-6' : 'lg:col-span-2 mx-auto w-full max-w-3xl space-y-6'}>
           <Card className="p-6">
             <CardHeader title="AI Predictive Health · RUL Model" icon={Activity} />
             <p className="text-xs text-ash mb-3">Prediction uses the saved sensor record for this component. If no valid record exists, enter the measurements manually.</p>
@@ -121,8 +121,8 @@ export const ComponentDetailPage: React.FC = () => {
               finally { setMlLoading(false); }
             }}>{mlLoading ? 'Reading record…' : 'Read saved record & predict RUL'}</Button>
             {mlError && <p className="mt-3 text-xs text-[#b13a2f]">{mlError}</p>}
-            {showRulForm && <div className="mt-4 rounded-xl border border-pebble bg-white p-4">
-              <h3 className="text-sm font-semibold text-ink mb-1">Manual sensor data entry</h3>
+            {showRulForm && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="rul-dialog-title"><div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-pebble bg-white p-5 shadow-2xl">
+              <div className="flex items-center justify-between gap-4 mb-1"><h3 id="rul-dialog-title" className="text-sm font-semibold text-ink">Manual sensor data entry</h3><button type="button" onClick={() => setShowRulForm(false)} className="rounded-lg px-3 py-1 text-xs font-semibold text-ash hover:bg-[#f7f7f5]">Close</button></div>
               <p className="text-[11px] text-ash mb-3">Enter actual measured values. Do not use NFC UID or maintenance descriptions as sensor values.</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {rulKeys.map(key => <label key={key} className="text-[11px] font-semibold text-ash">{key}<input type="number" step="any" value={rulFeatures[key] ?? ''} onChange={e => setRulFeatures(prev => ({...prev, [key]: e.target.value === '' ? NaN : Number(e.target.value)}))} className="mt-1 w-full rounded-lg border border-pebble p-2 text-sm text-ink" /></label>)}
