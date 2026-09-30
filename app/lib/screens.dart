@@ -166,6 +166,28 @@ class _PassportState extends State<PassportScreen> {
             _kv('Component UUID', widget.component.uuid),
           ]),
         ),
+        const SizedBox(height: 12),
+        CardBox(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Row(children: [Icon(Icons.insights_outlined, color: accent), SizedBox(width: 9), Expanded(child: Text('AI predictive health · RUL model', style: TextStyle(fontWeight: FontWeight.w800)))]),
+            const SizedBox(height: 8),
+            const Text('Run an on-demand model test for this selected component. This demo uses sample NASA C-MAPSS engine sensor data, not live component telemetry.', style: TextStyle(color: muted, height: 1.4)),
+            const SizedBox(height: 10),
+            const Text('Research prototype only · Not validated for aircraft maintenance or airworthiness decisions.', style: TextStyle(color: Color(0xff9a6a12), fontSize: 11, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 12),
+            SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: mlLoading ? null : runRulTest, icon: mlLoading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.play_arrow), label: Text(mlLoading ? 'Running model…' : 'Run RUL test for this component'))),
+            if (mlError != null) Padding(padding: const EdgeInsets.only(top: 10), child: Text(mlError!, style: const TextStyle(color: Colors.red))),
+            if (mlResult != null) ...[
+              const Divider(height: 24),
+              const Text('PREDICTED REMAINING USEFUL LIFE · SAMPLE INPUT', style: TextStyle(color: muted, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: .7)),
+              const SizedBox(height: 5),
+              Text('${(mlResult!['predicted_rul_cycles'] as num).toStringAsFixed(2)} cycles', style: const TextStyle(fontSize: 27, fontWeight: FontWeight.w900, color: accent)),
+              Text('${mlResult!['model']} · ${mlResult!['dataset']}', style: const TextStyle(color: muted, fontSize: 11)),
+              const SizedBox(height: 5),
+              Text('${mlResult!['notice']}', style: const TextStyle(color: muted, fontSize: 10)),
+            ],
+          ]),
+        ),
         if (canSeeVerification) ...[
           const SizedBox(height: 12),
           Section(
