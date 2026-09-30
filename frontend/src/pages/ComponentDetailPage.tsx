@@ -18,9 +18,6 @@ export const ComponentDetailPage: React.FC = () => {
   const [mlLoading, setMlLoading] = useState(false);
   const [mlResult, setMlResult] = useState<any>(null);
   const [mlError, setMlError] = useState<string | null>(null);
-  const [mlLoading, setMlLoading] = useState(false);
-  const [mlResult, setMlResult] = useState<any>(null);
-  const [mlError, setMlError] = useState<string | null>(null);
   const { showToast } = useToast();
   const { user } = useAuth();
   const role = user?.role;
