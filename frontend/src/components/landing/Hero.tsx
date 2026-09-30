@@ -33,15 +33,15 @@ export const Hero: React.FC = () => {
   const trustOpacity = useTransform(displayProgress, [0.08, 0.14, 0.27, 0.32], [0, 1, 1, 0]);
   const trustY = useTransform(displayProgress, [0.08, 0.14, 0.27, 0.32], [24, 0, 0, -18]);
   const verifyOpacity = useTransform(displayProgress, [0.32, 0.4, 0.55, 0.63], [0, 1, 1, 0]);
-  const verifyY = useTransform(cinematicProgress, [0.32, 0.4, 0.55, 0.63], [24, 0, 0, -18]);
+  const verifyY = useTransform(displayProgress, [0.32, 0.4, 0.55, 0.63], [24, 0, 0, -18]);
   const labelOpacity = useTransform(displayProgress, [0.68, 0.74, 0.82, 0.87], [0, 1, 1, 0]);
-  const labelY = useTransform(cinematicProgress, [0.68, 0.74, 0.82, 0.87], [16, 0, 0, -10]);
+  const labelY = useTransform(displayProgress, [0.68, 0.74, 0.82, 0.87], [16, 0, 0, -10]);
   const verifiedOpacity = useTransform(displayProgress, [0.94, 0.97, 1], [0, 1, 1]);
   const verifiedY = useTransform(displayProgress, [0.94, 0.97], [20, 0]);
   const verifiedScale = useTransform(cinematicProgress, [0.94, 0.97], [0.97, 1]);
   const scrollPromptOpacity = useTransform(displayProgress, [0, 0.02, 0.05], [1, 1, 0]);
   const scrollPromptY = useTransform(displayProgress, [0, 0.05], [0, 8]);
-  const activeStage = useTransform(displayProgress, [0, 0.24, 0.26, 0.49, 0.51, 0.74, 0.76, 1], [0, 0, 1, 1, 2, 2, 3, 3]);
+  const activeStage = useTransform(displayProgress, [0, 0.24, 0.26, 0.49, 0.51, 0.92, 0.94, 1], [0, 0, 1, 1, 2, 2, 3, 3]);
   const stage0Opacity = useTransform(activeStage, (v) => (Math.round(v) === 0 ? 1 : 0.35));
   const stage1Opacity = useTransform(activeStage, (v) => (Math.round(v) === 1 ? 1 : 0.35));
   const stage2Opacity = useTransform(activeStage, (v) => (Math.round(v) === 2 ? 1 : 0.35));
