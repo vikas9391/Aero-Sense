@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { componentsApi } from '../services/api';
+import { componentsApi, mlApi } from '../services/api';
 import { Component, MaintenanceRecord, VerificationLog } from '../types';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
@@ -15,6 +15,9 @@ export const ComponentDetailPage: React.FC = () => {
   const [history, setHistory] = useState<MaintenanceRecord[]>([]);
   const [verifications, setVerifications] = useState<VerificationLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mlLoading, setMlLoading] = useState(false);
+  const [mlResult, setMlResult] = useState<any>(null);
+  const [mlError, setMlError] = useState<string | null>(null);
   const { showToast } = useToast();
   const { user } = useAuth();
   const role = user?.role;
