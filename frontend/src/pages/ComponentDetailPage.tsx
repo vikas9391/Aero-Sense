@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, Link } from 'react-router-dom';
 import { componentsApi, mlApi, rulRecordApi } from '../services/api';
 import { Component, MaintenanceRecord, VerificationLog } from '../types';
@@ -121,7 +122,7 @@ export const ComponentDetailPage: React.FC = () => {
               finally { setMlLoading(false); }
             }}>{mlLoading ? 'Reading record…' : 'Read saved record & predict RUL'}</Button>
             {mlError && <p className="mt-3 text-xs text-[#b13a2f]">{mlError}</p>}
-            {showRulForm && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="rul-dialog-title"><div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-pebble bg-white p-5 shadow-2xl">
+            {showRulForm && createPortal(<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-labelledby="rul-dialog-title"><div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-pebble bg-white p-5 shadow-2xl">
               <div className="flex items-center justify-between gap-4 mb-1"><h3 id="rul-dialog-title" className="text-sm font-semibold text-ink">Manual sensor data entry</h3><button type="button" onClick={() => setShowRulForm(false)} className="rounded-lg px-3 py-1 text-xs font-semibold text-ash hover:bg-[#f7f7f5]">Close</button></div>
               <p className="text-[11px] text-ash mb-3">Enter actual measured values. Do not use NFC UID or maintenance descriptions as sensor values.</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -137,7 +138,7 @@ export const ComponentDetailPage: React.FC = () => {
                 finally { setMlLoading(false); }
               }}>{mlLoading ? 'Saving & predicting…' : 'Save record & predict'}</Button>
             </div>
-            </div>}
+            </div>, document.body)}
             {mlResult && <div className="mt-4 rounded-xl border border-pebble bg-white p-4">
               <div className="aero-eyebrow text-[10px]">Predicted remaining useful life · saved component record</div>
               <div className="text-3xl font-semibold text-ink aero-mono mt-1">{Number(mlResult.predicted_rul_cycles).toFixed(2)} <span className="text-sm">cycles</span></div>
