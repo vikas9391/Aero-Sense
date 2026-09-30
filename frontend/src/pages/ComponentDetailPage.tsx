@@ -55,6 +55,15 @@ export const ComponentDetailPage: React.FC = () => {
     load();
   }, [id, canMaintain, canVerify, showToast]);
 
+  useEffect(() => {
+    if (!showRulForm) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !mlLoading) setShowRulForm(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showRulForm, mlLoading]);
+
   if (loading) return <div className="py-12 text-center text-ash text-sm">Loading component record...</div>;
   if (!component) return <div className="py-12 text-center text-[#b13a2f] text-sm">Component not found.</div>;
 
@@ -130,10 +139,11 @@ export const ComponentDetailPage: React.FC = () => {
               }
             }}>{mlLoading ? 'Loading measurements…' : 'Update sensor data & predict RUL'}</Button>
             {mlError && <p className="mt-3 text-xs text-[#b13a2f]">{mlError}</p>}
-            {showRulForm && createPortal(<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-labelledby="rul-dialog-title"><div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-pebble bg-white p-5 shadow-2xl">
-              <div className="flex items-center justify-between gap-4 mb-1"><h3 id="rul-dialog-title" className="text-sm font-semibold text-ink">Manual sensor data entry</h3><button type="button" onClick={() => setShowRulForm(false)} className="rounded-lg px-3 py-1 text-xs font-semibold text-ash hover:bg-[#f7f7f5]">Close</button></div>
-              <p className="text-[11px] text-ash mb-3">Saved values are prefilled when available. Review or edit the actual measured values; do not use NFC UID or maintenance descriptions as sensor values.</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {showRulForm && createPortal(<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/65 p-3 sm:p-6 backdrop-blur-sm" onClick={() => !mlLoading && setShowRulForm(false)} role="dialog" aria-modal="true" aria-labelledby="rul-dialog-title"><div className="flex w-full max-w-3xl max-h-[92vh] flex-col overflow-hidden rounded-2xl border border-pebble bg-white shadow-2xl" onClick={e => e.stopPropagation()}>
+              <div className="shrink-0 border-b border-pebble bg-white px-5 py-4"><div className="flex items-center justify-between gap-4"><div><div className="aero-eyebrow text-[10px]">Aero-Sense · RUL input</div><h3 id="rul-dialog-title" className="mt-1 text-base font-semibold text-ink">Review sensor measurements</h3></div><button type="button" disabled={mlLoading} onClick={() => setShowRulForm(false)} className="rounded-lg border border-pebble px-3 py-2 text-xs font-semibold text-ash hover:bg-[#f7f7f5] disabled:opacity-50">Close</button></div><p className="mt-2 text-xs leading-relaxed text-ash">Saved values are prefilled when available. Enter measured NASA C-MAPSS values only. Do not guess values or enter an NFC UID, part number, or maintenance description.</p></div>
+              <div className="overflow-y-auto px-5 py-4"><div className="mb-3 rounded-lg border border-[#f0d9a5] bg-[#fff9eb] p-3 text-[11px] leading-relaxed text-[#805b13]"><strong>Important:</strong> These 18 fields are model features from a simulated engine dataset. They are not automatically collected by the NFC tag and may not correspond to measurements available for your real component.</div>
+              {mlError && <div role="alert" className="mb-3 rounded-lg border border-[#f2c5c1] bg-[#fff5f4] p-3 text-xs text-[#9b2c23]">{mlError}</div>}
+              <div className="mb-3 text-xs font-semibold text-ink">Operating conditions and sensor channels</div><div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {rulKeys.map(key => {
                   const labels: Record<string, { title: string; help: string }> = {
                     cycle: { title: 'Engine cycle number', help: 'Current operating cycle in the dataset.' },
@@ -162,7 +172,7 @@ export const ComponentDetailPage: React.FC = () => {
                   </label>;
                 })}
               </div>
-              <Button className="w-full mt-4" disabled={mlLoading || !rulKeys.every(k => Number.isFinite(rulFeatures[k]))} onClick={async () => {
+              <div className="shrink-0 border-t border-pebble bg-white px-5 py-4"><div className="mb-3 text-[11px] text-ash">{rulKeys.filter(k => Number.isFinite(rulFeatures[k])).length} of {rulKeys.length} measurements entered</div><Button className="w-full" disabled={mlLoading || !rulKeys.every(k => Number.isFinite(rulFeatures[k]))} onClick={async () => {
                 setMlLoading(true); setMlError(null);
                 try {
                   const saved = await rulRecordApi.save(component.id, rulFeatures);
@@ -170,8 +180,7 @@ export const ComponentDetailPage: React.FC = () => {
                   setMlResult(result); setShowRulForm(false); setMlError(null);
                 } catch (e: any) { setMlError(e.response?.data?.error?.message || e.response?.data?.detail || e.message || 'Could not save sensor record or run prediction'); }
                 finally { setMlLoading(false); }
-              }}>{mlLoading ? 'Saving & predicting…' : 'Save updated measurements & predict'}</Button>
-            </div>
+              }}>{mlLoading ? 'Saving & predicting…' : 'Save measurements & run prediction'}</Button><button type="button" disabled={mlLoading} onClick={() => setShowRulForm(false)} className="mt-2 w-full rounded-full border border-pebble py-3 text-sm font-semibold text-ash hover:bg-[#f7f7f5] disabled:opacity-50">Cancel</button></div>
             </div>, document.body)}
             {mlResult && <div className="mt-4 space-y-3">
               <div className="rounded-xl border border-[#c7d2fe] bg-[#f5f7ff] p-4">
