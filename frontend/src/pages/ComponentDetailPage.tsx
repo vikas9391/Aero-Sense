@@ -136,6 +136,7 @@ export const ComponentDetailPage: React.FC = () => {
                 } catch (e: any) { setMlError(e.response?.data?.error?.message || e.response?.data?.detail || e.message || 'Could not save sensor record or run prediction'); }
                 finally { setMlLoading(false); }
               }}>{mlLoading ? 'Saving & predicting…' : 'Save record & predict'}</Button>
+            </div>
             </div>}
             {mlResult && <div className="mt-4 rounded-xl border border-pebble bg-white p-4">
               <div className="aero-eyebrow text-[10px]">Predicted remaining useful life · saved component record</div>
