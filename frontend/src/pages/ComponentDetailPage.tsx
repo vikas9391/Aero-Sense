@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { componentsApi, mlApi } from '../services/api';
+import { componentsApi, mlApi, rulRecordApi } from '../services/api';
 import { Component, MaintenanceRecord, VerificationLog } from '../types';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
@@ -18,6 +18,9 @@ export const ComponentDetailPage: React.FC = () => {
   const [mlLoading, setMlLoading] = useState(false);
   const [mlResult, setMlResult] = useState<any>(null);
   const [mlError, setMlError] = useState<string | null>(null);
+  const [rulFeatures, setRulFeatures] = useState<Record<string, number>>({});
+  const [showRulForm, setShowRulForm] = useState(false);
+  const rulKeys = ['cycle','setting_1','setting_2','sensor_2','sensor_3','sensor_4','sensor_6','sensor_7','sensor_8','sensor_9','sensor_11','sensor_12','sensor_13','sensor_14','sensor_15','sensor_17','sensor_20','sensor_21'];
   const { showToast } = useToast();
   const { user } = useAuth();
   const role = user?.role;
@@ -97,21 +100,45 @@ export const ComponentDetailPage: React.FC = () => {
         <div className={canMaintain ? 'space-y-6' : 'lg:col-span-2 space-y-6'}>
           <Card className="p-6">
             <CardHeader title="AI Predictive Health · RUL Model" icon={Activity} />
-            <p className="text-xs text-ash mb-3">Run an on-demand test for this selected component. This demo uses sample NASA C-MAPSS engine data, not live component telemetry.</p>
-            <div className="rounded-xl border border-[#f0d9a5] bg-[#fff9eb] p-3 text-[11px] text-[#805b13] mb-4">Research prototype only · Not validated for aircraft maintenance or airworthiness decisions.</div>
+            <p className="text-xs text-ash mb-3">Prediction uses the saved sensor record for this component. If no valid record exists, enter the measurements manually.</p>
+            <div className="rounded-xl border border-[#f0d9a5] bg-[#fff9eb] p-3 text-[11px] text-[#805b13] mb-4">Research prototype on NASA C-MAPSS data · Not validated for aircraft maintenance or airworthiness decisions.</div>
             <Button className="w-full" disabled={mlLoading} onClick={async () => {
               setMlLoading(true); setMlError(null); setMlResult(null);
-              try { setMlResult(await mlApi.predictRul({
-                cycle: 31, setting_1: -0.0006, setting_2: 0.0004, sensor_2: 642.58, sensor_3: 1581.22,
-                sensor_4: 1398.91, sensor_6: 21.61, sensor_7: 554.42, sensor_8: 2388.08, sensor_9: 9056.4,
-                sensor_11: 47.23, sensor_12: 521.79, sensor_13: 2388.06, sensor_14: 8130.11,
-                sensor_15: 8.4024, sensor_17: 393, sensor_20: 38.81, sensor_21: 23.3552
-              })); } catch (e: any) { setMlError(e.response?.data?.detail || e.message || 'Prediction request failed'); }
+              try {
+                let features: Record<string, number>;
+                try {
+                  const saved = await rulRecordApi.get(component.id);
+                  features = saved.features;
+                  const valid = rulKeys.every(k => typeof features[k] === 'number' && Number.isFinite(features[k]));
+                  if (!valid) throw new Error('Saved sensor record is incomplete or invalid.');
+                } catch (readError: any) {
+                  setShowRulForm(true);
+                  setMlError(readError.response?.status === 404 ? 'No sensor record found. Enter the 18 measurements below to save one.' : (readError.message || 'Sensor record is missing or invalid. Enter it manually.'));
+                  return;
+                }
+                setMlResult(await mlApi.predictRul(features));
+              } catch (e: any) { setMlError(e.response?.data?.error?.message || e.response?.data?.detail || e.message || 'Prediction request failed'); }
               finally { setMlLoading(false); }
-            }}>{mlLoading ? 'Running model…' : 'Run RUL test for this component'}</Button>
+            }}>{mlLoading ? 'Reading record…' : 'Read saved record & predict RUL'}</Button>
             {mlError && <p className="mt-3 text-xs text-[#b13a2f]">{mlError}</p>}
+            {showRulForm && <div className="mt-4 rounded-xl border border-pebble bg-white p-4">
+              <h3 className="text-sm font-semibold text-ink mb-1">Manual sensor data entry</h3>
+              <p className="text-[11px] text-ash mb-3">Enter actual measured values. Do not use NFC UID or maintenance descriptions as sensor values.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {rulKeys.map(key => <label key={key} className="text-[11px] font-semibold text-ash">{key}<input type="number" step="any" value={rulFeatures[key] ?? ''} onChange={e => setRulFeatures(prev => ({...prev, [key]: e.target.value === '' ? NaN : Number(e.target.value)}))} className="mt-1 w-full rounded-lg border border-pebble p-2 text-sm text-ink" /></label>)}
+              </div>
+              <Button className="w-full mt-4" disabled={mlLoading || !rulKeys.every(k => Number.isFinite(rulFeatures[k]))} onClick={async () => {
+                setMlLoading(true); setMlError(null);
+                try {
+                  const saved = await rulRecordApi.save(component.id, rulFeatures);
+                  const result = await mlApi.predictRul(saved.features);
+                  setMlResult(result); setShowRulForm(false); setMlError(null);
+                } catch (e: any) { setMlError(e.response?.data?.error?.message || e.response?.data?.detail || e.message || 'Could not save sensor record or run prediction'); }
+                finally { setMlLoading(false); }
+              }}>{mlLoading ? 'Saving & predicting…' : 'Save record & predict'}</Button>
+            </div>}
             {mlResult && <div className="mt-4 rounded-xl border border-pebble bg-white p-4">
-              <div className="aero-eyebrow text-[10px]">Predicted remaining useful life · sample input</div>
+              <div className="aero-eyebrow text-[10px]">Predicted remaining useful life · saved component record</div>
               <div className="text-3xl font-semibold text-ink aero-mono mt-1">{Number(mlResult.predicted_rul_cycles).toFixed(2)} <span className="text-sm">cycles</span></div>
               <p className="text-[10px] text-ash mt-2">{mlResult.model} · {mlResult.dataset}</p><p className="text-[10px] text-ash mt-1">{mlResult.notice}</p>
             </div>}
