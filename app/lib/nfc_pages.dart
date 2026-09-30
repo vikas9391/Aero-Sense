@@ -278,8 +278,16 @@ class _VerificationResultCardState extends State<VerificationResultCard> {
     try {
       final loaded = await nfcApi.componentUpdateHistory(id);
       if (mounted) setState(() => history = loaded);
-    } catch (_) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Unable to load update history.')));
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Unable to load update history: ${nfcApi.errorMessage(e)}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 6),
+          ),
+        );
+      }
     } finally {
       if (mounted) setState(() => loadingHistory = false);
     }
